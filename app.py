@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from markupsafe import escape
+import argparse
 import TesteGraficoPython.extraction as ex
 
 app = Flask(__name__)
@@ -11,9 +12,23 @@ def index():
 
 
 @app.route("/choose-metrics", methods=["GET", "POST"])
-def choose_metrics():
+def choose_metrics() -> str:
     """
-    Handles the selection of metrics and displays the corresponding CSV files.
+    Handles the selection of metrics.
+    - If the request method is GET, it renders the initial form for selecting
+    metrics.
+    - If the request method is POST, it processes the form submission.
+        - If you select a valid base directory, it extracts the metrics from the CSV
+        files in the specified directory.
+        - If the configuration file is successfully loaded, it allows the user to
+        load the configuration file with the selected metrics.
+        - If the user specifies an output configuration file, it saves the selected
+        metrics to that file.
+        - If there are any errors during the process, it renders the error messages.
+        - Finally, it renders the form with the selected metrics and configuration data.
+    Returns:
+        template:
+            Rendered HTML template for the metrics selection form.
     """
     if request.method == "POST":
         base_directory = request.form["base-directory"]
@@ -65,4 +80,13 @@ def choose_metrics():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    parser = argparse.ArgumentParser(description="Run the Flask app.")
+    parser.add_argument(
+        "--port", type=int, default=5000, help="Port to run the server on"
+    )
+    parser.add_argument(
+        "--no-debug", action="store_false", help="Disable debug mode for the server"
+    )
+    args = parser.parse_args()
+
+    app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
