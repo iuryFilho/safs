@@ -1,9 +1,0 @@
-{
-    "BitRateBlockingProbability": [
-        "BitRate blocking probability",
-        "General requested bitRate"
-    ],
-    "BlockingProbability": [
-        "Blocking probability"
-    ]
-}

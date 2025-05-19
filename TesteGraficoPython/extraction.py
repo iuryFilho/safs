@@ -4,6 +4,12 @@ import pandas as pd
 import json
 
 
+class ExtractionError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 def filter_metric(
     metric: str, simulation_results: list[pd.DataFrame]
 ) -> list[pd.DataFrame]:
@@ -19,17 +25,17 @@ def filter_metric(
     return [d[d.Metrics == metric] for d in simulation_results]
 
 
-def extract_labels_from_paths(paths: list[str]) -> list[str]:
-    """
-    Extracts the labels from the file paths.
-    Args:
-        paths (list[str]): List of file paths.
-    Returns:
-        list: A list of labels extracted from the file paths.
-    """
+# def extract_labels_from_paths(paths: list[str]) -> list[str]:
+#     """
+#     Extracts the labels from the file paths.
+#     Args:
+#         paths (list[str]): List of file paths.
+#     Returns:
+#         list: A list of labels extracted from the file paths.
+#     """
 
-    solutions = [s.split("/")[-2] for s in paths]
-    return [s.split("_", 1)[0] for s in solutions]
+#     solutions = [s.split("/")[-2] for s in paths]
+#     return [s.split("_", 1)[0] for s in solutions]
 
 
 def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
@@ -116,19 +122,23 @@ def extract_metric_group_names(file_paths: list[str]) -> list[str]:
     return [s.split("_")[-1].split(".")[0] for s in file_names]
 
 
-def get_simulations_directories(base_directory: str) -> tuple[list[str], str]:
+def get_simulations_directories(base_directory: str) -> list[str]:
     """
     Retrieves the simulation directories from the base directory.
     Args:
         base_directory (str): The base directory to search for files.
     Returns:
-        (list, error): A list of simulation directories found in the directory and an error if the base directory does not exist.
+        list: A list of simulation directories found in the directory.
+    Raises:
+        FileNotFoundError: If the base directory does not exist.
     """
     if not os.path.exists(base_directory):
-        return [], f"The base directory '{base_directory}' does not exist."
+        raise FileNotFoundError(
+            f"The base directory '{base_directory}' does not exist."
+        )
     pattern = base_directory + "/*/"
     paths = glob.glob(pattern)
-    return [s.replace("\\", "/") for s in paths], None
+    return [s.replace("\\", "/") for s in paths]
 
 
 def group_metrics(
@@ -150,23 +160,37 @@ def group_metrics(
     return grouped_metrics
 
 
-def load_config(path: str) -> tuple[dict, str]:
+def load_config(path: str) -> dict:
     """
     Loads the configuration from a JSON file.
     Args:
         path (str): The path to the configuration file.
     Returns:
-        (dict, error): A dictionary with the configuration data and an error if the file does not exist.
+        dict: A dictionary with the configuration data.
+    Raises:
+        FileNotFoundError: If the configuration file does not exist.
+        ExtractionError: If the configuration file is not valid.
     """
     if not path:
-        return {}, None
+        return {}
     try:
         with open(path, "r") as config_file:
-            return json.load(config_file), None
-    except FileNotFoundError:
-        return {}, f"The configuration file '{path}' does not exist."
-    except json.JSONDecodeError:
-        return {}, f"The configuration file '{path}' is not a valid JSON file."
+            result = json.load(config_file)
+            if not isinstance(result, dict):
+                raise ExtractionError(
+                    f"The configuration file '{path}' is not a valid JSON object."
+                )
+            if "directories" not in result or "metrics" not in result:
+                raise ExtractionError(
+                    f"The configuration file '{path}' must contain 'directories' and 'metrics' keys."
+                )
+            return result
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"The configuration file '{path}' does not exist.")
+    except json.JSONDecodeError as e:
+        raise ExtractionError(
+            f"The configuration file '{path}' is not a valid JSON file."
+        )
 
 
 def save_config(config: dict, path: str) -> tuple[str, str]:

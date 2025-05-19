@@ -32,48 +32,66 @@ def choose_metrics() -> str:
     """
     if request.method == "POST":
         base_directory = request.form["base-directory"]
-        simulation_directories, err = ex.get_simulations_directories(base_directory)
-        if err:
+        input_config = request.form.get("input-config", "")
+        output_config = request.form.get("output-config", "")
+        action = request.form.get("action", "")
+        print(f"Action: {action}")
+
+        try:
+            simulation_directories_paths = ex.get_simulations_directories(
+                base_directory
+            )
+        except Exception as e:
             return render_template(
                 "choose_metrics.jinja",
-                base_dir_error=err,
+                base_dir_error=str(e),
                 base_directory=base_directory,
-                config_file=config_file,
+                input_config=input_config,
+                output_config=output_config,
             )
 
-        csv_paths = ex.get_csv_by_directory(simulation_directories[0])
+        simulation_directories = [
+            s.split("/")[-2] for s in simulation_directories_paths
+        ]
+
+        csv_paths = ex.get_csv_by_directory(simulation_directories_paths[0])
         metric_groups = ex.extract_metric_group_names(csv_paths)
         grouped_metrics = ex.group_metrics(metric_groups, csv_paths)
 
-        config_file = request.form["config-file"]
-        config_data, err = ex.load_config(config_file)
-        if err:
+        try:
+            config_data = ex.load_config(input_config)
+        except Exception as e:
             return render_template(
                 "choose_metrics.jinja",
-                config_file_error=err,
+                input_config_error=str(e),
                 base_directory=base_directory,
-                config_file=config_file,
+                input_config=input_config,
+                simulation_directories=simulation_directories,
                 grouped_metrics=grouped_metrics,
+                output_config=output_config,
             )
 
-        output_config_file = request.form.get("output-config-file", "")
-        if output_config_file:
-            new_config_data = {}
-            for metric_group, metric_list in config_data.items():
+        if action == "save-config" and output_config:
+            new_config_data = {"directories": [], "metrics": {}}
+            for dir in simulation_directories:
+                if dir in request.form:
+                    new_config_data["directories"].append(dir)
+            for metric_group, metric_list in grouped_metrics.items():
                 for metric in metric_list:
                     if metric in request.form:
-                        new_config_data[metric_group] = new_config_data.get(
-                            metric_group, []
-                        ) + [metric]
-            ex.save_config(new_config_data, output_config_file)
+                        new_config_data["metrics"][metric_group] = new_config_data[
+                            "metrics"
+                        ].get(metric_group, []) + [metric]
+            ex.save_config(new_config_data, output_config)
 
         return render_template(
             "choose_metrics.jinja",
             base_directory=base_directory,
-            config_file=config_file,
+            input_config=input_config,
+            config_data=config_data,
             simulation_directories=simulation_directories,
             grouped_metrics=grouped_metrics,
-            config_data=config_data,
+            output_config=output_config,
         )
     else:
         return render_template("choose_metrics.jinja")
