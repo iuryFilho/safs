@@ -1,0 +1,43 @@
+{% extends "base.jinja" %}
+{% from "macros/macros.jinja" import input, section, list_group, metrics_accordion %}
+{% from "macros/sections.jinja" import base_directory_section, input_config_section, output_config_section, directories_section, metrics_section, output_section %}
+
+{% block title %}
+  Metrics
+{% endblock title %}
+{% block header %}
+  Metrics
+{% endblock header %}
+{% block content %}
+  <form id="form" action="{{ url_for('choose_metrics') }}" method="post">
+    {{ base_directory_section(base_directory, base_dir_error) }}
+
+    {% if base_directory and not base_dir_error %}
+      {{ input_config_section(input_config, input_config_error) }}
+      {{ output_config_section(output_config) }}
+    {% else %}
+      <input type="text" name="input-config" value="{{ input_config }}" hidden>
+      <input type="text" name="output-config" value="{{ output_config }}" hidden>
+    {% endif %}
+
+    {{ directories_section(directories, config_data) }}
+
+    {{ metrics_section(grouped_metrics, config_data) }}
+  </form>
+
+  {{ output_section() }}
+{% endblock content %}
+{% block scripts %}
+  <script>
+      const form = document.getElementById("form");
+      const submitter = document.querySelector("button[value=save-config]");
+      const formData = new FormData(form, submitter);
+
+      const output = document.getElementById("output");
+      console.log(formData);
+
+      for (const [key, value] of formData) {
+          output.textContent += `${key}: ${value}\n`;
+      }
+  </script>
+{% endblock scripts %}

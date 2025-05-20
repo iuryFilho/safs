@@ -1,0 +1,99 @@
+{% from "macros/macros.jinja" import input, section, list_group, metrics_accordion %}
+
+{% macro base_directory_section(base_directory, base_dir_error) %}
+  {% call section("base-directory") %}
+    {{ input(label="Base Directory:",
+        name="base-directory", value=base_directory,
+        placeholder="Enter base directory path", required=true,
+        button_text="Get Metrics", action="get-metrics",
+        error=base_dir_error) 
+    }}
+  {% endcall %}
+{% endmacro %}
+
+{% macro input_config_section(input_config, input_config_error) %}
+  {% call section("input-config") %}
+    {{ input(label="Input Configuration File (Optional):",
+        name="input-config", value=input_config,
+        placeholder="Enter input configuration file path", required=false,
+        button_text="Load Configuration", action="load-config",
+        error=input_config_error) 
+    }}
+  {% endcall %}
+{% endmacro %}
+
+{% macro output_config_section(output_config) %}
+  {% call section("output-config") %}
+    {{ input(label="Output Configuration File (Optional):",
+        name="output-config", value=output_config,
+        placeholder="Enter output configuration file path", required=false,
+        button_text="Save Configuration", action="save-config") 
+    }}
+  {% endcall %}
+{% endmacro %}
+
+{% macro directories_section(directories, config_data) %}
+  {% if directories %}
+    {% call section("directories") %}
+      <h2>Simulation Directories List:</h2>
+      {% if config_data %}
+        {{ list_group("directory-list", directories, config_data["directories"]) }}
+      {% else %}
+        {{ list_group("directory-list", directories) }}
+      {% endif %}
+    {% endcall %}
+  {% endif %}
+{% endmacro %}
+
+{% macro metrics_section(grouped_metrics, config_data) %}
+  {% if grouped_metrics %}
+    {% call section("metrics") %}
+      <h2>Metrics List:</h2>
+      <div class="accordion mb-3" id="accordion">
+        {% for metric_group, metric_list in grouped_metrics.items() %}
+          <div class="accordion-item">
+            <h3 class="accordion-header">
+              <button id="{{ metric_group }}-but"
+                      class="accordion-button text-bg-secondary collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#{{ metric_group }}"
+                      aria-expanded="false"
+                      aria-controls="{{ metric_group }}">{{ metric_group }}</button>
+            </h3>
+            <div id="{{ metric_group }}"
+                 class="accordion-collapse collapse bg-dark-subtle">
+              <div class="accordion-body p-2">
+                {% if config_data and config_data["metrics"] %}
+                  {# Extrair depois #}
+                  {% set metric_script %}
+                    <script>
+                        var metric_group_but = document.getElementById("{{ metric_group }}-but");
+                        metric_group_but.classList.remove("collapsed");
+                        metric_group_but.ariaExpanded = "true";
+                        document.getElementById("{{ metric_group }}").classList.add("show");
+                    </script>
+                  {% endset %}
+                  {{ list_group(input_name="metric-list",
+                                    items=metric_list,
+                                    checked_items=config_data["metrics"][metric_group],
+                                    script=metric_script) 
+                  }}
+                {% else %}
+                  {{ list_group("metric-list", metric_list) }}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endcall %}
+  {% endif %}
+{% endmacro %}
+
+{% macro output_section() %}
+  {% call section("output") %}
+    <h2>Output:</h2>
+    <pre id="output" class="text-bg-secondary p-3"></pre>
+  {% endcall %}
+{% endmacro %}

@@ -1,0 +1,96 @@
+{% macro input(label, name, value, placeholder, required, button_text, action, error=None) %}
+  <div class="col">
+    <label for="{{ name }}" class="form-label">
+      <h2>{{ label }}</h2>
+    </label>
+    <input type="text"
+           id="{{ name }}"
+           class="form-control mb-3"
+           name="{{ name }}"
+           value="{{ value }}"
+           placeholder="{{ placeholder }}"
+           {% if required %}required{% endif %}>
+    <button type="submit"
+            class="btn btn-primary"
+            name="action"
+            value="{{ action }}">{{ button_text }}</button>
+  </div>
+  {% if error %}<div class="alert alert-danger mt-3" role="alert">{{ error }}</div>{% endif %}
+{% endmacro %}
+
+{% macro section(name) %}
+  <section id="{{ name }}-section" class="mb-4">
+    {{ caller() }}
+  </section>
+{% endmacro %}
+
+{% macro list_group(input_name, items, checked_items=None, name_prefix='', script="") %}
+  <ul class="list-group">
+    {% if checked_items %}
+      {% for item in items %}
+        {% if item in checked_items %}
+          {{ _list_group_item(input_name, item, name_prefix, "checked", script) }}
+        {% else %}
+          {{ _list_group_item(input_name, item, name_prefix) }}
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      {% for item in items %}{{ _list_group_item(input_name, item, name_prefix) }}{% endfor %}
+    {% endif %}
+  </ul>
+{% endmacro %}
+
+{% macro _list_group_item(input_name, item, name_prefix, checked="", script="" ) %}
+  <li class="list-group-item text-bg-light">
+    <input id="{{ name_prefix }}{{ item }}"
+           class="form-check-input me-1"
+           type="checkbox"
+           name="{{ input_name }}"
+           value="{{ item }}"
+           {{ checked }} />
+    <label class="form-check-label stretched-link"
+           for="{{ name_prefix }}{{ item }}">{{ item }}</label>
+    {{ script }}
+  </li>
+{% endmacro %}
+
+{% macro metrics_accordion(grouped_metrics, config_data) %}
+  <div class="accordion mb-3" id="accordion">
+    {% for metric_group, metric_list in grouped_metrics.items() %}
+      <div class="accordion-item">
+        <h3 class="accordion-header">
+          <button id="{{ metric_group }}-but"
+                  class="accordion-button text-bg-secondary collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#{{ metric_group }}"
+                  aria-expanded="false"
+                  aria-controls="{{ metric_group }}">{{ metric_group }}</button>
+        </h3>
+        <div id="{{ metric_group }}"
+             class="accordion-collapse collapse bg-dark-subtle">
+          <div class="accordion-body p-2">
+            {% if config_data and config_data["metrics"] %}
+              {# Extrair depois #}
+              {% set metric_script %}
+                <script>
+                    var metric_group_but = document.getElementById("{{ metric_group }}-but");
+                    metric_group_but.classList.remove("collapsed");
+                    metric_group_but.ariaExpanded = "true";
+                    document.getElementById("{{ metric_group }}").classList.add("show");
+                </script>
+              {% endset %}
+              {{ list_group(input_name="metric-list",
+                            items=metric_list,
+                            checked_items=config_data["metrics"][metric_group],
+                            script=metric_script) 
+              }}
+            {% else %}
+              {{ list_group("metric-list", metric_list) }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}

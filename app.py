@@ -43,16 +43,14 @@ def choose_metrics() -> str:
             )
         except Exception as e:
             return render_template(
-                "choose_metrics.jinja",
+                "choose-metrics.jinja",
                 base_dir_error=str(e),
                 base_directory=base_directory,
                 input_config=input_config,
                 output_config=output_config,
             )
 
-        simulation_directories = [
-            s.split("/")[-2] for s in simulation_directories_paths
-        ]
+        directories = [s.split("/")[-2] for s in simulation_directories_paths]
 
         csv_paths = ex.get_csv_by_directory(simulation_directories_paths[0])
         metric_groups = ex.extract_metric_group_names(csv_paths)
@@ -62,39 +60,39 @@ def choose_metrics() -> str:
             config_data = ex.load_config(input_config)
         except Exception as e:
             return render_template(
-                "choose_metrics.jinja",
+                "choose-metrics.jinja",
                 input_config_error=str(e),
                 base_directory=base_directory,
                 input_config=input_config,
-                simulation_directories=simulation_directories,
+                directories=directories,
                 grouped_metrics=grouped_metrics,
                 output_config=output_config,
             )
 
         if action == "save-config" and output_config:
             new_config_data = {"directories": [], "metrics": {}}
-            for dir in simulation_directories:
-                if dir in request.form:
-                    new_config_data["directories"].append(dir)
+            for dir in request.form.getlist("directory-list"):
+                new_config_data["directories"].append(dir)
+            metric_list_form = request.form.getlist("metric-list")
             for metric_group, metric_list in grouped_metrics.items():
-                for metric in metric_list:
-                    if metric in request.form:
+                for metric in metric_list_form:
+                    if metric in metric_list:
                         new_config_data["metrics"][metric_group] = new_config_data[
                             "metrics"
                         ].get(metric_group, []) + [metric]
             ex.save_config(new_config_data, output_config)
 
         return render_template(
-            "choose_metrics.jinja",
+            "choose-metrics.jinja",
             base_directory=base_directory,
             input_config=input_config,
             config_data=config_data,
-            simulation_directories=simulation_directories,
+            directories=directories,
             grouped_metrics=grouped_metrics,
             output_config=output_config,
         )
     else:
-        return render_template("choose_metrics.jinja")
+        return render_template("choose-metrics.jinja")
 
 
 if __name__ == "__main__":
