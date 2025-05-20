@@ -11,6 +11,7 @@
            placeholder="{{ placeholder }}"
            {% if required %}required{% endif %}>
     <button type="submit"
+            id="{{ action }}-submit"
             class="btn btn-primary"
             name="action"
             value="{{ action }}">{{ button_text }}</button>

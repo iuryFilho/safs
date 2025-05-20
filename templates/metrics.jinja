@@ -9,7 +9,7 @@
   Metrics
 {% endblock header %}
 {% block content %}
-  <form id="form" action="{{ url_for('choose_metrics') }}" method="post">
+  <form id="form">
     {{ base_directory_section(base_directory, base_dir_error) }}
 
     {% if base_directory and not base_dir_error %}
@@ -30,14 +30,23 @@
 {% block scripts %}
   <script>
       const form = document.getElementById("form");
-      const submitter = document.querySelector("button[value=save-config]");
-      const formData = new FormData(form, submitter);
-
       const output = document.getElementById("output");
-      console.log(formData);
-
-      for (const [key, value] of formData) {
+      output.textContent = "";
+      for (const [key, value] of new FormData(form)) {
           output.textContent += `${key}: ${value}\n`;
       }
+
+      form.addEventListener("submit", function(event) {
+          event.preventDefault();
+          const formData = new FormData(form, event.submitter);
+          console.log(event.submitter.value);
+          if (event.submitter.value === "get-metrics") {
+              form.method = "post";
+              form.action = "{{ url_for('metrics.extract_metrics') }}";
+              form.submit();
+          }
+      });
   </script>
+  <script src="{{ url_for('static', filename='forms.js') }}"></script>
+
 {% endblock scripts %}
