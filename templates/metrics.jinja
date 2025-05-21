@@ -1,6 +1,5 @@
 {% extends "base.jinja" %}
-{% from "macros/macros.jinja" import input, section, list_group, metrics_accordion %}
-{% from "macros/sections.jinja" import base_directory_section, input_config_section, output_config_section, directories_section, metrics_section, output_section %}
+{% from "macros.jinja" import input, section, list_group, metrics_accordion %}
 
 {% block title %}
   Metrics
@@ -10,43 +9,79 @@
 {% endblock header %}
 {% block content %}
   <form id="form">
-    {{ base_directory_section(base_directory, base_dir_error) }}
+    {% call section("base-directory") %}
+      {{ input(label="Base Directory:",
+            name="base-directory", value=base_directory,
+            placeholder="Enter base directory path", required=true,
+            button_text="Get Metrics", action="get-metrics",
+            error=base_dir_error) 
+      }}
+    {% endcall %}
 
     {% if base_directory and not base_dir_error %}
-      {{ input_config_section(input_config, input_config_error) }}
-      {{ output_config_section(output_config) }}
+      {% call section("input-config") %}
+        {{ input(label="Input Configuration File (Optional):",
+                name="input-config", value=input_config,
+                placeholder="Enter input configuration file path", required=false,
+                button_text="Load Configuration", action="load-config") 
+        }}
+      {% endcall %}
+      {% call section("output-config") %}
+        {{ input(label="Output Configuration File (Optional):",
+                name="output-config", value=output_config,
+                placeholder="Enter output configuration file path", required=false,
+                button_text="Save Configuration", action="save-config") 
+        }}
+      {% endcall %}
     {% else %}
       <input type="text" name="input-config" value="{{ input_config }}" hidden>
       <input type="text" name="output-config" value="{{ output_config }}" hidden>
     {% endif %}
 
-    {{ directories_section(directories, config_data) }}
+    {% if directories %}
+      {% call section("directories") %}
+        <h2>Simulation Directories List:</h2>
+        {{ list_group("directory-list", directories) }}
+      {% endcall %}
+    {% endif %}
 
-    {{ metrics_section(grouped_metrics, config_data) }}
+    {% if grouped_metrics %}
+      {% call section("metrics") %}
+        <h2>Metrics List:</h2>
+        <div class="accordion mb-3" id="accordion">
+          {% for metric_group, metric_list in grouped_metrics.items() %}
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button id="{{ metric_group }}-btn"
+                        class="accordion-button text-bg-secondary collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#{{ metric_group }}"
+                        aria-expanded="false"
+                        aria-controls="{{ metric_group }}">{{ metric_group }}</button>
+              </h3>
+              <div id="{{ metric_group }}"
+                   class="accordion-collapse collapse bg-dark-subtle">
+                <div class="accordion-body p-2">{{ list_group("metric-list", metric_list) }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endcall %}
+    {% endif %}
   </form>
 
-  {{ output_section() }}
+  {% if debug_output %}
+    {% call section("debug") %}
+      <h2>Debug Output:</h2>
+      <pre id="debug-output" class="text-bg-secondary p-3">{{ debug_output }}</pre>
+    {% endcall %}
+  {% endif %}
 {% endblock content %}
 {% block scripts %}
-  <script>
-      const form = document.getElementById("form");
-      const output = document.getElementById("output");
-      output.textContent = "";
-      for (const [key, value] of new FormData(form)) {
-          output.textContent += `${key}: ${value}\n`;
-      }
-
-      form.addEventListener("submit", function(event) {
-          event.preventDefault();
-          const formData = new FormData(form, event.submitter);
-          console.log(event.submitter.value);
-          if (event.submitter.value === "get-metrics") {
-              form.method = "post";
-              form.action = "{{ url_for('metrics.extract_metrics') }}";
-              form.submit();
-          }
-      });
-  </script>
   <script src="{{ url_for('static', filename='forms.js') }}"></script>
+  {% if has_config_data %}<script>
+    document.addEventListener("DOMContentLoaded", loadConfig);
+</script>{% endif %}
 
 {% endblock scripts %}

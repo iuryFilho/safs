@@ -1,26 +1,42 @@
-// async function extractMetrics() {
-//     const baseDirectory = document.getElementById("base-directory").value;
-//     console.log("Base Directory:", baseDirectory);
-//     const response = await fetch("/metrics/extract", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: new URLSearchParams({ "base-directory": baseDirectory }),
-//     });
-//     console.log("Response:", response);
-//     const data = await response.json();
-//     console.log("Response Data:", data);
-//     if (data.error) {
-//         alert("Erro: " + data.error);
-//     } else {
-//         // Atualize a interface conforme necessário
-//         console.log(data);
-//         // Exemplo: document.getElementById("output").textContent = JSON.stringify(data, null, 2);
-//     }
-// }
+const form = document.getElementById("form");
+const debugOutput = document.getElementById("debug-output");
+
+if (debugOutput) {
+    function setOutput() {
+        debugOutput.textContent = "";
+        for (const [key, value] of new FormData(form)) {
+            debugOutput.textContent += `${key}: ${value}\n`;
+        }
+    }
+    document.addEventListener("DOMContentLoaded", setOutput);
+    (() => {
+        const checkboxes = form.querySelectorAll(
+            'input[type="checkbox"][name="directory-list"], input[type="checkbox"][name="metric-list"]'
+        );
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener("change", function () {
+                setOutput();
+            });
+        });
+    })();
+}
+
+form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    console.log(event.submitter.value);
+    if (event.submitter.value === "get-metrics") {
+        form.method = "post";
+        form.action = "/metrics/get-metrics";
+        form.submit();
+    }
+});
 
 // Carregar configuração
 async function loadConfig() {
-    const inputConfig = document.querySelector('[name="input-config"]').value;
+    const inputConfig = document.getElementById("input-config").value;
+    if (!inputConfig) {
+        return;
+    }
     const response = await fetch("/metrics/load-config", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -30,8 +46,37 @@ async function loadConfig() {
     if (data.error) {
         alert("Erro: " + data.error);
     } else {
-        // Atualize a interface conforme necessário
-        console.log(data);
+        const configData = data.config_data;
+
+        configData.directories.forEach((dir) => {
+            const dirCheckbox = document.getElementById(dir);
+            dirCheckbox.checked = true;
+        });
+
+        Object.entries(configData.metrics).forEach(
+            ([metricGroup, metricList]) => {
+                const metricGroupBtn = document.getElementById(
+                    `${metricGroup}-btn`
+                );
+                if (metricGroupBtn) {
+                    metricGroupBtn.classList.remove("collapsed");
+                    metricGroupBtn.ariaExpanded = "true";
+                    document
+                        .getElementById(`${metricGroup}`)
+                        .classList.add("show");
+                }
+
+                metricList.forEach((metric) => {
+                    const metricCheckbox = document.getElementById(metric);
+                    if (metricCheckbox) {
+                        metricCheckbox.checked = true;
+                    }
+                });
+            }
+        );
+        if (debugOutput) {
+            setOutput();
+        }
     }
 }
 
@@ -67,12 +112,9 @@ async function saveConfig() {
 }
 
 // Exemplo de ligação dos scripts aos botões
-// document
-//     .getElementById("get-metrics-submit")
-//     ?.addEventListener("click", extractMetrics);
-// document
-//     .getElementById("load-config-btn")
-//     ?.addEventListener("click", loadConfig);
-// document
-//     .getElementById("save-config-btn")
-//     ?.addEventListener("click", saveConfig);
+document
+    .getElementById("load-config-submit")
+    ?.addEventListener("click", loadConfig);
+document
+    .getElementById("save-config-submit")
+    ?.addEventListener("click", saveConfig);

@@ -1,10 +1,9 @@
 from flask import Flask, render_template
 import argparse
-from routes import metrics
+from routes import metrics, debug_output
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
-app.register_blueprint(metrics, url_prefix="/metrics")
 
 
 @app.route("/")
@@ -21,7 +20,10 @@ def main():
         "--no-debug", action="store_false", help="Disable debug mode for the server"
     )
     args = parser.parse_args()
-
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
+    global debug_output
+    debug_output = args.no_debug
+    app.register_blueprint(metrics, url_prefix="/metrics", debug_output=debug_output)
     app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
 
 
