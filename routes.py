@@ -21,8 +21,6 @@ def record_params(setup_state):
 
 @metrics.route("", methods=["GET"])
 def metrics_index():
-    print("Debug Output:", debug_output)
-
     base_directory = session.get("base_directory", "")
     base_dir_error = session.get("base_dir_error", None)
     if base_dir_error:
@@ -54,16 +52,16 @@ def get_metrics():
     base_directory = request.form["base-directory"]
     session["base_directory"] = base_directory
     try:
-        session["base_dir_error"] = None
-        print("Base Directory:", base_directory)
         simulation_directories_paths = ex.get_simulations_directories(base_directory)
-        directories = [s.split("/")[-2] for s in simulation_directories_paths]
-        csv_paths = ex.get_csv_by_directory(simulation_directories_paths[0])
-        metric_groups = ex.extract_metric_group_names(csv_paths)
-        grouped_metrics = ex.group_metrics(metric_groups, csv_paths)
+        simulation_directories = [
+            s.split("/")[-2] for s in simulation_directories_paths
+        ]
+        csv_paths = ex.get_csv_paths(simulation_directories_paths[0])
+        grouped_metrics = ex.group_metrics(csv_paths)
 
-        session["directories"] = directories
+        session["directories"] = simulation_directories
         session["grouped_metrics"] = grouped_metrics
+        session["base_dir_error"] = None
         return redirect(url_for("metrics.metrics_index"))
     except Exception as e:
         session["base_dir_error"] = str(e)
@@ -100,5 +98,5 @@ def save_config():
                 new_config_data["metrics"][metric_group] = new_config_data[
                     "metrics"
                 ].get(metric_group, []) + [metric]
-    ex.save_config(new_config_data, output_config)
-    return jsonify({"message": "Configuração salva com sucesso!"})
+    result = ex.save_config(new_config_data, output_config)
+    return jsonify({"message": result})

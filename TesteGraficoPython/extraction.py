@@ -2,6 +2,7 @@ import glob
 import os
 import pandas as pd
 import json
+import logging
 
 
 class ExtractionError(Exception):
@@ -23,19 +24,6 @@ def filter_metric(
     """
 
     return [d[d.Metrics == metric] for d in simulation_results]
-
-
-# def extract_labels_from_paths(paths: list[str]) -> list[str]:
-#     """
-#     Extracts the labels from the file paths.
-#     Args:
-#         paths (list[str]): List of file paths.
-#     Returns:
-#         list: A list of labels extracted from the file paths.
-#     """
-
-#     solutions = [s.split("/")[-2] for s in paths]
-#     return [s.split("_", 1)[0] for s in solutions]
 
 
 def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
@@ -70,28 +58,36 @@ def get_metric_names(path: str) -> list[str]:
     return list(df["Metrics"].unique())
 
 
-def get_paths_by_metric(base_directory: str, metric: str) -> list[str]:
+def get_csv_paths_by_metric(
+    simulation_directories: list[str], metric: str
+) -> list[str]:
     """
-    Retrieves the csv file paths from the base directory based on the given metric.
+    Retrieves the csv file paths from the simulation directories based on the given metric.
     Args:
-        base_directory (str): The base directory to search for files.
+        simulation_directories (list[str]): The simulation directories to search for files.
         metric (str): The file name pattern to search for.
     Returns:
         list: A list of csv file paths matching the given pattern.
     Raises:
-        FileNotFoundError: If the base directory does not exist.
+        FileNotFoundError: If any simulation directory does not exist.
     """
+    all_file_paths = []
+    for simulation_directory in simulation_directories:
+        if not os.path.exists(simulation_directory):
+            raise FileNotFoundError(
+                f"The simulation directory '{simulation_directory}' does not exist."
+            )
+        pattern = f"{simulation_directory}/*_{metric}.csv"
+        file_path = glob.glob(pattern)[0]
+        all_file_paths.append(normalize_path(file_path))
+    return all_file_paths
 
-    if not os.path.exists(base_directory):
-        raise FileNotFoundError(
-            f"The base directory '{base_directory}' does not exist."
-        )
-    pattern = base_directory + "/*/*" + metric
-    file_paths = glob.glob(pattern)
-    return [s.replace("\\", "/") for s in file_paths]
+
+def normalize_path(s: str) -> str:
+    return s.replace("\\", "/")
 
 
-def get_csv_by_directory(simulation_directory: str) -> list[str]:
+def get_csv_paths(simulation_directory: str) -> list[str]:
     """
     Retrieves the csv file paths from the simulation directory.
     Args:
@@ -105,9 +101,9 @@ def get_csv_by_directory(simulation_directory: str) -> list[str]:
         raise FileNotFoundError(
             f"The simulation directory '{simulation_directory}' does not exist."
         )
-    pattern = simulation_directory + "/*.csv"
+    pattern = f"{simulation_directory}/*.csv"
     file_paths = glob.glob(pattern)
-    return [s.replace("\\", "/") for s in file_paths]
+    return [normalize_path(s) for s in file_paths]
 
 
 def extract_metric_group_names(file_paths: list[str]) -> list[str]:
@@ -118,7 +114,7 @@ def extract_metric_group_names(file_paths: list[str]) -> list[str]:
     Returns:
         list: A list of metric group names found in the file paths.
     """
-    file_names = [s.replace("\\", "/").split("/")[-1] for s in file_paths]
+    file_names = [normalize_path(s).split("/")[-1] for s in file_paths]
     return [s.split("_")[-1].split(".")[0] for s in file_names]
 
 
@@ -136,14 +132,12 @@ def get_simulations_directories(base_directory: str) -> list[str]:
         raise FileNotFoundError(
             f"The base directory '{base_directory}' does not exist."
         )
-    pattern = base_directory + "/*/"
+    pattern = f"{base_directory}/*/"
     paths = glob.glob(pattern)
-    return [s.replace("\\", "/") for s in paths]
+    return [normalize_path(s) for s in paths]
 
 
-def group_metrics(
-    metric_groups: list[str], file_paths: list[str]
-) -> dict[str, list[str]]:
+def group_metrics(file_paths: list[str]) -> dict[str, list[str]]:
     """
     Groups the metrics by their names and file paths.
     Args:
@@ -152,7 +146,7 @@ def group_metrics(
     Returns:
         dict: A dictionary with metric groups as keys and file paths as values.
     """
-
+    metric_groups = extract_metric_group_names(file_paths)
     grouped_metrics = {}
     for metric_group, path in zip(metric_groups, file_paths):
         metrics = get_metric_names(path)
@@ -193,31 +187,49 @@ def load_config(path: str) -> dict:
         )
 
 
-def save_config(config: dict, path: str) -> tuple[str, str]:
+def save_config(config: dict, path: str) -> str:
     """
     Saves the configuration to a JSON file.
     Args:
         config (dict): The configuration data to save.
         path (str): The path to save the configuration file.
     Returns:
-        (str, error): A message indicating the result of the save operation and an error if the file could not be saved.
+        str: A message indicating the result of the save operation.
     """
     if not path:
-        return "No path provided", None
+        return "No path provided"
     try:
         with open(path, "w") as config_file:
             json.dump(config, config_file, indent=4)
-        return "Configuration saved successfully", None
+        return "Configuration saved successfully"
     except IOError:
-        return "Failed to save configuration", f"Could not write to '{path}'"
+        return "Failed to save configuration"
 
 
 if __name__ == "__main__":
+
+    def to_json(obj):
+        return json.dumps(obj, indent=4)
+
     # Example usage
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
+    logger = logging.getLogger(__name__)
     base_directory = "TesteGraficoPython/simulations"
-    simulation_directories, err = get_simulations_directories(base_directory)
-    file_paths = get_csv_by_directory(simulation_directories[0])
-    metric_groups = extract_metric_group_names(file_paths)
-    grouped_metrics = group_metrics(metric_groups, file_paths)
-    with open("result.json", "w") as result_file:
-        result_file.write(json.dumps(grouped_metrics, indent=4))
+    logger.info(f"Base directory: {base_directory}")
+    simulation_directories = get_simulations_directories(base_directory)
+    logger.info(f"Simulation directories: {to_json(simulation_directories)}")
+    simulation_directories_names = [s.split("/")[-2] for s in simulation_directories]
+    logger.info(
+        f"Simulation directories names: {to_json(simulation_directories_names)}"
+    )
+    csv_paths = get_csv_paths(simulation_directories[0])
+    metric_groups = extract_metric_group_names(csv_paths)
+    logger.info(f"Metric groups: {to_json(metric_groups)}")
+    all_csv_paths_by_metric = {}
+    for metric in metric_groups:
+        all_csv_paths_by_metric[metric] = get_csv_paths_by_metric(
+            simulation_directories, metric
+        )
+    logger.info(f"All csv paths by metric: {to_json(all_csv_paths_by_metric)}")
+    # grouped_metrics = group_metrics(csv_paths)
+    # logger.info(f"Grouped metrics: {to_json(grouped_metrics)}")
