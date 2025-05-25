@@ -239,6 +239,15 @@ def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:
     return [d.filter(like="rep", axis=1) for d in simulation_results]
 
 
+# TODO - Função temporária para pegar os labels
+def get_labels(directories):
+    labels = []
+    for dir in directories:
+        dir = "".join([c for c in dir if c.isupper() or c.isnumeric()])
+        labels.append(dir)
+    return labels
+
+
 def main():
     def to_json(obj):
         return json.dumps(obj, indent=4)

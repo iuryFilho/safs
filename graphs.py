@@ -195,15 +195,8 @@ def main():
     }
 
     # ? Temporary solution for getting labels
-    def get_labels():
-        labels = []
-        for dir in directories:
-            dir = "".join([c for c in dir if c.isupper() or c.isnumeric()])
-            logging.info(f"Directory: {dir}")
-            labels.append(dir)
-        return labels
 
-    labels = get_labels()
+    labels = ex.get_labels(directories)
 
     plot_line_graph(
         base_directory, directories, grouped_metrics, labels=labels, show=False
