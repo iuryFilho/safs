@@ -34,8 +34,18 @@ def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
     Returns:
         list: A list of DataFrames containing the simulation results.
     """
-
-    return [pd.read_csv(s) for s in paths]
+    dataframes = []
+    for path in paths:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"The file '{path}' does not exist.")
+        sep = "," if "," in open(path).readline() else ";"
+        df = pd.read_csv(path, sep=sep)
+        if "Metrics" not in df.columns:
+            raise ExtractionError(
+                f"The file '{path}' does not contain the 'Metrics' column."
+            )
+        dataframes.append(df)
+    return dataframes
 
 
 def get_metric_names(path: str) -> list[str]:
@@ -71,7 +81,7 @@ def get_csv_paths_by_metric(
     Raises:
         FileNotFoundError: If any simulation directory does not exist.
     """
-    all_file_paths = []
+    file_paths = []
     for simulation_directory in simulation_directories:
         if not os.path.exists(simulation_directory):
             raise FileNotFoundError(
@@ -79,8 +89,8 @@ def get_csv_paths_by_metric(
             )
         pattern = f"{simulation_directory}/*_{metric}.csv"
         file_path = glob.glob(pattern)[0]
-        all_file_paths.append(normalize_path(file_path))
-    return all_file_paths
+        file_paths.append(normalize_path(file_path))
+    return file_paths
 
 
 def normalize_path(s: str) -> str:
@@ -206,8 +216,30 @@ def save_config(config: dict, path: str) -> str:
         return "Failed to save configuration"
 
 
-if __name__ == "__main__":
+def extract_load_points(simulation_results: list[pd.DataFrame]) -> list[str]:
+    """
+    Extracts the load points from the simulation results.
+    Args:
+        simulation_results (list[DataFrame]): List of DataFrames containing the simulation results.
+    Returns:
+        list[str]: A list of load points extracted from the simulation results.
+    """
+    return simulation_results[0]["LoadPoint"].tolist()
 
+
+def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:
+    """
+    Extracts the repetitions data from the simulation results.
+    Args:
+        simulation_results (list[DataFrame]): List of DataFrames containing the simulation results.
+    Returns:
+        list: A list of DataFrames containing the repetitions data.
+    """
+
+    return [d.filter(like="rep", axis=1) for d in simulation_results]
+
+
+def main():
     def to_json(obj):
         return json.dumps(obj, indent=4)
 
@@ -233,3 +265,7 @@ if __name__ == "__main__":
     logger.info(f"All csv paths by metric: {to_json(all_csv_paths_by_metric)}")
     # grouped_metrics = group_metrics(csv_paths)
     # logger.info(f"Grouped metrics: {to_json(grouped_metrics)}")
+
+
+if __name__ == "__main__":
+    main()
