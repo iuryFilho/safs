@@ -7,7 +7,7 @@ from flask import (
     jsonify,
     session,
 )
-import TesteGraficoPython.extraction as ex
+import extraction as ex
 
 metrics = Blueprint("metrics", __name__)
 debug_output = True

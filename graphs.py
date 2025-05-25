@@ -1,10 +1,4 @@
-from extraction import (
-    get_csv_paths_by_metric,
-    load_simulation_results,
-    filter_metric,
-    extract_load_points,
-    extract_repetitions,
-)
+import extraction as ex
 import matplotlib.pyplot as plt
 import scipy.stats as st
 import pandas as pd
@@ -67,16 +61,16 @@ def compile_simulation_results(
     """
     length = len(directories)
     full_directories = [os.path.join(base_directory, d) for d in directories]
-    csv_paths = get_csv_paths_by_metric(full_directories, metric_group)
+    csv_paths = ex.get_csv_paths_by_metric(full_directories, metric_group)
     logging.info(f"CSV paths: {to_json(csv_paths)}")
-    simulation_results = load_simulation_results(csv_paths)
+    simulation_results = ex.load_simulation_results(csv_paths)
     del csv_paths
 
-    metric_results = filter_metric(metric, simulation_results)
+    metric_results = ex.filter_metric(metric, simulation_results)
     del simulation_results
 
-    loads = extract_load_points(metric_results)
-    final_results = extract_repetitions(metric_results)
+    loads = ex.extract_load_points(metric_results)
+    final_results = ex.extract_repetitions(metric_results)
     del metric_results
 
     number_of_reps = get_number_of_repetitions(final_results)
