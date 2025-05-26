@@ -1,5 +1,5 @@
-{% extends "base.jinja" %}
-{% from "macros.jinja" import input, section, list_group, metrics_accordion %}
+{% extends "__base.jinja" %}
+{% from "__macros.jinja" import section, submit_button, input_text, select, list_group, metrics_accordion %}
 
 {% block title %}
   Metrics
@@ -10,7 +10,7 @@
 {% block content %}
   <form id="form">
     {% call section("base-directory") %}
-      {{ input(label="Base Directory:",
+      {{ input_text(label="Base Directory:",
             name="base-directory", value=base_directory,
             placeholder="Enter base directory path", required=true,
             button_text="Get Metrics", action="get-metrics",
@@ -19,23 +19,25 @@
     {% endcall %}
 
     {% if base_directory and not base_dir_error %}
-      {% call section("input-config") %}
-        {{ input(label="Input Configuration File (Optional):",
-                name="input-config", value=input_config,
-                placeholder="Enter input configuration file path", required=false,
-                button_text="Load Configuration", action="load-config") 
-        }}
-      {% endcall %}
-      {% call section("output-config") %}
-        {{ input(label="Output Configuration File (Optional):",
-                name="output-config", value=output_config,
-                placeholder="Enter output configuration file path", required=false,
-                button_text="Save Configuration", action="save-config") 
-        }}
+      {% call section("config") %}
+        <div class="row">
+          {{ input_text(label="Input Configuration File (Optional):",
+                    name="input-config", value=input_config,
+                    placeholder="Enter input configuration file path", required=false,
+                    button_text="Load Configuration", action="load-config") 
+          }}
+          {{ input_text(label="Output Configuration File (Optional):",
+                    name="output-config", value=output_config,
+                    placeholder="Enter output configuration file path", required=false,
+                    button_text="Save Configuration", action="save-config") 
+          }}
+        </div>
       {% endcall %}
     {% else %}
-      <input type="text" name="input-config" value="{{ input_config }}" hidden>
-      <input type="text" name="output-config" value="{{ output_config }}" hidden>
+      {% call section("config") %}
+        <input type="text" name="input-config" value="{{ input_config }}" hidden>
+        <input type="text" name="output-config" value="{{ output_config }}" hidden>
+      {% endcall %}
     {% endif %}
 
     {% if directories %}
@@ -66,6 +68,43 @@
               </div>
             </div>
           {% endfor %}
+        </div>
+      {% endcall %}
+    {% endif %}
+
+    {% if base_directory and not base_dir_error %}
+      {% call section("graph") %}
+        <h2>Graph Generation:</h2>
+
+        <div class="col">
+          <div class="row mb-3">
+            <div class="col">
+              {{ select(label="Graph Type:",
+                            name="graph-type",
+                            options=[
+                            ["line", "Line Graph", true] ,
+                            ["bar", "Bar Graph", false],
+                            ["scatter", "Scatter Plot", false],
+                            ]) }}
+            </div>
+            <div class="col">
+              {{ select(label="Graph Composition:",
+                            name="graph-composition",
+                            options=[
+                            ["individual", "Individual", true],
+                            ["combined", "Combined", false]
+                            ]) }}
+            </div>
+            <div class="col">
+              {{ select(label="Overwrite Images:",
+                            name="overwrite",
+                            options=[
+                            ["true", "Yes", true],
+                            ["false", "No", true]
+                            ]) }}
+            </div>
+          </div>
+          {{ submit_button('Generate Graphs', 'generate-graphs') }}
         </div>
       {% endcall %}
     {% endif %}

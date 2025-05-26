@@ -18,6 +18,12 @@ if (debugOutput) {
                 setOutput();
             });
         });
+        const selections = form.querySelectorAll("select");
+        selections.forEach((select) => {
+            select.addEventListener("change", function () {
+                setOutput();
+            });
+        });
     })();
 }
 
@@ -111,6 +117,37 @@ async function saveConfig() {
     }
 }
 
+// Gerar gráficos
+async function generateGraphs() {
+    const directories = Array.from(
+        document.querySelectorAll('[name="directory-list"]:checked')
+    ).map((el) => el.value);
+    const metrics = Array.from(
+        document.querySelectorAll('[name="metric-list"]:checked')
+    ).map((el) => el.value);
+    const graphType = document.getElementById("graph-type").value;
+    const graphComposition = document.getElementById("graph-composition").value;
+    const overwrite = document.getElementById("overwrite").value;
+    const body = new URLSearchParams();
+    body.append("graph-type", graphType);
+    body.append("graph-composition", graphComposition);
+    body.append("overwrite", overwrite);
+    directories.forEach((dir) => body.append("directory-list", dir));
+    metrics.forEach((metric) => body.append("metric-list", metric));
+
+    const response = await fetch("/graphs/generate-graphs", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    });
+    const data = await response.json();
+    if (data.error) {
+        alert("Erro: " + data.error);
+    } else {
+        alert(data.message);
+    }
+}
+
 // Exemplo de ligação dos scripts aos botões
 document
     .getElementById("load-config-submit")
@@ -118,3 +155,6 @@ document
 document
     .getElementById("save-config-submit")
     ?.addEventListener("click", saveConfig);
+document
+    .getElementById("generate-graphs-submit")
+    ?.addEventListener("click", generateGraphs);

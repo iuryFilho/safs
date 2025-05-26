@@ -8,19 +8,18 @@ from flask import (
     session,
 )
 import extraction as ex
-import graphs as gr
 
-metrics = Blueprint("metrics", __name__)
+blueprint = Blueprint("metrics", __name__)
 debug_output = True
 
 
-@metrics.record
+@blueprint.record
 def record_params(setup_state):
     global debug_output
     debug_output = setup_state.options.get("debug_output", True)
 
 
-@metrics.route("", methods=["GET"])
+@blueprint.route("", methods=["GET"])
 def metrics_index():
     base_directory = session.get("base_directory", "")
     base_dir_error = session.get("base_dir_error", None)
@@ -48,7 +47,7 @@ def metrics_index():
     )
 
 
-@metrics.route("/get-metrics", methods=["POST"])
+@blueprint.route("/get-metrics", methods=["POST"])
 def get_metrics():
     base_directory = request.form["base-directory"]
     session["base_directory"] = base_directory
@@ -69,7 +68,7 @@ def get_metrics():
         return redirect(url_for("metrics.metrics_index"))
 
 
-@metrics.route("/load-config", methods=["POST"])
+@blueprint.route("/load-config", methods=["POST"])
 def load_config():
     input_config = request.form.get("input-config", "")
     session["input_config"] = input_config
@@ -82,7 +81,7 @@ def load_config():
         return jsonify({"error": str(e)})
 
 
-@metrics.route("/save-config", methods=["POST"])
+@blueprint.route("/save-config", methods=["POST"])
 def save_config():
     output_config = request.form.get("output-config", "")
     if not output_config:
@@ -101,42 +100,3 @@ def save_config():
                 ].get(metric_group, []) + [metric]
     result = ex.save_config(new_config_data, output_config)
     return jsonify({"message": result})
-
-
-@metrics.route("/plot-graph", methods=["POST"])
-def plot_graph():
-    base_directory = session.get("base_directory", "")
-    grouped_metrics = session.get("grouped_metrics", None)
-    directories = request.form.getlist("directory-list")
-    chosen_metrics = request.form.getlist("metric-list")
-    chosen_grouped_metrics = {}
-
-    if grouped_metrics:
-        for metric_group, metric_list in grouped_metrics.items():
-            if not chosen_metrics:
-                break
-            found_metrics = []
-            for metric in chosen_metrics:
-                if metric in metric_list:
-                    found_metrics.append(metric)
-                    chosen_metrics.remove(metric)
-            if found_metrics:
-                chosen_grouped_metrics[metric_group] = found_metrics
-        show = request.form.get("show-graph", "false") == "true"
-        if not show:
-            show = False
-        else:
-            show = True
-        try:
-            gr.plot_line_graph(
-                base_directory,
-                directories,
-                chosen_grouped_metrics,
-                labels=ex.get_labels(directories),
-                show=show,
-            )
-            return jsonify({"message": "Graphs plotted successfully."})
-        except Exception as e:
-            return jsonify({"error": str(e)})
-    else:
-        return jsonify({"error": "No metrics selected."})

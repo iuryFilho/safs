@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 import argparse
-from routes import metrics, debug_output
+from routes import metrics_routes as mr, graphs_routes as gr
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -23,7 +23,12 @@ def main():
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     global debug_output
     debug_output = args.no_debug
-    app.register_blueprint(metrics, url_prefix="/metrics", debug_output=debug_output)
+    app.register_blueprint(
+        mr.blueprint, url_prefix="/metrics", debug_output=debug_output
+    )
+    app.register_blueprint(
+        gr.blueprint, url_prefix="/graphs", debug_output=debug_output
+    )
     app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
 
 

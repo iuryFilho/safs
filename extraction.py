@@ -2,7 +2,7 @@ import glob
 import os
 import pandas as pd
 import json
-import logging
+from routes.debug_utils import Logger
 
 
 class ExtractionError(Exception):
@@ -253,25 +253,22 @@ def main():
         return json.dumps(obj, indent=4)
 
     # Example usage
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
-    logger = logging.getLogger(__name__)
+    logger = Logger(log=True)
     base_directory = "TesteGraficoPython/simulations"
-    logger.info(f"Base directory: {base_directory}")
+    logger.log(f"Base directory: {base_directory}")
     simulation_directories = get_simulations_directories(base_directory)
-    logger.info(f"Simulation directories: {to_json(simulation_directories)}")
+    logger.log(f"Simulation directories: {to_json(simulation_directories)}")
     simulation_directories_names = [s.split("/")[-2] for s in simulation_directories]
-    logger.info(
-        f"Simulation directories names: {to_json(simulation_directories_names)}"
-    )
+    logger.log(f"Simulation directories names: {to_json(simulation_directories_names)}")
     csv_paths = get_csv_paths(simulation_directories[0])
     metric_groups = extract_metric_group_names(csv_paths)
-    logger.info(f"Metric groups: {to_json(metric_groups)}")
+    logger.log(f"Metric groups: {to_json(metric_groups)}")
     all_csv_paths_by_metric = {}
     for metric in metric_groups:
         all_csv_paths_by_metric[metric] = get_csv_paths_by_metric(
             simulation_directories, metric
         )
-    logger.info(f"All csv paths by metric: {to_json(all_csv_paths_by_metric)}")
+    logger.log(f"All csv paths by metric: {to_json(all_csv_paths_by_metric)}")
     # grouped_metrics = group_metrics(csv_paths)
     # logger.info(f"Grouped metrics: {to_json(grouped_metrics)}")
 

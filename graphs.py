@@ -1,10 +1,15 @@
 import extraction as ex
+import matplotlib
 import matplotlib.pyplot as plt
 import scipy.stats as st
 import pandas as pd
 import os
-import logging
 import json
+from routes.debug_utils import to_json, Logger
+
+matplotlib.use("agg")
+
+logger = Logger(log=False)
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
@@ -62,7 +67,7 @@ def compile_simulation_results(
     length = len(directories)
     full_directories = [os.path.join(base_directory, d) for d in directories]
     csv_paths = ex.get_csv_paths_by_metric(full_directories, metric_group)
-    logging.info(f"CSV paths: {to_json(csv_paths)}")
+    logger.log(f"CSV paths: {to_json(csv_paths)}")
     simulation_results = ex.load_simulation_results(csv_paths)
     del csv_paths
 
@@ -88,15 +93,20 @@ def compile_simulation_results(
 
 
 def plot_line_graph(
-    base_directory, directories, grouped_metrics, labels=[], loads=[], show=True
+    base_directory,
+    directories,
+    grouped_metrics,
+    labels=[],
+    loads=[],
+    overwrite=True,
 ):
-    filename_prefix = base_directory.split("/")[-1] + "_Line_"
+    filename_prefix = base_directory.replace("\\", "/").split("/")[-1] + "_Line_"
     x_label = "Carga na rede (Erlangs)"
     if not labels:
         labels = directories
     for metric_group, metrics in grouped_metrics.items():
         for metric in metrics:
-            logging.info(f"Plotting {metric_group} - {metric}")
+            logger.log(f"Plotting {metric_group} - {metric}")
             dataframes = compile_simulation_results(
                 base_directory,
                 directories,
@@ -115,7 +125,7 @@ def plot_line_graph(
                 x_label,
                 y_label=metric,
                 output_file=output_file,
-                show=show,
+                overwrite=overwrite,
             )
 
 
@@ -126,9 +136,9 @@ def aux_plot_line(
     x_label,
     y_label,
     output_file,
-    show=True,
     legend_position="lower center",
     num_columns=5,
+    overwrite=True,
 ):
     font_size = 27
     plt.figure(figsize=(10, 7))
@@ -162,7 +172,8 @@ def aux_plot_line(
         bbox_to_anchor=(0.5, -0.43),
     )
     if output_file != "":
-        if os.path.exists(f"{output_file}.png"):
+        logger.log(f"Saving graph to {output_file}.png")
+        if not overwrite and os.path.exists(f"{output_file}.png"):
             i = 0
             while True:
                 if os.path.exists(f"{output_file}_{i}.png"):
@@ -172,13 +183,10 @@ def aux_plot_line(
                     break
         else:
             plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
-    if show:
-        plt.show()
     plt.close()
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
     base_directory = "TesteGraficoPython/simulations"
     directories = [
         "GreedReoptimization_CircuitBlocked_XT_XTO_001",
@@ -199,7 +207,7 @@ def main():
     labels = ex.get_labels(directories)
 
     plot_line_graph(
-        base_directory, directories, grouped_metrics, labels=labels, show=False
+        base_directory, directories, grouped_metrics, labels=labels, overwrite=True
     )
 
 

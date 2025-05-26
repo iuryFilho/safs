@@ -1,4 +1,18 @@
-{% macro input(label, name, value, placeholder, required, button_text, action, error=None) %}
+{% macro section(name) %}
+  <section id="{{ name }}-section" class="mb-4">
+    {{ caller() }}
+  </section>
+{% endmacro %}
+
+{% macro submit_button(text, action) %}
+  <button type="submit"
+          id="{{ action }}-submit"
+          class="btn btn-primary"
+          name="action"
+          value="{{ action }}">{{ text }}</button>
+{% endmacro %}
+
+{% macro input_text(label, name, value, placeholder, required, button_text, action, error=None) %}
   <div class="col">
     <label for="{{ name }}" class="form-label">
       <h2>{{ label }}</h2>
@@ -10,19 +24,20 @@
            value="{{ value }}"
            placeholder="{{ placeholder }}"
            {% if required %}required{% endif %}>
-    <button type="submit"
-            id="{{ action }}-submit"
-            class="btn btn-primary"
-            name="action"
-            value="{{ action }}">{{ button_text }}</button>
+    {{ submit_button(button_text, action) }}
   </div>
   {% if error %}<div id="{{ name }}-error" class="alert alert-danger mt-3" role="alert">{{ error|e }}</div>{% endif %}
 {% endmacro %}
 
-{% macro section(name) %}
-  <section id="{{ name }}-section" class="mb-4">
-    {{ caller() }}
-  </section>
+{% macro select(label, name, options) %}
+  <div class="col">
+    <label for="{{ name }}" class="form-label fw-bold">{{ label }}</label>
+    <select id="{{ name }}" class="form-select" name="{{ name }}">
+      {% for op_value, option, enabled in options %}
+        <option value="{{ op_value }}" {% if not enabled %}disabled{% endif %}>{{ option }}</option>
+      {% endfor %}
+    </select>
+  </div>
 {% endmacro %}
 
 {% macro list_group(input_name, items, name_prefix='') %}
