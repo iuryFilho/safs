@@ -5,7 +5,7 @@ import scipy.stats as st
 import pandas as pd
 import os
 import json
-from routes.debug_utils import to_json, Logger
+from routes.utils import to_json, Logger
 
 matplotlib.use("agg")
 
@@ -92,6 +92,25 @@ def compile_simulation_results(
     return dataframes
 
 
+def export_results(
+    dataframes: list[pd.DataFrame],
+    labels: list[str],
+    base_directory: str,
+    output_name: str,
+) -> None:
+    """
+    Exports the compiled results to an Excel file with each DataFrame in a separate sheet.
+    Args:
+        dataframes (list[pd.DataFrame]): List of DataFrames containing the compiled results.
+        labels (list[str]): List of labels for each DataFrame.
+        base_directory (str): The base directory where the Excel file will be saved.
+        output_name (str): The name of the output Excel file (without extension).
+    """
+    with pd.ExcelWriter(f"{os.path.join(base_directory, output_name)}.xlsx") as writer:
+        for label, df in zip(labels, dataframes):
+            df.to_excel(writer, sheet_name=label, index=False)
+
+
 def plot_line_graph(
     base_directory,
     directories,
@@ -102,7 +121,7 @@ def plot_line_graph(
     figsize=(10, 5),
     overwrite=True,
 ):
-    filename_prefix = base_directory.replace("\\", "/").split("/")[-1] + "_Line_"
+    filename_prefix = ex.normalize_path(base_directory).split("/")[-1] + "_Line_"
     x_label = "Carga na rede (Erlangs)"
     if not labels:
         labels = directories
@@ -117,9 +136,7 @@ def plot_line_graph(
             )
             if loads == []:
                 loads = dataframes[0]["loads"].tolist()
-            output_file = (
-                f"{base_directory}/{filename_prefix}{metric.replace(' ', '_')}"
-            )
+            output_file = f"{os.path.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
             aux_plot_line(
                 dataframes,
                 loads,
@@ -211,8 +228,19 @@ def main():
 
     labels = ex.get_labels(directories)
 
-    plot_line_graph(
-        base_directory, directories, grouped_metrics, labels=labels, overwrite=True
+    # plot_line_graph(
+    #     base_directory, directories, grouped_metrics, labels=labels, overwrite=True
+    # )
+    export_results(
+        compile_simulation_results(
+            base_directory,
+            directories,
+            "BitRateBlockingProbability",
+            "BitRate blocking probability",
+        ),
+        labels,
+        base_directory,
+        "BitRate blocking probability",
     )
 
 

@@ -1,3 +1,4 @@
+import os
 import threading
 from flask import (
     Blueprint,
@@ -10,7 +11,7 @@ from flask import (
 )
 import extraction as ex
 import graphs as gr
-from routes.debug_utils import Logger
+from routes.utils import Logger
 
 blueprint = Blueprint("graphs", __name__)
 debug_output = True
@@ -40,12 +41,7 @@ def generate_graphs():
     logger.log(f"Overwrite images: {overwrite}")
 
     if grouped_metrics:
-        for metric_group, metric_list in grouped_metrics.items():
-            for metric in chosen_metrics:
-                if metric in metric_list:
-                    chosen_grouped_metrics[metric_group] = chosen_grouped_metrics.get(
-                        metric_group, []
-                    ) + [metric]
+        chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
         try:
             # TODO implement graph composition logic
             if graph_type == "line":
@@ -66,3 +62,47 @@ def generate_graphs():
             return jsonify({"error": str(e)})
     else:
         return jsonify({"error": "No metrics selected."})
+
+
+@blueprint.route("/export-results", methods=["POST"])
+def export_results():
+    base_directory = session.get("base_directory", "")
+    grouped_metrics = session.get("grouped_metrics", None)
+
+    if not grouped_metrics:
+        return jsonify({"error": "No metrics selected."})
+
+    directories = request.form.getlist("directory-list")
+    chosen_metrics = request.form.getlist("metric-list")
+    chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
+
+    filename_prefix = ex.normalize_path(base_directory).split("/")[-1]
+    try:
+        for metric_group, metrics in chosen_grouped_metrics.items():
+            for metric in metrics:
+                gr.export_results(
+                    gr.compile_simulation_results(
+                        base_directory,
+                        directories,
+                        metric_group,
+                        metric,
+                    ),
+                    ex.get_labels(directories),
+                    base_directory,
+                    f"{os.path.join(base_directory, filename_prefix)}_{metric}",
+                )
+        return jsonify({"message": "Results exported successfully."})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+def group_selected_metrics(grouped_metrics, chosen_metrics):
+    chosen_grouped_metrics = {}
+    for metric_group, metric_list in grouped_metrics.items():
+        for metric in chosen_metrics:
+            if metric in metric_list:
+                chosen_grouped_metrics[metric_group] = chosen_grouped_metrics.get(
+                    metric_group, []
+                ) + [metric]
+
+    return chosen_grouped_metrics

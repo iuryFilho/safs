@@ -2,7 +2,7 @@ import glob
 import os
 import pandas as pd
 import json
-from routes.debug_utils import Logger
+from routes.utils import Logger
 
 
 class ExtractionError(Exception):
@@ -94,6 +94,13 @@ def get_csv_paths_by_metric(
 
 
 def normalize_path(s: str) -> str:
+    """
+    Normalizes the file path by replacing backslashes with forward slashes.
+    Args:
+        s (str): The file path to normalize.
+    Returns:
+        str: The normalized file path.
+    """
     return s.replace("\\", "/")
 
 
