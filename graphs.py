@@ -98,6 +98,8 @@ def plot_line_graph(
     grouped_metrics,
     labels=[],
     loads=[],
+    fontsize="large",
+    figsize=(10, 5),
     overwrite=True,
 ):
     filename_prefix = base_directory.replace("\\", "/").split("/")[-1] + "_Line_"
@@ -124,6 +126,8 @@ def plot_line_graph(
                 labels,
                 x_label,
                 y_label=metric,
+                fontsize=fontsize,
+                figsize=figsize,
                 output_file=output_file,
                 overwrite=overwrite,
             )
@@ -135,13 +139,14 @@ def aux_plot_line(
     labels,
     x_label,
     y_label,
+    fontsize,
+    figsize,
     output_file,
     legend_position="lower center",
-    num_columns=5,
+    max_columns=5,
     overwrite=True,
 ):
-    font_size = 27
-    plt.figure(figsize=(10, 7))
+    plt.figure(figsize=figsize)
     for i in range(len(dataframes)):
         x = dataframes[i]["loads"]
         y = dataframes[i]["mean"]
@@ -157,18 +162,18 @@ def aux_plot_line(
         )
         plt.xticks(x, loads)
 
-    plt.xlabel(x_label, fontsize=font_size)
-    plt.ylabel(y_label, fontsize=font_size)
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xlabel(x_label, fontsize=fontsize)
+    plt.ylabel(y_label, fontsize=fontsize)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
     plt.grid(axis="y")
-    if len(labels) < num_columns:
-        num_columns = len(labels)
+    if len(labels) < max_columns:
+        max_columns = len(labels)
 
     plt.legend(
         loc=legend_position,
-        ncol=num_columns,
-        fontsize=font_size,
+        ncol=max_columns,
+        fontsize=fontsize,
         bbox_to_anchor=(0.5, -0.43),
     )
     if output_file != "":

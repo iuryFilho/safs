@@ -10,7 +10,7 @@
 {% block content %}
   <form id="form">
     {% call section("base-directory") %}
-      {{ input_text(label="Base Directory:",
+      {{ input_text(label="<h2>Base Directory:</h2>",
             name="base-directory", value=base_directory,
             placeholder="Enter base directory path", required=true,
             button_text="Get Metrics", action="get-metrics",
@@ -21,12 +21,12 @@
     {% if base_directory and not base_dir_error %}
       {% call section("config") %}
         <div class="row">
-          {{ input_text(label="Input Configuration File (Optional):",
+          {{ input_text(label="<h2>Input Configuration File (Optional):</h2>",
                     name="input-config", value=input_config,
                     placeholder="Enter input configuration file path", required=false,
                     button_text="Load Configuration", action="load-config") 
           }}
-          {{ input_text(label="Output Configuration File (Optional):",
+          {{ input_text(label="<h2>Output Configuration File (Optional):</h2>",
                     name="output-config", value=output_config,
                     placeholder="Enter output configuration file path", required=false,
                     button_text="Save Configuration", action="save-config") 
@@ -78,31 +78,46 @@
 
         <div class="col">
           <div class="row mb-3">
-            <div class="col">
-              {{ select(label="Graph Type:",
-                            name="graph-type",
-                            options=[
-                            ["line", "Line Graph", true] ,
-                            ["bar", "Bar Graph", false],
-                            ["scatter", "Scatter Plot", false],
-                            ]) }}
-            </div>
-            <div class="col">
-              {{ select(label="Graph Composition:",
-                            name="graph-composition",
-                            options=[
-                            ["individual", "Individual", true],
-                            ["combined", "Combined", false]
-                            ]) }}
-            </div>
-            <div class="col">
-              {{ select(label="Overwrite Images:",
-                            name="overwrite",
-                            options=[
-                            ["true", "Yes", true],
-                            ["false", "No", true]
-                            ]) }}
-            </div>
+            {{ select(label="Graph Type:",
+                        name="graph-type",
+                        options=[
+                        ["line", "Line Graph", true] ,
+                        ["bar", "Bar Graph", false],
+                        ["scatter", "Scatter Plot", false],
+                        ]) }}
+            {{ select(label="Graph Composition:",
+                        name="graph-composition",
+                        options=[
+                        ["individual", "Individual", true],
+                        ["combined", "Combined", false]
+                        ]) }}
+            {{ select(label="Overwrite Images:",
+                        name="overwrite",
+                        options=[
+                        ["true", "Yes", true],
+                        ["false", "No", true]
+                        ]) }}
+          </div>
+          <div class="row mb-3">
+            {{ input_text(label="Graph Width:",
+                        name="graph-width", value=10,
+                        placeholder="Enter graph width in inches",
+                        required=true, type="number", class="fw-bold") }}
+            {{ input_text(label="Graph Height:",
+                        name="graph-height", value=5,
+                        placeholder="Enter graph height in inches",
+                        required=true, type="number", class="fw-bold") }}
+            {{ select(label="Font Size:",
+                        name="font-size",
+                        options=[
+                        ["xx-small", "XX-Small", true],
+                        ["x-small", "X-Small", true],
+                        ["small", "Small", true],
+                        ["medium", "Medium", true],
+                        ["large", "Large", true],
+                        ["x-large", "X-Large", true],
+                        ["xx-large", "XX-Large", true],
+                        ]) }}
           </div>
           {{ submit_button('Generate Graphs', 'generate-graphs') }}
         </div>

@@ -12,19 +12,18 @@
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
 
-{% macro input_text(label, name, value, placeholder, required, button_text, action, error=None) %}
+{% macro input_text(label, name, value, placeholder, required, button_text, action, type="text", class="", error=None) %}
   <div class="col">
-    <label for="{{ name }}" class="form-label">
-      <h2>{{ label }}</h2>
-    </label>
-    <input type="text"
+    <label for="{{ name }}" class="form-label {{ class }}">{{ label }}</label>
+    <input type="{{ type }}"
            id="{{ name }}"
            class="form-control mb-3"
            name="{{ name }}"
            value="{{ value }}"
            placeholder="{{ placeholder }}"
+           {% if type == "number" %}step="any"{% endif %}
            {% if required %}required{% endif %}>
-    {{ submit_button(button_text, action) }}
+    {% if button_text and action %}{{ submit_button(button_text, action) }}{% endif %}
   </div>
   {% if error %}<div id="{{ name }}-error" class="alert alert-danger mt-3" role="alert">{{ error|e }}</div>{% endif %}
 {% endmacro %}
