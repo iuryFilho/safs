@@ -4,37 +4,50 @@
   </section>
 {% endmacro %}
 
-{% macro submit_button(text, action) %}
+{% macro submit_button(text, action, class) %}
   <button type="submit"
           id="{{ action }}-submit"
-          class="btn btn-primary"
+          class="btn btn-primary {{ class }}"
           name="action"
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
 
-{% macro input_text(label, name, value, placeholder, required, button_text, action, type="text", class="", error=None) %}
+{% macro input_text(label, name, value, placeholder, required, button_text, action, type="text", label_class="", error=None) %}
+  {% set has_button = button_text and action %}
   <div class="col">
-    <label for="{{ name }}" class="form-label {{ class }}">{{ label }}</label>
+    <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
     <input type="{{ type }}"
            id="{{ name }}"
-           class="form-control mb-3"
+           class="form-control {% if has_button %}mb-3{% endif %}"
            name="{{ name }}"
            value="{{ value }}"
            placeholder="{{ placeholder }}"
            {% if type == "number" %}step="any"{% endif %}
            {% if required %}required{% endif %}>
-    {% if button_text and action %}{{ submit_button(button_text, action) }}{% endif %}
+    {% if has_button %}{{ submit_button(button_text, action) }}{% endif %}
   </div>
   {% if error %}<div id="{{ name }}-error" class="alert alert-danger mt-3" role="alert">{{ error|e }}</div>{% endif %}
 {% endmacro %}
 
-{% macro select(label, name, options) %}
+{% macro select(label, name, selected, options) %}
   <div class="col">
     <label for="{{ name }}" class="form-label fw-bold">{{ label }}</label>
     <select id="{{ name }}" class="form-select" name="{{ name }}">
-      {% for op_value, option, enabled in options %}
-        <option value="{{ op_value }}" {% if not enabled %}disabled{% endif %}>{{ option }}</option>
-      {% endfor %}
+      {% if options[0]|length == 3 %}
+        {% for op_value, option, enabled in options %}
+          <option value="{{ op_value }}"
+                  {% if not enabled %}disabled{% endif %}
+                  {% if op_value == selected %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      {% else %}
+        {% for op_value, option in options %}
+          <script>
+              console.log("Option: {{ op_value }}");
+          </script>
+          <option value="{{ op_value }}"
+                  {% if op_value == selected %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      {% endif %}
     </select>
   </div>
 {% endmacro %}

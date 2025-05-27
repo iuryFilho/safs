@@ -1,11 +1,7 @@
 import os
-import threading
 from flask import (
     Blueprint,
-    render_template,
     request,
-    redirect,
-    url_for,
     jsonify,
     session,
 )
@@ -14,31 +10,37 @@ import graphs as gr
 from routes.utils import Logger
 
 blueprint = Blueprint("graphs", __name__)
-debug_output = True
-logger = Logger(log=False)
+LOG = True
 
 
 @blueprint.record
 def record_params(setup_state):
-    global debug_output
-    debug_output = setup_state.options.get("debug_output", True)
+    global logger
+    logger = Logger(log=(LOG and setup_state.options.get("debug_output", True)))
 
 
 @blueprint.route("/generate-graphs", methods=["POST"])
 def generate_graphs():
     base_directory = session.get("base_directory", "")
     grouped_metrics = session.get("grouped_metrics", None)
+    directories = request.form.getlist("directory-list")
+    chosen_metrics = request.form.getlist("metric-list")
 
     graph_type = request.form.get("graph-type", "line")
     graph_composition = request.form.get("graph-composition", "individual")
-    overwrite = request.form.get("overwrite", "false") == "true"
+    overwrite = request.form.get("overwrite", "") == "true"
+    figsize = (
+        request.form.get("figure-width", "10"),
+        request.form.get("figure-height", "5"),
+    )
+    font_size = request.form.get("font-size", "medium")
 
-    directories = request.form.getlist("directory-list")
-    chosen_metrics = request.form.getlist("metric-list")
-    chosen_grouped_metrics = {}
-    logger.log(f"Graph type: {graph_type}")
-    logger.log(f"Graph composition: {graph_composition}")
-    logger.log(f"Overwrite images: {overwrite}")
+    session["graph_type"] = graph_type
+    session["graph_composition"] = graph_composition
+    session["overwrite"] = overwrite
+    session["figure_width"] = figsize[0]
+    session["figure_height"] = figsize[1]
+    session["font_size"] = font_size
 
     if grouped_metrics:
         chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
@@ -50,6 +52,8 @@ def generate_graphs():
                     directories,
                     chosen_grouped_metrics,
                     labels=ex.get_labels(directories),
+                    fontsize=font_size,
+                    figsize=to_float(*figsize),
                     overwrite=overwrite,
                 )
             elif graph_type == "bar":
@@ -77,19 +81,24 @@ def export_results():
     chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
 
     filename_prefix = ex.normalize_path(base_directory).split("/")[-1]
+    logger.log(f"Filename prefix: {filename_prefix}")
     try:
         for metric_group, metrics in chosen_grouped_metrics.items():
             for metric in metrics:
+                results = gr.compile_simulation_results(
+                    base_directory,
+                    directories,
+                    metric_group,
+                    metric,
+                )
+                filename = f"{filename_prefix}_{metric.replace(' ', '_')}"
+                logger.log(f"Exporting results for {metric} to {filename}")
+
                 gr.export_results(
-                    gr.compile_simulation_results(
-                        base_directory,
-                        directories,
-                        metric_group,
-                        metric,
-                    ),
+                    results,
                     ex.get_labels(directories),
                     base_directory,
-                    f"{os.path.join(base_directory, filename_prefix)}_{metric}",
+                    filename,
                 )
         return jsonify({"message": "Results exported successfully."})
     except Exception as e:
@@ -106,3 +115,20 @@ def group_selected_metrics(grouped_metrics, chosen_metrics):
                 ) + [metric]
 
     return chosen_grouped_metrics
+
+
+def to_float(*values: str) -> list[float]:
+    """
+    Converts a string or list of strings to a list of floats.
+    Args:
+        *values (str): A variable number of string values to be converted to floats.
+    Returns:
+        list[float]: The converted values.
+    """
+    float_values = []
+    for value in values:
+        if value.find(",") != -1:
+            float_values.append(float(value.replace(",", ".")))
+        else:
+            float_values.append(float(value))
+    return float_values

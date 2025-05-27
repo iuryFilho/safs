@@ -32,9 +32,20 @@ def metrics_index():
         )
     input_config = session.get("input_config", "")
     output_config = session.get("output_config", "")
+
     directories = session.get("directories", None)
     grouped_metrics = session.get("grouped_metrics", None)
     has_config_data = session.get("has_config_data", False)
+
+    graph_type = session.get("graph_type", "line")
+    graph_composition = session.get("graph_composition", "individual")
+    overwrite = session.get("overwrite", False)
+    figure_width = session.get("figure_width", "10")
+    figure_height = session.get("figure_height", "5")
+    font_size = session.get("font_size", "medium")
+
+    directories = session.get("directories", None)
+    chosen_metrics = session.get("chosen_metrics", None)
     return render_template(
         "metrics.jinja",
         base_directory=base_directory,
@@ -43,6 +54,13 @@ def metrics_index():
         directories=directories,
         grouped_metrics=grouped_metrics,
         has_config_data=has_config_data,
+        graph_type=graph_type,
+        graph_composition=graph_composition,
+        overwrite=overwrite,
+        figure_width=figure_width,
+        figure_height=figure_height,
+        font_size=font_size,
+        chosen_metrics=chosen_metrics,
         debug_output=debug_output,
     )
 

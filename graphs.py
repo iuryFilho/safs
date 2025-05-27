@@ -9,7 +9,8 @@ from routes.utils import to_json, Logger
 
 matplotlib.use("agg")
 
-logger = Logger(log=False)
+LOG = True
+logger = Logger(log=LOG)
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
@@ -127,7 +128,6 @@ def plot_line_graph(
         labels = directories
     for metric_group, metrics in grouped_metrics.items():
         for metric in metrics:
-            logger.log(f"Plotting {metric_group} - {metric}")
             dataframes = compile_simulation_results(
                 base_directory,
                 directories,

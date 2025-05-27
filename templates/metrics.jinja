@@ -35,8 +35,16 @@
       {% endcall %}
     {% else %}
       {% call section("config") %}
-        <input type="text" name="input-config" value="{{ input_config }}" hidden>
-        <input type="text" name="output-config" value="{{ output_config }}" hidden>
+        <input type="text"
+               id="input-config"
+               name="input-config"
+               value="{{ input_config }}"
+               hidden>
+        <input type="text"
+               id="output-config"
+               name="output-config"
+               value="{{ output_config }}"
+               hidden>
       {% endcall %}
     {% endif %}
 
@@ -77,9 +85,10 @@
         <h2>Graph Generation:</h2>
 
         <div class="col">
-          <div class="row mb-3">
+          <div class="row mb-2">
             {{ select(label="Graph Type:",
                         name="graph-type",
+                        selected=graph_type,
                         options=[
                         ["line", "Line Graph", true] ,
                         ["bar", "Bar Graph", false],
@@ -87,39 +96,41 @@
                         ]) }}
             {{ select(label="Graph Composition:",
                         name="graph-composition",
+                        selected=graph_composition,
                         options=[
                         ["individual", "Individual", true],
                         ["combined", "Combined", false]
                         ]) }}
             {{ select(label="Overwrite Images:",
                         name="overwrite",
+                        selected=overwrite,
                         options=[
-                        ["true", "Yes", true],
-                        ["false", "No", true]
+                        ["true", "Yes"],
+                        ["false", "No"]
                         ]) }}
           </div>
           <div class="row mb-3">
-            {{ input_text(label="Graph Width:",
-                        name="graph-width", value=10,
-                        placeholder="Enter graph width in inches",
-                        required=true, type="number", class="fw-bold") }}
-            {{ input_text(label="Graph Height:",
-                        name="graph-height", value=5,
-                        placeholder="Enter graph height in inches",
-                        required=true, type="number", class="fw-bold") }}
+            {{ input_text(label="Figure Width:",
+                        name="figure-width", value=figure_width,
+                        placeholder="Enter figure width in inches", type="number", label_class="fw-bold") }}
+            {{ input_text(label="Figure Height:",
+                        name="figure-height", value=figure_height,
+                        placeholder="Enter figure height in inches", type="number", label_class="fw-bold") }}
             {{ select(label="Font Size:",
                         name="font-size",
+                        selected=font_size,
                         options=[
-                        ["xx-small", "XX-Small", true],
-                        ["x-small", "X-Small", true],
-                        ["small", "Small", true],
-                        ["medium", "Medium", true],
-                        ["large", "Large", true],
-                        ["x-large", "X-Large", true],
-                        ["xx-large", "XX-Large", true],
+                        ["xx-small", "XX-Small"],
+                        ["x-small", "X-Small"],
+                        ["small", "Small"],
+                        ["medium", "Medium"],
+                        ["large", "Large"],
+                        ["x-large", "X-Large"],
+                        ["xx-large", "XX-Large"],
                         ]) }}
           </div>
-          {{ submit_button('Generate Graphs', 'generate-graphs') }}
+          {{ submit_button('Generate Graphs', 'generate-graphs', 'me-2') }}
+          {{ submit_button('Export Results', 'export-results') }}
         </div>
       {% endcall %}
     {% endif %}

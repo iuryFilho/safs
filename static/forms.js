@@ -24,6 +24,17 @@ if (debugOutput) {
                 setOutput();
             });
         });
+        const graphSection = form.querySelector("#graph-section");
+        if (graphSection) {
+            const inputs = graphSection.querySelectorAll(
+                'input[type="text"], input[type="number"]'
+            );
+            inputs.forEach((input) => {
+                input.addEventListener("input", function () {
+                    setOutput();
+                });
+            });
+        }
     })();
 }
 
@@ -37,16 +48,42 @@ form.addEventListener("submit", function (event) {
     }
 });
 
+function createBody(data) {
+    const body = new URLSearchParams();
+    for (const [key, value] of Object.entries(data)) {
+        if (Array.isArray(value)) {
+            value.forEach((item) => body.append(key, item));
+        } else if (typeof value === "object" && value !== null) {
+            body.append(key, JSON.stringify(value));
+        } else {
+            body.append(key, value);
+        }
+    }
+    return body;
+}
+
+function getElementValue(id) {
+    return document.getElementById(id).value;
+}
+
+function getCheckedValues(name) {
+    return Array.from(
+        document.querySelectorAll(`[name="${name}"]:checked`)
+    ).map((el) => el.value);
+}
+
 // Carregar configuração
 async function loadConfig() {
-    const inputConfig = document.getElementById("input-config").value;
+    const inputConfig = getElementValue("input-config");
     if (!inputConfig) {
         return;
     }
     const response = await fetch("/metrics/load-config", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ "input-config": inputConfig }),
+        body: createBody({
+            "input-config": inputConfig,
+        }),
     });
     const data = await response.json();
     if (data.error) {
@@ -88,21 +125,15 @@ async function loadConfig() {
 
 // Salvar configuração
 async function saveConfig() {
-    const outputConfig = document.querySelector('[name="output-config"]').value;
-    // Exemplo de coleta de métricas e diretórios selecionados
-    const directories = Array.from(
-        document.querySelectorAll('[name="directory-list"]:checked')
-    ).map((el) => el.value);
-    const metrics = Array.from(
-        document.querySelectorAll('[name="metric-list"]:checked')
-    ).map((el) => el.value);
+    const outputConfig = getElementValue("output-config");
+    const directories = getCheckedValues("directory-list");
+    const metrics = getCheckedValues("metric-list");
 
-    const body = new URLSearchParams();
-    body.append("output-config", outputConfig);
-    directories.forEach((dir) => body.append("directory-list", dir));
-    metrics.forEach((metric) => body.append("metric-list", metric));
-    // grouped-metrics pode precisar de um formato específico, adapte conforme necessário
-    // body.append("grouped-metrics", JSON.stringify(groupedMetrics));
+    const body = createBody({
+        "output-config": outputConfig,
+        "directory-list": directories,
+        "metric-list": metrics,
+    });
 
     const response = await fetch("/metrics/save-config", {
         method: "POST",
@@ -119,23 +150,49 @@ async function saveConfig() {
 
 // Gerar gráficos
 async function generateGraphs() {
-    const directories = Array.from(
-        document.querySelectorAll('[name="directory-list"]:checked')
-    ).map((el) => el.value);
-    const metrics = Array.from(
-        document.querySelectorAll('[name="metric-list"]:checked')
-    ).map((el) => el.value);
-    const graphType = document.getElementById("graph-type").value;
-    const graphComposition = document.getElementById("graph-composition").value;
-    const overwrite = document.getElementById("overwrite").value;
-    const body = new URLSearchParams();
-    body.append("graph-type", graphType);
-    body.append("graph-composition", graphComposition);
-    body.append("overwrite", overwrite);
-    directories.forEach((dir) => body.append("directory-list", dir));
-    metrics.forEach((metric) => body.append("metric-list", metric));
+    const directories = getCheckedValues("directory-list");
+    const metrics = getCheckedValues("metric-list");
+    const graphType = getElementValue("graph-type");
+    const graphComposition = getElementValue("graph-composition");
+    const overwrite = getElementValue("overwrite");
+    const figureWidth = getElementValue("figure-width");
+    const figureHeight = getElementValue("figure-height");
+    const fontSize = getElementValue("font-size");
+
+    const body = createBody({
+        "directory-list": directories,
+        "metric-list": metrics,
+        "graph-type": graphType,
+        "graph-composition": graphComposition,
+        overwrite: overwrite,
+        "figure-width": figureWidth,
+        "figure-height": figureHeight,
+        "font-size": fontSize,
+    });
 
     const response = await fetch("/graphs/generate-graphs", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body,
+    });
+    const data = await response.json();
+    if (data.error) {
+        alert("Erro: " + data.error);
+    } else {
+        alert(data.message);
+    }
+}
+
+// Exportar resultados
+async function exportResults() {
+    const directories = getCheckedValues("directory-list");
+    const metrics = getCheckedValues("metric-list");
+    const body = createBody({
+        "directory-list": directories,
+        "metric-list": metrics,
+    });
+
+    const response = await fetch("/graphs/export-results", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: body,
@@ -158,3 +215,6 @@ document
 document
     .getElementById("generate-graphs-submit")
     ?.addEventListener("click", generateGraphs);
+document
+    .getElementById("export-results-submit")
+    ?.addEventListener("click", exportResults);
