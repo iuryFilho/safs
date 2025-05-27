@@ -7,7 +7,7 @@ from flask import (
 )
 import extraction as ex
 import graphs as gr
-from routes.utils import Logger
+from utils import Logger
 
 blueprint = Blueprint("graphs", __name__)
 LOG = True

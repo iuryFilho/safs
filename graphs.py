@@ -5,7 +5,7 @@ import scipy.stats as st
 import pandas as pd
 import os
 import json
-from routes.utils import to_json, Logger
+from utils import to_json, Logger
 
 matplotlib.use("agg")
 

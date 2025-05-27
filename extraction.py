@@ -2,7 +2,7 @@ import glob
 import os
 import pandas as pd
 import json
-from routes.utils import Logger
+from utils import Logger
 
 
 class ExtractionError(Exception):
