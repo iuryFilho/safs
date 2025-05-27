@@ -17,15 +17,28 @@
           integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
           crossorigin="anonymous">
   </head>
-  <body class="p-4 text-bg-dark">
-    <header class="text-center">
-      <h1>
-        {% block header required %}
-        {% endblock header %}
-      </h1>
-    </header>
+  <body class="text-bg-dark">
+    <nav class="navbar navbar-expand-lg bg-dark border-bottom border-body mb-3"
+         data-bs-theme="dark">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">SAFS</span>
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          {% block navbarNav required %}
+          {% endblock navbarNav %}
+        </div>
+      </div>
+    </nav>
 
-    <main id="main">
+    <main id="main" class="p-4">
       {% block content required %}
       {% endblock content %}
     </main>

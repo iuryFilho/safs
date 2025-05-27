@@ -1,13 +1,16 @@
 {% extends "__base.jinja" %}
-{% from "__macros.jinja" import section, submit_button, input_text, select, list_group, metrics_accordion %}
+{% from "__macros.jinja" import navbarNav, section, submit_button, input_text, select, list_group, metrics_accordion %}
 
 {% block title %}
   Metrics
 {% endblock title %}
-{% block header %}
-  Metrics
-{% endblock header %}
+
+{% block navbarNav %}
+  {{ navbarNav("metrics") }}
+{% endblock navbarNav %}
+
 {% block content %}
+
   <form id="form">
     {% call section("base-directory") %}
       {{ input_text(label="<h2>Base Directory:</h2>",

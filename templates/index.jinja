@@ -1,16 +1,23 @@
 {% extends "__base.jinja" %}
+{% from "__macros.jinja" import navbarNav %}
+
 {% block title %}
   Home
 {% endblock title %}
-{% block header %}
-  Welcome to SAFS
-{% endblock header %}
+
+{% block navbarNav %}
+  {{ navbarNav("index") }}
+{% endblock navbarNav %}
+
 {% block content %}
-  <ul class="list-group">
-    <li class="list-group-item">
-      <a href="{{ url_for('metrics.metrics_index') }}">
-        <h2>Metrics</h2>
-      </a>
-    </li>
-  </ul>
+  <div class="container">
+    <h1 class="mt-4">Welcome to the SAFS Dashboard</h1>
+    <p class="lead">This dashboard provides an overview of simulation metrics and configurations.</p>
+    <p>Use the navigation bar to explore different sections.</p>
+  </div>
+
+  <div class="container mt-5">
+    <h2>Getting Started</h2>
+    <p>To begin, please navigate to the Metrics section to set up your base directory and configurations.</p>
+  </div>
 {% endblock content %}

@@ -1,3 +1,30 @@
+{% macro navbarNav(page) %}
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      {% if page == "index" %}
+        <span class="nav-link active" aria-current="page">Home</span>
+      {% else %}
+        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+      {% endif %}
+    </li>
+    <li class="nav-item">
+      {% if page == "metrics" %}
+        <span class="nav-link active" aria-current="page">Metrics</span>
+      {% else %}
+        <a class="nav-link" href="{{ url_for('metrics.metrics_index') }}">Metrics</a>
+      {% endif %}
+    </li>
+    <li class="nav-item">
+      {# {% if page == "graphs" %}
+        <span class="nav-link active" aria-current="page">Graphs</span>
+      {% else %}
+        <a class="nav-link" href="{{ url_for('graphs.graphs_index') }}">Graphs</a>
+      {% endif %} #}
+      <a class="nav-link disabled" aria-disabled="true">Graphs</a>
+    </li>
+  </ul>
+{% endmacro %}
+
 {% macro section(name) %}
   <section id="{{ name }}-section" class="mb-4">
     {{ caller() }}
