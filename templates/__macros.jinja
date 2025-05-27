@@ -1,28 +1,34 @@
 {% macro navbarNav(page) %}
-  <ul class="navbar-nav">
-    <li class="nav-item">
-      {% if page == "index" %}
-        <span class="nav-link active" aria-current="page">Home</span>
-      {% else %}
-        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
-      {% endif %}
-    </li>
-    <li class="nav-item">
-      {% if page == "metrics" %}
-        <span class="nav-link active" aria-current="page">Metrics</span>
-      {% else %}
-        <a class="nav-link" href="{{ url_for('metrics.metrics_index') }}">Metrics</a>
-      {% endif %}
-    </li>
-    <li class="nav-item">
-      {# {% if page == "graphs" %}
-        <span class="nav-link active" aria-current="page">Graphs</span>
-      {% else %}
-        <a class="nav-link" href="{{ url_for('graphs.graphs_index') }}">Graphs</a>
-      {% endif %} #}
-      <a class="nav-link disabled" aria-disabled="true">Graphs</a>
-    </li>
-  </ul>
+  <div class="collapse navbar-collapse d-flex justify-content-between"
+       id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        {% if page == "index" %}
+          <span class="nav-link active" aria-current="page">Home</span>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+        {% endif %}
+      </li>
+      <li class="nav-item">
+        {% if page == "metrics" %}
+          <span class="nav-link active" aria-current="page">Metrics</span>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('metrics.metrics_index') }}">Metrics</a>
+        {% endif %}
+      </li>
+      <li class="nav-item">
+        {# {% if page == "graphs" %}
+          <span class="nav-link active" aria-current="page">Graphs</span>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('graphs.graphs_index') }}">Graphs</a>
+        {% endif %} #}
+        <a class="nav-link disabled" aria-disabled="true">Graphs</a>
+      </li>
+    </ul>
+    <form id="clean-session-form" class="d-flex">
+      {{ submit_button('Clean Session', 'clean-session', 'btn-outline-danger') }}
+    </form>
+  </div>
 {% endmacro %}
 
 {% macro section(name) %}
@@ -31,10 +37,10 @@
   </section>
 {% endmacro %}
 
-{% macro submit_button(text, action, class) %}
+{% macro submit_button(text, action, style, class="") %}
   <button type="submit"
-          id="{{ action }}-submit"
-          class="btn btn-primary {{ class }}"
+          id="{{ action }}-sub"
+          class="btn {{ style }} {{ class }}"
           name="action"
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
@@ -51,7 +57,7 @@
            placeholder="{{ placeholder }}"
            {% if type == "number" %}step="any"{% endif %}
            {% if required %}required{% endif %}>
-    {% if has_button %}{{ submit_button(button_text, action) }}{% endif %}
+    {% if has_button %}{{ submit_button(button_text, action, 'btn-primary') }}{% endif %}
   </div>
   {% if error %}<div id="{{ name }}-error" class="alert alert-danger mt-3" role="alert">{{ error|e }}</div>{% endif %}
 {% endmacro %}
@@ -68,9 +74,6 @@
         {% endfor %}
       {% else %}
         {% for op_value, option in options %}
-          <script>
-              console.log("Option: {{ op_value }}");
-          </script>
           <option value="{{ op_value }}"
                   {% if op_value == selected %}selected{% endif %}>{{ option }}</option>
         {% endfor %}

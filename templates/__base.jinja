@@ -18,23 +18,12 @@
           crossorigin="anonymous">
   </head>
   <body class="text-bg-dark">
-    <nav class="navbar navbar-expand-lg bg-dark border-bottom border-body mb-3"
+    <nav class="navbar navbar-expand-sm bg-dark border-bottom border-body mb-3"
          data-bs-theme="dark">
       <div class="container-fluid">
         <span class="navbar-brand mb-0 h1">SAFS</span>
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          {% block navbarNav required %}
-          {% endblock navbarNav %}
-        </div>
+        {% block navbarNav required %}
+        {% endblock navbarNav %}
       </div>
     </nav>
 

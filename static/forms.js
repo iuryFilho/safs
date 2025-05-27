@@ -72,6 +72,15 @@ function getCheckedValues(name) {
     ).map((el) => el.value);
 }
 
+function assignSubmitFunction(id, func) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.addEventListener("click", func);
+    } else {
+        console.warn(`Elemento com ID ${id} não encontrado.`);
+    }
+}
+
 // Carregar configuração
 async function loadConfig() {
     const inputConfig = getElementValue("input-config");
@@ -90,6 +99,10 @@ async function loadConfig() {
         alert("Erro: " + data.error);
     } else {
         const configData = data.config_data;
+
+        form.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+            checkbox.checked = false;
+        });
 
         configData.directories.forEach((dir) => {
             const dirCheckbox = document.getElementById(dir);
@@ -146,6 +159,24 @@ async function saveConfig() {
     } else {
         alert(data.message);
     }
+}
+
+function selectAllCheckboxes(listName) {
+    const checkboxes = document.querySelectorAll(
+        `input[type="checkbox"][name="${listName}"]`
+    );
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = true;
+    });
+}
+
+function deselectAllCheckboxes(listName) {
+    const checkboxes = document.querySelectorAll(
+        `input[type="checkbox"][name="${listName}"]`
+    );
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = false;
+    });
 }
 
 // Gerar gráficos
@@ -205,16 +236,19 @@ async function exportResults() {
     }
 }
 
-// Exemplo de ligação dos scripts aos botões
-document
-    .getElementById("load-config-submit")
-    ?.addEventListener("click", loadConfig);
-document
-    .getElementById("save-config-submit")
-    ?.addEventListener("click", saveConfig);
-document
-    .getElementById("generate-graphs-submit")
-    ?.addEventListener("click", generateGraphs);
-document
-    .getElementById("export-results-submit")
-    ?.addEventListener("click", exportResults);
+assignSubmitFunction("load-config-sub", loadConfig);
+assignSubmitFunction("save-config-sub", saveConfig);
+assignSubmitFunction("select-all-directories-sub", () =>
+    selectAllCheckboxes("directory-list")
+);
+assignSubmitFunction("deselect-all-directories-sub", () =>
+    deselectAllCheckboxes("directory-list")
+);
+assignSubmitFunction("select-all-metrics-sub", () =>
+    selectAllCheckboxes("metric-list")
+);
+assignSubmitFunction("deselect-all-metrics-sub", () =>
+    deselectAllCheckboxes("metric-list")
+);
+assignSubmitFunction("generate-graphs-sub", generateGraphs);
+assignSubmitFunction("export-results-sub", exportResults);
