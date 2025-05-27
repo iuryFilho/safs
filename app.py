@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template, session
 import argparse
 from routes import metrics_routes as mr, graphs_routes as gr
 
@@ -9,6 +9,16 @@ app.secret_key = "supersecretkey"
 @app.route("/")
 def index():
     return render_template("index.jinja")
+
+
+@app.route("/clear-session", methods=["POST"])
+def clear_session():
+    """Clear the session data."""
+    try:
+        session.clear()
+        return jsonify({"message": "Session cleared successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 def main():
