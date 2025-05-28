@@ -31,13 +31,11 @@ def main():
     )
     args = parser.parse_args()
     app.config["TEMPLATES_AUTO_RELOAD"] = True
-    global debug_output
-    debug_output = args.no_debug
     app.register_blueprint(
-        mr.blueprint, url_prefix="/metrics", debug_output=debug_output
+        mr.blueprint, url_prefix="/metrics", debug_output=args.no_debug
     )
     app.register_blueprint(
-        gr.blueprint, url_prefix="/graphs", debug_output=debug_output
+        gr.blueprint, url_prefix="/graphs", debug_output=args.no_debug
     )
     app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
 
