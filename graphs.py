@@ -176,6 +176,7 @@ def aux_plot_line(
             linestyle=linestyles[i],
             marker=markers[i],
             label=labels[i],
+            fillstyle="none",
         )
         plt.xticks(x, loads)
 
