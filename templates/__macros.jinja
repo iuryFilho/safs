@@ -83,7 +83,7 @@
 {% endmacro %}
 
 {% macro list_group(input_name, items, name_prefix='') %}
-  <ul class="list-group">
+  <ul class="list-group col">
     {% for item in items %}
       <li class="list-group-item text-bg-light">
         <input id="{{ name_prefix }}{{ item }}"
@@ -93,6 +93,28 @@
                value="{{ item }}" />
         <label class="form-check-label stretched-link"
                for="{{ name_prefix }}{{ item }}">{{ item }}</label>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro list_group_text(input_name, items, name_prefix='') %}
+  <ul class="list-group col">
+    {% for item in items %}
+      <li class="list-group-item text-bg-light">
+        <div class="col mb-1">
+          <input id="{{ name_prefix }}{{ item }}"
+                 class="form-check-input me-1"
+                 type="checkbox"
+                 name="{{ input_name }}"
+                 value="{{ item }}" />
+          <label class="form-check-label" for="{{ name_prefix }}{{ item }}">{{ item }}</label>
+        </div>
+        <input id="{{ name_prefix }}{{ item }}-label"
+               class="form-control form-control-sm"
+               type="text"
+               name="{{ input_name }}"
+               placeholder="Label for {{ item }}" />
       </li>
     {% endfor %}
   </ul>
