@@ -143,27 +143,12 @@ async function saveConfig() {
     }
 }
 
-function selectAllCheckboxes(listName) {
-    const checkboxes = document.querySelectorAll(
-        `input[type="checkbox"][name="${listName}"]`
-    );
-    checkboxes.forEach((checkbox) => {
-        checkbox.checked = true;
-    });
-}
-
-function deselectAllCheckboxes(listName) {
-    const checkboxes = document.querySelectorAll(
-        `input[type="checkbox"][name="${listName}"]`
-    );
-    checkboxes.forEach((checkbox) => {
-        checkbox.checked = false;
-    });
-}
-
 // Gerar gráficos
 async function generateGraphs() {
     const directories = getCheckedValues("directory-list");
+    const directoryLabels = directories.map((dir) => {
+        return document.getElementById(`label-${dir}`).value;
+    });
     const metrics = getCheckedValues("metric-list");
     const graphType = getElementValue("graph-type");
     const graphComposition = getElementValue("graph-composition");
@@ -174,6 +159,7 @@ async function generateGraphs() {
 
     const body = createBody({
         "directory-list": directories,
+        "directory-labels": directoryLabels,
         "metric-list": metrics,
         "graph-type": graphType,
         "graph-composition": graphComposition,

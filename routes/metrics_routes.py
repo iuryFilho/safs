@@ -34,6 +34,7 @@ def metrics_index():
     output_config = session.get("output_config", "")
 
     directories = session.get("directories", None)
+    labels = session.get("labels", None)
     grouped_metrics = session.get("grouped_metrics", None)
     has_config_data = session.get("has_config_data", False)
 
@@ -52,6 +53,7 @@ def metrics_index():
         input_config=input_config,
         output_config=output_config,
         directories=directories,
+        labels=labels,
         grouped_metrics=grouped_metrics,
         has_config_data=has_config_data,
         graph_type=graph_type,

@@ -30,3 +30,21 @@ function assignSubmitFunction(id, func) {
         console.warn(`Elemento com ID ${id} não encontrado.`);
     }
 }
+
+function selectAllCheckboxes(listName) {
+    const checkboxes = document.querySelectorAll(
+        `input[type="checkbox"][name="${listName}"]`
+    );
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = true;
+    });
+}
+
+function deselectAllCheckboxes(listName) {
+    const checkboxes = document.querySelectorAll(
+        `input[type="checkbox"][name="${listName}"]`
+    );
+    checkboxes.forEach((checkbox) => {
+        checkbox.checked = false;
+    });
+}

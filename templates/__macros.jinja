@@ -98,7 +98,7 @@
   </ul>
 {% endmacro %}
 
-{% macro list_group_text(input_name, items, name_prefix='') %}
+{% macro list_group_text(input_name, items, labels, name_prefix='') %}
   <ul class="list-group col">
     {% for item in items %}
       <li class="list-group-item text-bg-light">
@@ -110,11 +110,12 @@
                  value="{{ item }}" />
           <label class="form-check-label" for="{{ name_prefix }}{{ item }}">{{ item }}</label>
         </div>
-        <input id="{{ name_prefix }}{{ item }}-label"
+        <input id="label-{{ name_prefix }}{{ item }}"
                class="form-control form-control-sm"
                type="text"
-               name="{{ input_name }}"
-               placeholder="Label for {{ item }}" />
+               name="label-{{ item }}"
+               placeholder="Label for {{ item }}"
+               value="{{ labels[item] if labels[item] else '' }}" />
       </li>
     {% endfor %}
   </ul>

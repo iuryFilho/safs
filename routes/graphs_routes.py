@@ -24,6 +24,15 @@ def generate_graphs():
     base_directory = session.get("base_directory", "")
     grouped_metrics = session.get("grouped_metrics", None)
     directories = request.form.getlist("directory-list")
+    raw_labels = request.form.getlist("directory-labels")
+    labels = []
+    session_labels = {}
+    for dir, label in zip(directories, raw_labels):
+        if label:
+            labels.append(label)
+            session_labels[dir] = label
+        else:
+            labels.append(ex.get_default_label(dir))
     chosen_metrics = request.form.getlist("metric-list")
 
     graph_type = request.form.get("graph-type", "line")
@@ -35,6 +44,7 @@ def generate_graphs():
     )
     font_size = request.form.get("font-size", "medium")
 
+    session["labels"] = session_labels
     session["graph_type"] = graph_type
     session["graph_composition"] = graph_composition
     session["overwrite"] = overwrite
@@ -51,7 +61,7 @@ def generate_graphs():
                     base_directory,
                     directories,
                     chosen_grouped_metrics,
-                    labels=ex.get_labels(directories),
+                    labels=labels,
                     fontsize=font_size,
                     figsize=to_float(*figsize),
                     overwrite=overwrite,

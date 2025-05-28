@@ -247,12 +247,9 @@ def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:
 
 
 # TODO - Função temporária para pegar os labels
-def get_labels(directories):
-    labels = []
-    for dir in directories:
-        dir = "".join([c for c in dir if c.isupper() or c.isnumeric()])
-        labels.append(dir)
-    return labels
+def get_default_label(directory: str) -> str:
+    directory = "".join([c for c in directory if c.isupper() or c.isnumeric()])
+    return directory
 
 
 def main():
