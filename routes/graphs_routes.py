@@ -66,8 +66,15 @@ def generate_graphs():
                     overwrite=overwrite,
                 )
             elif graph_type == "bar":
-                # TODO implement bar graph plotting
-                return jsonify({"error": "Bar graph plotting not implemented yet."})
+                gr.plot_bar_graph(
+                    base_directory,
+                    directories,
+                    chosen_grouped_metrics,
+                    labels=labels,
+                    fontsize=font_size,
+                    figsize=to_float(*figsize),
+                    overwrite=overwrite,
+                )
             else:
                 return jsonify({"error": "Unsupported graph type."})
             return jsonify({"message": "Graphs generated successfully."})

@@ -209,6 +209,107 @@ def aux_plot_line(
     plt.close()
 
 
+def plot_bar_graph(
+    base_directory,
+    directories,
+    grouped_metrics,
+    labels=[],
+    loads=[],
+    fontsize="large",
+    figsize=(10, 5),
+    overwrite=True,
+):
+    filename_prefix = ex.normalize_path(base_directory).split("/")[-1] + "_Bar_"
+    x_label = "Carga na rede (Erlangs)"
+    if not labels:
+        labels = directories
+    for metric_group, metrics in grouped_metrics.items():
+        for metric in metrics:
+            dataframes = compile_simulation_results(
+                base_directory,
+                directories,
+                metric_group,
+                metric,
+            )
+            if loads == []:
+                loads = dataframes[0]["loads"].tolist()
+            output_file = f"{os.path.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
+            aux_plot_bar(
+                dataframes,
+                loads,
+                labels,
+                x_label,
+                y_label=metric,
+                fontsize=fontsize,
+                figsize=figsize,
+                output_file=output_file,
+                overwrite=overwrite,
+            )
+
+
+def aux_plot_bar(
+    dataframes,
+    loads,
+    labels,
+    x_label,
+    y_label,
+    fontsize,
+    figsize,
+    output_file,
+    legend_position="lower center",
+    max_columns=5,
+    overwrite=True,
+):
+    plt.figure(figsize=figsize)
+    bar_width = 0.15
+    x = range(len(loads))
+
+    for i in range(len(dataframes)):
+        y = dataframes[i]["mean"]
+        e = dataframes[i]["error"]
+        plt.bar(
+            [p + i * bar_width for p in x],
+            y,
+            width=bar_width,
+            label=labels[i],
+            yerr=e,
+            capsize=5,
+        )
+
+    plt.xlabel(x_label, fontsize=fontsize)
+    plt.ylabel(y_label, fontsize=fontsize)
+    plt.xticks(
+        [p + (len(dataframes) - 1) * bar_width / 2 for p in x], loads, fontsize=fontsize
+    )
+    plt.yticks(fontsize=fontsize)
+    plt.grid(axis="y")
+
+    if len(labels) < max_columns:
+        max_columns = len(labels)
+
+    plt.legend(
+        loc=legend_position,
+        ncol=max_columns,
+        fontsize=fontsize,
+        bbox_to_anchor=(0.5, -0.43),
+    )
+
+    if output_file != "":
+        logger.log(f"Saving graph to {output_file}.png")
+        if not overwrite and os.path.exists(f"{output_file}.png"):
+            i = 0
+            while True:
+                if os.path.exists(f"{output_file}_{i}.png"):
+                    i += 1
+                else:
+                    plt.savefig(f"{output_file}_{i}.png", dpi=150, bbox_inches="tight")
+                    break
+        else:
+            plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
+
+    plt.close()
+
+
 def main():
     base_directory = "TesteGraficoPython/simulations"
     directories = [
