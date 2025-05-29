@@ -84,11 +84,24 @@ async function loadConfig() {
             .querySelectorAll('input[type="checkbox"]')
             .forEach((checkbox) => {
                 checkbox.checked = false;
+                const labelElement = document.getElementById(
+                    `label-${checkbox.value}`
+                );
+                if (labelElement) {
+                    labelElement.disabled = true;
+                    labelElement.value = "";
+                    checkbox.addEventListener("change", function () {
+                        labelElement.disabled = !this.checked;
+                    });
+                }
             });
 
-        configData.directories.forEach((dir) => {
+        Object.entries(configData.directories).forEach(([dir, label]) => {
             const dirCheckbox = document.getElementById(dir);
+            const labelElement = document.getElementById(`label-${dir}`);
             dirCheckbox.checked = true;
+            labelElement.disabled = false;
+            labelElement.value = label;
         });
 
         Object.entries(configData.metrics).forEach(
@@ -122,11 +135,17 @@ async function loadConfig() {
 async function saveConfig() {
     const outputConfig = getElementValue("output-config");
     const directories = getCheckedValues("directory-list");
+    const labels = directories.map((dir) => {
+        return document.getElementById(`label-${dir}`).value;
+    });
+    console.log("Labels:", labels);
+
     const metrics = getCheckedValues("metric-list");
 
     const body = createBody({
         "output-config": outputConfig,
         "directory-list": directories,
+        labels: labels,
         "metric-list": metrics,
     });
 

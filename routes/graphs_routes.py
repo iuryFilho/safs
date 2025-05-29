@@ -44,7 +44,6 @@ def generate_graphs():
     )
     font_size = request.form.get("font-size", "medium")
 
-    session["labels"] = session_labels
     session["graph_type"] = graph_type
     session["graph_composition"] = graph_composition
     session["overwrite"] = overwrite

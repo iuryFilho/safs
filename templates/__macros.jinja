@@ -98,7 +98,7 @@
   </ul>
 {% endmacro %}
 
-{% macro list_group_text(input_name, items, labels, name_prefix='') %}
+{% macro list_group_text(input_name, items, name_prefix='') %}
   <ul class="list-group col">
     {% for item in items %}
       <li class="list-group-item text-bg-light">
@@ -115,7 +115,7 @@
                type="text"
                name="label-{{ item }}"
                placeholder="Label for {{ item }}"
-               value="{{ labels[item] if labels[item] else '' }}" />
+               disabled />
       </li>
     {% endfor %}
   </ul>

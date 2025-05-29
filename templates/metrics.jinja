@@ -55,7 +55,7 @@
       {% call section("directories") %}
         <h2>Simulation Directories List:</h2>
         {# <div class="mb-3">{{ list_group("directory-list", directories) }}</div> #}
-        <div class="mb-3">{{ list_group_text("directory-list", directories, labels) }}</div>
+        <div class="mb-3">{{ list_group_text("directory-list", directories) }}</div>
         <div class="btn-group" role="group" aria-label="Directory Actions">
           {{ submit_button('Select All', 'select-all-directories', 'btn-outline-primary', class="me-2") }}
           {{ submit_button('Deselect All', 'deselect-all-directories', 'btn-outline-primary') }}

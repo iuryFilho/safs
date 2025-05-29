@@ -1,9 +1,9 @@
 {
-    "directories": [
-        "GreedReoptimization_CircuitBlocked_XT_XTO_001",
-        "GreedReoptimization_CircuitFinalized_001",
-        "NoReallocation"
-    ],
+    "directories": {
+        "GreedReoptimization_CircuitBlocked_XT_XTO_001": "Greed_X",
+        "GreedReoptimization_CircuitFinalized_001": "Greed",
+        "NoReallocation": "NR"
+    },
     "metrics": {
         "BitRateBlockingProbability": [
             "BitRate blocking probability"

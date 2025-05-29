@@ -34,7 +34,6 @@ def metrics_index():
     output_config = session.get("output_config", "")
 
     directories = session.get("directories", None)
-    labels = session.get("labels", None)
     grouped_metrics = session.get("grouped_metrics", None)
     has_config_data = session.get("has_config_data", False)
 
@@ -53,7 +52,6 @@ def metrics_index():
         input_config=input_config,
         output_config=output_config,
         directories=directories,
-        labels=labels,
         grouped_metrics=grouped_metrics,
         has_config_data=has_config_data,
         graph_type=graph_type,
@@ -107,10 +105,14 @@ def save_config():
     if not output_config:
         return jsonify({"error": "Output config file is required."})
     session["output_config"] = output_config
+
+    new_config_data = {"directories": {}, "metrics": {}}
+    directories = request.form.getlist("directory-list")
+    labels = request.form.getlist("labels")
+    for dir, label in zip(directories, labels):
+        new_config_data["directories"][dir] = label
+
     grouped_metrics = session.get("grouped_metrics", None)
-    new_config_data = {"directories": [], "metrics": {}}
-    for dir in request.form.getlist("directory-list"):
-        new_config_data["directories"].append(dir)
     metric_list_form = request.form.getlist("metric-list")
     for metric_group, metric_list in grouped_metrics.items():
         for metric in metric_list_form:
@@ -118,5 +120,6 @@ def save_config():
                 new_config_data["metrics"][metric_group] = new_config_data[
                     "metrics"
                 ].get(metric_group, []) + [metric]
+
     result = ex.save_config(new_config_data, output_config)
     return jsonify({"message": result})
