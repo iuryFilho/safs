@@ -16,6 +16,12 @@ function getElementValue(id) {
     return document.getElementById(id).value;
 }
 
+function getListValues(name) {
+    return Array.from(document.querySelectorAll(`[name="${name}"]`)).map(
+        (el) => el.value
+    );
+}
+
 function getCheckedValues(name) {
     return Array.from(
         document.querySelectorAll(`[name="${name}"]:checked`)

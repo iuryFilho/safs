@@ -45,13 +45,13 @@
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
 
-{% macro input(label, name, value, placeholder, required, button_text, action, type="text", label_class="", error=None) %}
+{% macro input(label, name, value, placeholder, required, button_text, action, size="", type="text", label_class="", error=None) %}
   {% set has_button = button_text and action %}
   <div class="col">
     <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
     <input type="{{ type }}"
            id="{{ name }}"
-           class="form-control {% if has_button %}mb-3{% endif %}"
+           class="form-control {{ size }} {% if has_button %}mb-3{% endif %}"
            name="{{ name }}"
            value="{{ value }}"
            placeholder="{{ placeholder }}"
@@ -65,7 +65,7 @@
 {% macro select(label, name, selected, options) %}
   <div class="col">
     <label for="{{ name }}" class="form-label fw-bold">{{ label }}</label>
-    <select id="{{ name }}" class="form-select" name="{{ name }}">
+    <select id="{{ name }}" class="form-select form-select-sm" name="{{ name }}">
       {% if options[0]|length == 3 %}
         {% for op_value, option, enabled in options %}
           <option value="{{ op_value }}"
@@ -160,4 +160,23 @@
       </div>
     {% endfor %}
   </div>
+{% endmacro %}
+
+{% macro input_list(size, items, list_name, item_name) %}
+  <ul class="list-group">
+    {% for i in range(size) %}
+      {% set item = items[i] %}
+      <li class="list-group-item list-group-item-dark p-1">
+        <div class="input-group input-group-sm">
+          <label class="input-group-text" for="{{ list_name }}-{{ i }}">{{ item_name }} {{ i }}</label>
+          <input id="{{ list_name }}-{{ i }}"
+                 type="number"
+                 class="form-control form-control-sm"
+                 name="{{ list_name }}-list"
+                 value="{{ item }}"
+                 onchange="if(this.value===''){this.value='0';}">
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
 {% endmacro %}

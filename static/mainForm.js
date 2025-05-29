@@ -175,8 +175,10 @@ async function generateGraphs() {
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
     const fontSize = getElementValue("font-size");
+    const loads = getListValues("load-list");
+    console.log("Loads:", loads);
 
-    const body = createBody({
+    const body = {
         "directory-list": directories,
         "directory-labels": directoryLabels,
         "metric-list": metrics,
@@ -186,12 +188,13 @@ async function generateGraphs() {
         "figure-width": figureWidth,
         "figure-height": figureHeight,
         "font-size": fontSize,
-    });
+        loads: loads,
+    };
 
     const response = await fetch("/graphs/generate-graphs", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
     });
     const data = await response.json();
     if (data.error) {

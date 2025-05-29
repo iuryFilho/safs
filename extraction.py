@@ -246,6 +246,24 @@ def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:
     return [d.filter(like="rep", axis=1) for d in simulation_results]
 
 
+def get_load_count(metric: str, csv_path: str) -> int:
+    """
+    Retrieves the number of load points from the CSV file based on the given metric.
+    Args:
+        metric (str): The metric to filter by.
+        csv_path (str): The path to the CSV file to analyze.
+    Returns:
+        int: The number of load points found in the CSV file for the specified metric.
+    Raises:
+        FileNotFoundError: If the CSV file does not exist.
+    """
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"The CSV file '{csv_path}' does not exist.")
+    simulation_results = load_simulation_results([csv_path])
+    filtered_results = filter_metric(metric, simulation_results)
+    return len(extract_load_points(filtered_results))
+
+
 # TODO - Função temporária para pegar os labels
 def get_default_label(directory: str) -> str:
     directory = "".join([c for c in directory if c.isupper() or c.isnumeric()])

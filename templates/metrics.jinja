@@ -1,5 +1,5 @@
 {% extends "__base.jinja" %}
-{% from "__macros.jinja" import navbarNav, section, submit_button, input, select, list_group, list_group_text, metrics_accordion %}
+{% from "__macros.jinja" import navbarNav, section, submit_button, input, select, list_group, list_group_text, metrics_accordion, input_list %}
 
 {% block title %}
   Metrics
@@ -112,7 +112,7 @@
                         ["individual", "Individual", true],
                         ["combined", "Combined", false]
                         ]) }}
-            {{ select(label="Overwrite Images:",
+            {{ select(label="Overwrite Files:",
                         name="overwrite",
                         selected=overwrite,
                         options=[
@@ -120,13 +120,13 @@
                         ["false", "No"]
                         ]) }}
           </div>
-          <div class="row mb-3">
+          <div class="row mb-2">
             {{ input(label="Figure Width:",
                         name="figure-width", value=figure_width,
-                        placeholder="Enter figure width in inches", type="number", label_class="fw-bold") }}
+                        placeholder="Enter figure width in inches", size="form-control-sm", type="number", label_class="fw-bold") }}
             {{ input(label="Figure Height:",
                         name="figure-height", value=figure_height,
-                        placeholder="Enter figure height in inches", type="number", label_class="fw-bold") }}
+                        placeholder="Enter figure height in inches", size="form-control-sm", type="number", label_class="fw-bold") }}
             {{ select(label="Font Size:",
                         name="font-size",
                         selected=font_size,
@@ -139,6 +139,10 @@
                         ["x-large", "X-Large"],
                         ["xx-large", "XX-Large"],
                         ]) }}
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold mb-2">Custom Loads:</div>
+            {{ input_list(load_count, loads, "load", "Load") }}
           </div>
           <div class="btn-group" role="group" aria-label="Graph Actions">
             {{ submit_button('Generate Graphs', 'generate-graphs', 'btn-primary', class="me-2") }}

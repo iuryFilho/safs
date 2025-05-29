@@ -23,8 +23,9 @@ def record_params(setup_state):
 def generate_graphs():
     base_directory = session.get("base_directory", "")
     grouped_metrics = session.get("grouped_metrics", None)
-    directories = request.form.getlist("directory-list")
-    raw_labels = request.form.getlist("directory-labels")
+    data: dict = request.get_json()
+    directories = data.get("directory-list", [])
+    raw_labels = data.get("directory-labels", [])
     labels = []
     session_labels = {}
     for dir, label in zip(directories, raw_labels):
@@ -33,16 +34,17 @@ def generate_graphs():
             session_labels[dir] = label
         else:
             labels.append(ex.get_default_label(dir))
-    chosen_metrics = request.form.getlist("metric-list")
+    chosen_metrics = data.get("metric-list", [])
 
-    graph_type = request.form.get("graph-type", "line")
-    graph_composition = request.form.get("graph-composition", "individual")
-    overwrite = request.form.get("overwrite", "") == "true"
+    graph_type = data.get("graph-type", "line")
+    graph_composition = data.get("graph-composition", "individual")
+    overwrite = data.get("overwrite", "") == "true"
     figsize = (
-        request.form.get("figure-width", "10"),
-        request.form.get("figure-height", "5"),
+        data.get("figure-width", "10"),
+        data.get("figure-height", "5"),
     )
-    font_size = request.form.get("font-size", "medium")
+    font_size = data.get("font-size", "medium")
+    loads = data.get("loads", [])
 
     session["graph_type"] = graph_type
     session["graph_composition"] = graph_composition
@@ -50,7 +52,9 @@ def generate_graphs():
     session["figure_width"] = figsize[0]
     session["figure_height"] = figsize[1]
     session["font_size"] = font_size
+    session["loads"] = loads
 
+    # return jsonify({"message": "Graph generation started."})
     if grouped_metrics:
         chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
         try:
@@ -61,6 +65,7 @@ def generate_graphs():
                     directories,
                     chosen_grouped_metrics,
                     labels=labels,
+                    loads=loads,
                     fontsize=font_size,
                     figsize=to_float(*figsize),
                     overwrite=overwrite,
@@ -71,6 +76,7 @@ def generate_graphs():
                     directories,
                     chosen_grouped_metrics,
                     labels=labels,
+                    loads=loads,
                     fontsize=font_size,
                     figsize=to_float(*figsize),
                     overwrite=overwrite,

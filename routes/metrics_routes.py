@@ -35,6 +35,7 @@ def metrics_index():
 
     directories = session.get("directories", None)
     grouped_metrics = session.get("grouped_metrics", None)
+    load_count = session.get("load_count", 0)
     has_config_data = session.get("has_config_data", False)
 
     graph_type = session.get("graph_type", "line")
@@ -43,9 +44,8 @@ def metrics_index():
     figure_width = session.get("figure_width", "10")
     figure_height = session.get("figure_height", "5")
     font_size = session.get("font_size", "medium")
+    loads = session.get("loads", [])
 
-    directories = session.get("directories", None)
-    chosen_metrics = session.get("chosen_metrics", None)
     return render_template(
         "metrics.jinja",
         base_directory=base_directory,
@@ -53,6 +53,7 @@ def metrics_index():
         output_config=output_config,
         directories=directories,
         grouped_metrics=grouped_metrics,
+        load_count=load_count,
         has_config_data=has_config_data,
         graph_type=graph_type,
         graph_composition=graph_composition,
@@ -60,7 +61,7 @@ def metrics_index():
         figure_width=figure_width,
         figure_height=figure_height,
         font_size=font_size,
-        chosen_metrics=chosen_metrics,
+        loads=loads,
         debug_output=debug_output,
     )
 
@@ -76,9 +77,13 @@ def get_metrics():
         ]
         csv_paths = ex.get_csv_paths(simulation_directories_paths[0])
         grouped_metrics = ex.group_metrics(csv_paths)
+        load_count = ex.get_load_count(
+            list(grouped_metrics.values())[0][0], csv_paths[0]
+        )
 
         session["directories"] = simulation_directories
         session["grouped_metrics"] = grouped_metrics
+        session["load_count"] = load_count
         session["base_dir_error"] = None
         return redirect(url_for("metrics.metrics_index"))
     except Exception as e:

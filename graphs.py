@@ -14,6 +14,7 @@ logger = Logger(log=LOG)
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
+bbox_to_anchor = (0.5, 0)
 
 
 # * Auxiliary functions
@@ -192,7 +193,7 @@ def aux_plot_line(
         loc=legend_position,
         ncol=max_columns,
         fontsize=fontsize,
-        bbox_to_anchor=(0.5, -0.43),
+        bbox_to_anchor=bbox_to_anchor,
     )
     if output_file != "":
         logger.log(f"Saving graph to {output_file}.png")
@@ -256,15 +257,15 @@ def aux_plot_bar(
     fontsize,
     figsize,
     output_file,
-    legend_position="lower center",
+    legend_position="best",
     max_columns=5,
     overwrite=True,
 ):
     plt.figure(figsize=figsize)
     bar_width = 0.15
-    x = range(len(loads))
 
     for i in range(len(dataframes)):
+        x = dataframes[i]["loads"]
         y = dataframes[i]["mean"]
         e = dataframes[i]["error"]
         plt.bar(
@@ -275,12 +276,11 @@ def aux_plot_bar(
             yerr=e,
             capsize=5,
         )
+        plt.xticks([p + (len(dataframes) - 1) * bar_width / 2 for p in x], loads)
 
     plt.xlabel(x_label, fontsize=fontsize)
     plt.ylabel(y_label, fontsize=fontsize)
-    plt.xticks(
-        [p + (len(dataframes) - 1) * bar_width / 2 for p in x], loads, fontsize=fontsize
-    )
+    plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     plt.grid(axis="y")
 
@@ -291,7 +291,7 @@ def aux_plot_bar(
         loc=legend_position,
         ncol=max_columns,
         fontsize=fontsize,
-        bbox_to_anchor=(0.5, -0.43),
+        # bbox_to_anchor=bbox_to_anchor,
     )
 
     if output_file != "":
