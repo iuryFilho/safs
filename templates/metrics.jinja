@@ -1,5 +1,5 @@
 {% extends "__base.jinja" %}
-{% from "__macros.jinja" import navbarNav, section, submit_button, input_text, select, list_group, list_group_text, metrics_accordion %}
+{% from "__macros.jinja" import navbarNav, section, submit_button, input, select, list_group, list_group_text, metrics_accordion %}
 
 {% block title %}
   Metrics
@@ -13,7 +13,7 @@
 
   <form id="form">
     {% call section("base-directory") %}
-      {{ input_text(label="<h2>Base Directory:</h2>",
+      {{ input(label="<h2>Base Directory:</h2>",
             name="base-directory", value=base_directory,
             placeholder="Enter base directory path", required=true,
             button_text="Get Metrics", action="get-metrics",
@@ -24,12 +24,12 @@
     {% if base_directory and not base_dir_error %}
       {% call section("config") %}
         <div class="row">
-          {{ input_text(label="<h2>Input Configuration File (Optional):</h2>",
+          {{ input(label="<h2>Input Configuration File (Optional):</h2>",
                     name="input-config", value=input_config,
                     placeholder="Enter input configuration file path", required=false,
                     button_text="Load Configuration", action="load-config") 
           }}
-          {{ input_text(label="<h2>Output Configuration File (Optional):</h2>",
+          {{ input(label="<h2>Output Configuration File (Optional):</h2>",
                     name="output-config", value=output_config,
                     placeholder="Enter output configuration file path", required=false,
                     button_text="Save Configuration", action="save-config") 
@@ -121,10 +121,10 @@
                         ]) }}
           </div>
           <div class="row mb-3">
-            {{ input_text(label="Figure Width:",
+            {{ input(label="Figure Width:",
                         name="figure-width", value=figure_width,
                         placeholder="Enter figure width in inches", type="number", label_class="fw-bold") }}
-            {{ input_text(label="Figure Height:",
+            {{ input(label="Figure Height:",
                         name="figure-height", value=figure_height,
                         placeholder="Enter figure height in inches", type="number", label_class="fw-bold") }}
             {{ select(label="Font Size:",

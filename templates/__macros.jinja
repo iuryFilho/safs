@@ -45,7 +45,7 @@
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
 
-{% macro input_text(label, name, value, placeholder, required, button_text, action, type="text", label_class="", error=None) %}
+{% macro input(label, name, value, placeholder, required, button_text, action, type="text", label_class="", error=None) %}
   {% set has_button = button_text and action %}
   <div class="col">
     <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
