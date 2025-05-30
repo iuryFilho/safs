@@ -9,7 +9,34 @@ if (debugOutput) {
         }
     }
     document.addEventListener("DOMContentLoaded", setOutput);
-    (() => {
+    newFunction()();
+}
+mainForm.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        if (event.target.id == "base-directory") {
+            return;
+        } else if (
+            ["INPUT", "TEXTAREA"].includes(event.target.tagName) &&
+            event.target.type !== "textarea"
+        ) {
+            event.preventDefault();
+        }
+    }
+});
+
+mainForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const action = event.submitter.value;
+    console.log(action);
+    if (action === "get-metrics") {
+        mainForm.method = "post";
+        mainForm.action = "/metrics/get-metrics";
+        mainForm.submit();
+    }
+});
+
+function newFunction() {
+    return () => {
         const checkboxes = mainForm.querySelectorAll(
             'input[type="checkbox"][name="directory-list"], input[type="checkbox"][name="metric-list"]'
         );
@@ -35,31 +62,8 @@ if (debugOutput) {
                 });
             });
         }
-    })();
+    };
 }
-mainForm.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-        if (event.target.id == "base-directory") {
-            return;
-        } else if (
-            ["INPUT", "TEXTAREA"].includes(event.target.tagName) &&
-            event.target.type !== "textarea"
-        ) {
-            event.preventDefault();
-        }
-    }
-});
-
-mainForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const action = event.submitter.value;
-    console.log(action);
-    if (action === "get-metrics") {
-        mainForm.method = "post";
-        mainForm.action = "/metrics/get-metrics";
-        mainForm.submit();
-    }
-});
 
 // Carregar configuração
 async function loadConfig() {

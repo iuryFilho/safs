@@ -3,7 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import scipy.stats as st
 import pandas as pd
-import os
+import os.path as op
 import json
 from utils import to_json, Logger
 
@@ -14,7 +14,6 @@ logger = Logger(log=LOG)
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
-bbox_to_anchor = (0.5, 0)
 
 
 # * Auxiliary functions
@@ -67,7 +66,7 @@ def compile_simulation_results(
         list: A list of DataFrames containing the compiled simulation results.
     """
     length = len(directories)
-    full_directories = [os.path.join(base_directory, d) for d in directories]
+    full_directories = [op.join(base_directory, d) for d in directories]
     csv_paths = ex.get_csv_paths_by_metric(full_directories, metric_group)
     logger.log(f"CSV paths: {to_json(csv_paths)}")
     simulation_results = ex.load_simulation_results(csv_paths)
@@ -108,7 +107,7 @@ def export_results(
         base_directory (str): The base directory where the Excel file will be saved.
         output_name (str): The name of the output Excel file (without extension).
     """
-    with pd.ExcelWriter(f"{os.path.join(base_directory, output_name)}.xlsx") as writer:
+    with pd.ExcelWriter(f"{op.join(base_directory, output_name)}.xlsx") as writer:
         for label, df in zip(labels, dataframes):
             df.to_excel(writer, sheet_name=label, index=False)
 
@@ -123,7 +122,7 @@ def plot_line_graph(
     figsize=(10, 5),
     overwrite=True,
 ):
-    filename_prefix = ex.normalize_path(base_directory).split("/")[-1] + "_Line_"
+    filename_prefix = ex.get_basename(base_directory) + "_Line_"
     x_label = "Carga na rede (Erlangs)"
     if not labels:
         labels = directories
@@ -137,7 +136,9 @@ def plot_line_graph(
             )
             if loads == []:
                 loads = dataframes[0]["loads"].tolist()
-            output_file = f"{os.path.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
+            output_file = (
+                f"{op.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
+            )
             aux_plot_line(
                 dataframes,
                 loads,
@@ -160,7 +161,7 @@ def aux_plot_line(
     fontsize,
     figsize,
     output_file,
-    legend_position="lower center",
+    legend_position="best",
     max_columns=5,
     overwrite=True,
 ):
@@ -193,14 +194,13 @@ def aux_plot_line(
         loc=legend_position,
         ncol=max_columns,
         fontsize=fontsize,
-        bbox_to_anchor=bbox_to_anchor,
     )
     if output_file != "":
         logger.log(f"Saving graph to {output_file}.png")
-        if not overwrite and os.path.exists(f"{output_file}.png"):
+        if not overwrite and op.exists(f"{output_file}.png"):
             i = 0
             while True:
-                if os.path.exists(f"{output_file}_{i}.png"):
+                if op.exists(f"{output_file}_{i}.png"):
                     i += 1
                 else:
                     plt.savefig(f"{output_file}_{i}.png", dpi=150, bbox_inches="tight")
@@ -220,7 +220,7 @@ def plot_bar_graph(
     figsize=(10, 5),
     overwrite=True,
 ):
-    filename_prefix = ex.normalize_path(base_directory).split("/")[-1] + "_Bar_"
+    filename_prefix = op.normpath(base_directory).split("/")[-1] + "_Bar_"
     x_label = "Carga na rede (Erlangs)"
     if not labels:
         labels = directories
@@ -234,7 +234,9 @@ def plot_bar_graph(
             )
             if loads == []:
                 loads = dataframes[0]["loads"].tolist()
-            output_file = f"{os.path.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
+            output_file = (
+                f"{op.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
+            )
             aux_plot_bar(
                 dataframes,
                 loads,
@@ -291,15 +293,14 @@ def aux_plot_bar(
         loc=legend_position,
         ncol=max_columns,
         fontsize=fontsize,
-        # bbox_to_anchor=bbox_to_anchor,
     )
 
     if output_file != "":
         logger.log(f"Saving graph to {output_file}.png")
-        if not overwrite and os.path.exists(f"{output_file}.png"):
+        if not overwrite and op.exists(f"{output_file}.png"):
             i = 0
             while True:
-                if os.path.exists(f"{output_file}_{i}.png"):
+                if op.exists(f"{output_file}_{i}.png"):
                     i += 1
                 else:
                     plt.savefig(f"{output_file}_{i}.png", dpi=150, bbox_inches="tight")

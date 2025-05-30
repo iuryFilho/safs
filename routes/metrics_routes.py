@@ -7,6 +7,7 @@ from flask import (
     jsonify,
     session,
 )
+import os.path as op
 import extraction as ex
 
 blueprint = Blueprint("metrics", __name__)
@@ -72,9 +73,8 @@ def get_metrics():
     session["base_directory"] = base_directory
     try:
         simulation_directories_paths = ex.get_simulations_directories(base_directory)
-        simulation_directories = [
-            s.split("/")[-2] for s in simulation_directories_paths
-        ]
+        simulation_directories = [op.basename(s) for s in simulation_directories_paths]
+        print(f"Simulation directories: {simulation_directories}")
         csv_paths = ex.get_csv_paths(simulation_directories_paths[0])
         grouped_metrics = ex.group_metrics(csv_paths)
         load_count = ex.get_load_count(

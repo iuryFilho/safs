@@ -1,4 +1,5 @@
 import glob
+import os.path as op
 import os
 import pandas as pd
 import json
@@ -36,7 +37,7 @@ def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
     """
     dataframes = []
     for path in paths:
-        if not os.path.exists(path):
+        if not op.exists(path):
             raise FileNotFoundError(f"The file '{path}' does not exist.")
         sep = "," if "," in open(path).readline() else ";"
         df = pd.read_csv(path, sep=sep)
@@ -59,7 +60,7 @@ def get_metric_names(path: str) -> list[str]:
         FileNotFoundError: If the file does not exist.
     """
 
-    if not os.path.exists(path):
+    if not op.exists(path):
         raise FileNotFoundError(f"The file '{path}' does not exist.")
     with open(path, "r") as file:
         first_line = file.readline()
@@ -83,25 +84,14 @@ def get_csv_paths_by_metric(
     """
     file_paths = []
     for simulation_directory in simulation_directories:
-        if not os.path.exists(simulation_directory):
+        if not op.isdir(simulation_directory):
             raise FileNotFoundError(
                 f"The simulation directory '{simulation_directory}' does not exist."
             )
         pattern = f"{simulation_directory}/*_{metric}.csv"
         file_path = glob.glob(pattern)[0]
-        file_paths.append(normalize_path(file_path))
+        file_paths.append(op.normpath(file_path))
     return file_paths
-
-
-def normalize_path(s: str) -> str:
-    """
-    Normalizes the file path by replacing backslashes with forward slashes.
-    Args:
-        s (str): The file path to normalize.
-    Returns:
-        str: The normalized file path.
-    """
-    return s.replace("\\", "/")
 
 
 def get_csv_paths(simulation_directory: str) -> list[str]:
@@ -114,13 +104,13 @@ def get_csv_paths(simulation_directory: str) -> list[str]:
     Raises:
         FileNotFoundError: If the base directory does not exist.
     """
-    if not os.path.exists(simulation_directory):
+    if not op.isdir(simulation_directory):
         raise FileNotFoundError(
             f"The simulation directory '{simulation_directory}' does not exist."
         )
     pattern = f"{simulation_directory}/*.csv"
     file_paths = glob.glob(pattern)
-    return [normalize_path(s) for s in file_paths]
+    return [op.normpath(s) for s in file_paths]
 
 
 def extract_metric_group_names(file_paths: list[str]) -> list[str]:
@@ -131,27 +121,32 @@ def extract_metric_group_names(file_paths: list[str]) -> list[str]:
     Returns:
         list: A list of metric group names found in the file paths.
     """
-    file_names = [normalize_path(s).split("/")[-1] for s in file_paths]
-    return [s.split("_")[-1].split(".")[0] for s in file_names]
+    file_names = [get_basename(s) for s in file_paths]
+    return [get_metric_suffix(s) for s in file_names]
+
+
+def get_metric_suffix(s):
+    return op.splitext(s)[0].split("_")[-1]
 
 
 def get_simulations_directories(base_directory: str) -> list[str]:
     """
     Retrieves the simulation directories from the base directory.
     Args:
-        base_directory (str): The base directory to search for files.
+        base_directory (str): The base directory to search for directories.
     Returns:
         list: A list of simulation directories found in the directory.
     Raises:
         FileNotFoundError: If the base directory does not exist.
     """
-    if not os.path.exists(base_directory):
+    if not op.isdir(base_directory):
         raise FileNotFoundError(
             f"The base directory '{base_directory}' does not exist."
         )
-    pattern = f"{base_directory}/*/"
-    paths = glob.glob(pattern)
-    return [normalize_path(s) for s in paths]
+    # List all entries and filter only directories
+    entries = [op.join(base_directory, d) for d in os.listdir(base_directory)]
+    dirs = [op.normpath(d) for d in entries if op.isdir(d)]
+    return dirs
 
 
 def group_metrics(file_paths: list[str]) -> dict[str, list[str]]:
@@ -257,17 +252,20 @@ def get_load_count(metric: str, csv_path: str) -> int:
     Raises:
         FileNotFoundError: If the CSV file does not exist.
     """
-    if not os.path.exists(csv_path):
+    if not op.exists(csv_path):
         raise FileNotFoundError(f"The CSV file '{csv_path}' does not exist.")
     simulation_results = load_simulation_results([csv_path])
     filtered_results = filter_metric(metric, simulation_results)
     return len(extract_load_points(filtered_results))
 
 
-# TODO - Função temporária para pegar os labels
 def get_default_label(directory: str) -> str:
-    directory = "".join([c for c in directory if c.isupper() or c.isnumeric()])
-    return directory
+    label = "".join([c for c in directory if c.isupper() or c.isnumeric()])
+    return label if label else "Label"
+
+
+def get_basename(path: str) -> str:
+    return op.basename(op.normpath(path))
 
 
 def main():

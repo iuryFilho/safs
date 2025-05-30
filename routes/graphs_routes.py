@@ -1,4 +1,4 @@
-import os
+import os.path as op
 from flask import (
     Blueprint,
     request,
@@ -102,7 +102,7 @@ def export_results():
     chosen_metrics = request.form.getlist("metric-list")
     chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
 
-    filename_prefix = ex.normalize_path(base_directory).split("/")[-1]
+    filename_prefix = op.normpath(base_directory).split("/")[-1]
     logger.log(f"Filename prefix: {filename_prefix}")
     try:
         for metric_group, metrics in chosen_grouped_metrics.items():

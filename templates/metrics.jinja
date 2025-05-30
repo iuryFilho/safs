@@ -1,5 +1,5 @@
 {% extends "__base.jinja" %}
-{% from "__macros.jinja" import navbarNav, section, submit_button, input, select, list_group, list_group_text, metrics_accordion, input_list %}
+{% from "__macros.jinja" import navbarNav, section, submit_button, input, select, list_group, list_group_text, input_list %}
 
 {% block title %}
   Metrics
@@ -54,7 +54,6 @@
     {% if directories %}
       {% call section("directories") %}
         <h2>Simulation Directories List:</h2>
-        {# <div class="mb-3">{{ list_group("directory-list", directories) }}</div> #}
         <div class="mb-3">{{ list_group_text("directory-list", directories) }}</div>
         <div class="btn-group" role="group" aria-label="Directory Actions">
           {{ submit_button('Select All', 'select-all-directories', 'btn-outline-primary', class="me-2") }}
@@ -71,7 +70,7 @@
             <div class="accordion-item">
               <h3 class="accordion-header">
                 <button id="{{ metric_group }}-btn"
-                        class="accordion-button text-bg-secondary collapsed"
+                        class="accordion-button text-bg-secondary shadow-none fw-medium collapsed"
                         type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#{{ metric_group }}"
@@ -79,7 +78,7 @@
                         aria-controls="{{ metric_group }}">{{ metric_group }}</button>
               </h3>
               <div id="{{ metric_group }}"
-                   class="accordion-collapse collapse bg-dark-subtle">
+                   class="accordion-collapse collapse bg-secondary-subtle">
                 <div class="accordion-body p-2">{{ list_group("metric-list", metric_list) }}</div>
               </div>
             </div>
@@ -123,10 +122,10 @@
           <div class="row mb-2">
             {{ input(label="Figure Width:",
                         name="figure-width", value=figure_width,
-                        placeholder="Enter figure width in inches", size="form-control-sm", type="number", label_class="fw-bold") }}
+                        placeholder="Enter figure width in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
             {{ input(label="Figure Height:",
                         name="figure-height", value=figure_height,
-                        placeholder="Enter figure height in inches", size="form-control-sm", type="number", label_class="fw-bold") }}
+                        placeholder="Enter figure height in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
             {{ select(label="Font Size:",
                         name="font-size",
                         selected=font_size,
@@ -141,7 +140,7 @@
                         ]) }}
           </div>
           <div class="mb-3">
-            <div class="fw-bold mb-2">Custom Loads:</div>
+            <div class="fw-medium mb-2">Custom Loads:</div>
             {{ input_list(load_count, loads, "load", "Load") }}
           </div>
           <div class="btn-group" role="group" aria-label="Graph Actions">

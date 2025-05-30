@@ -40,7 +40,7 @@
 {% macro submit_button(text, action, style, class="") %}
   <button type="submit"
           id="{{ action }}-sub"
-          class="btn {{ style }} {{ class }}"
+          class="btn fw-medium {{ style }} {{ class }}"
           name="action"
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
@@ -51,7 +51,7 @@
     <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
     <input type="{{ type }}"
            id="{{ name }}"
-           class="form-control {{ size }} {% if has_button %}mb-3{% endif %}"
+           class="form-control text-bg-light border border-0 {{ size }} {% if has_button %}mb-3{% endif %}"
            name="{{ name }}"
            value="{{ value }}"
            placeholder="{{ placeholder }}"
@@ -64,8 +64,10 @@
 
 {% macro select(label, name, selected, options) %}
   <div class="col">
-    <label for="{{ name }}" class="form-label fw-bold">{{ label }}</label>
-    <select id="{{ name }}" class="form-select form-select-sm" name="{{ name }}">
+    <label for="{{ name }}" class="form-label fw-medium">{{ label }}</label>
+    <select id="{{ name }}"
+            class="form-select form-select-sm text-bg-light border border-0 "
+            name="{{ name }}">
       {% if options[0]|length == 3 %}
         {% for op_value, option, enabled in options %}
           <option value="{{ op_value }}"
@@ -101,7 +103,7 @@
 {% macro list_group_text(input_name, items, name_prefix='') %}
   <ul class="list-group col">
     {% for item in items %}
-      <li class="list-group-item text-bg-light">
+      <li class="list-group-item bg-secondary-subtle text-black border border-0 px-2 py-2">
         <div class="col mb-1">
           <input id="{{ name_prefix }}{{ item }}"
                  class="form-check-input me-1"
@@ -121,60 +123,19 @@
   </ul>
 {% endmacro %}
 
-{% macro metrics_accordion(grouped_metrics, config_data) %}
-  <div class="accordion mb-3" id="accordion">
-    {% for metric_group, metric_list in grouped_metrics.items() %}
-      <div class="accordion-item">
-        <h3 class="accordion-header">
-          <button id="{{ metric_group }}-but"
-                  class="accordion-button text-bg-secondary collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#{{ metric_group }}"
-                  aria-expanded="false"
-                  aria-controls="{{ metric_group }}">{{ metric_group }}</button>
-        </h3>
-        <div id="{{ metric_group }}"
-             class="accordion-collapse collapse bg-dark-subtle">
-          <div class="accordion-body p-2">
-            {% if config_data and config_data["metrics"] %}
-              {# Extrair depois #}
-              {% set metric_script %}
-                <script>
-                    var metric_group_but = document.getElementById("{{ metric_group }}-but");
-                    metric_group_but.classList.remove("collapsed");
-                    metric_group_but.ariaExpanded = "true";
-                    document.getElementById("{{ metric_group }}").classList.add("show");
-                </script>
-              {% endset %}
-              {{ list_group(input_name="metric-list",
-                            items=metric_list,
-                            checked_items=config_data["metrics"][metric_group],
-                            script=metric_script) 
-              }}
-            {% else %}
-              {{ list_group("metric-list", metric_list) }}
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-{% endmacro %}
-
 {% macro input_list(size, items, list_name, item_name) %}
   <ul class="list-group">
     {% for i in range(size) %}
       {% set item = items[i] %}
-      <li class="list-group-item list-group-item-dark p-1">
+      <li class="list-group-item bg-secondary-subtle border-0 p-1">
         <div class="input-group input-group-sm">
-          <label class="input-group-text" for="{{ list_name }}-{{ i }}">{{ item_name }} {{ i }}</label>
+          <label class="input-group-text text-bg-secondary"
+                 for="{{ list_name }}-{{ i }}">{{ item_name }} {{ i }}</label>
           <input id="{{ list_name }}-{{ i }}"
                  type="number"
-                 class="form-control form-control-sm"
+                 class="form-control form-control-sm text-bg-light"
                  name="{{ list_name }}-list"
-                 value="{{ item }}"
-                 onchange="if(this.value===''){this.value='0';}">
+                 value="{{ item }}">
         </div>
       </li>
     {% endfor %}
