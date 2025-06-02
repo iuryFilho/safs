@@ -27,6 +27,21 @@ def filter_metric(
     return [d[d.Metrics == metric] for d in simulation_results]
 
 
+def filter_metric_list(
+    metric: str, simulation_results: list[pd.DataFrame]
+) -> list[pd.DataFrame]:
+    """
+    Extracts the filtered metrics from the simulation results files.
+    Args:
+        metric (str): The metric to filter by.
+        simulation_results (list[DataFrame]): List of DataFrames containing the simulation results.
+    Returns:
+        list: A list of DataFrames containing the filtered metrics.
+    """
+
+    return [d[d.Metrics == metric] for d in simulation_results]
+
+
 def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
     """
     Loads the simulation results from the given file paths.
@@ -39,7 +54,7 @@ def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
     for path in paths:
         if not op.exists(path):
             raise FileNotFoundError(f"The file '{path}' does not exist.")
-        sep = "," if "," in open(path).readline() else ";"
+        sep = get_separator(path)
         df = pd.read_csv(path, sep=sep)
         if "Metrics" not in df.columns:
             raise ExtractionError(
@@ -62,21 +77,26 @@ def get_metric_names(path: str) -> list[str]:
 
     if not op.exists(path):
         raise FileNotFoundError(f"The file '{path}' does not exist.")
-    with open(path, "r") as file:
-        first_line = file.readline()
-        sep = "," if "," in first_line else ";"
+    sep = get_separator(path)
     df = pd.read_csv(path, sep=sep)
     return list(df["Metrics"].unique())
 
 
-def get_csv_paths_by_metric(
-    simulation_directories: list[str], metric: str
+def get_separator(path):
+    with open(path, "r") as file:
+        first_line = file.readline()
+        sep = "," if "," in first_line else ";"
+    return sep
+
+
+def get_csv_paths_by_metric_group(
+    simulation_directories: list[str], metric_group: str
 ) -> list[str]:
     """
-    Retrieves the csv file paths from the simulation directories based on the given metric.
+    Retrieves the csv file paths from the simulation directories based on the given metric group.
     Args:
         simulation_directories (list[str]): The simulation directories to search for files.
-        metric (str): The file name pattern to search for.
+        metric_group (str): The file name pattern to search for.
     Returns:
         list: A list of csv file paths matching the given pattern.
     Raises:
@@ -88,7 +108,7 @@ def get_csv_paths_by_metric(
             raise FileNotFoundError(
                 f"The simulation directory '{simulation_directory}' does not exist."
             )
-        pattern = f"{simulation_directory}/*_{metric}.csv"
+        pattern = f"{simulation_directory}/*_{metric_group}.csv"
         file_path = glob.glob(pattern)[0]
         file_paths.append(op.normpath(file_path))
     return file_paths
@@ -125,8 +145,9 @@ def extract_metric_group_names(file_paths: list[str]) -> list[str]:
     return [get_metric_suffix(s) for s in file_names]
 
 
-def get_metric_suffix(s):
-    return op.splitext(s)[0].split("_")[-1]
+def get_metric_suffix(filename):
+    root: str = op.splitext(filename)[0]
+    return root.split("_")[-1]
 
 
 def get_simulations_directories(base_directory: str) -> list[str]:
@@ -259,11 +280,6 @@ def get_load_count(metric: str, csv_path: str) -> int:
     return len(extract_load_points(filtered_results))
 
 
-def get_default_label(directory: str) -> str:
-    label = "".join([c for c in directory if c.isupper() or c.isnumeric()])
-    return label if label else "Label"
-
-
 def get_basename(path: str) -> str:
     return op.basename(op.normpath(path))
 
@@ -285,7 +301,7 @@ def main():
     logger.log(f"Metric groups: {to_json(metric_groups)}")
     all_csv_paths_by_metric = {}
     for metric in metric_groups:
-        all_csv_paths_by_metric[metric] = get_csv_paths_by_metric(
+        all_csv_paths_by_metric[metric] = get_csv_paths_by_metric_group(
             simulation_directories, metric
         )
     logger.log(f"All csv paths by metric: {to_json(all_csv_paths_by_metric)}")

@@ -9,34 +9,7 @@ if (debugOutput) {
         }
     }
     document.addEventListener("DOMContentLoaded", setOutput);
-    newFunction()();
-}
-mainForm.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-        if (event.target.id == "base-directory") {
-            return;
-        } else if (
-            ["INPUT", "TEXTAREA"].includes(event.target.tagName) &&
-            event.target.type !== "textarea"
-        ) {
-            event.preventDefault();
-        }
-    }
-});
-
-mainForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const action = event.submitter.value;
-    console.log(action);
-    if (action === "get-metrics") {
-        mainForm.method = "post";
-        mainForm.action = "/metrics/get-metrics";
-        mainForm.submit();
-    }
-});
-
-function newFunction() {
-    return () => {
+    (() => {
         const checkboxes = mainForm.querySelectorAll(
             'input[type="checkbox"][name="directory-list"], input[type="checkbox"][name="metric-list"]'
         );
@@ -62,8 +35,31 @@ function newFunction() {
                 });
             });
         }
-    };
+    })();
 }
+mainForm.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        if (event.target.id == "base-directory") {
+            return;
+        } else if (
+            ["INPUT", "TEXTAREA"].includes(event.target.tagName) &&
+            event.target.type !== "textarea"
+        ) {
+            event.preventDefault();
+        }
+    }
+});
+
+mainForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const action = event.submitter.value;
+    console.log(action);
+    if (action === "get-metrics") {
+        mainForm.method = "post";
+        mainForm.action = "/metrics/get-metrics";
+        mainForm.submit();
+    }
+});
 
 // Carregar configuração
 async function loadConfig() {
@@ -166,6 +162,26 @@ async function saveConfig() {
     }
 }
 
+async function updateMetricType() {
+    const previousMetricType = getElementValue("previous-metric-type");
+    const metricType = getRadioValue("metric-type");
+
+    if (previousMetricType !== metricType) {
+        const response = await fetch("/metrics/update-metric-type", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ "metric-type": metricType }),
+        });
+
+        const data = response.json();
+        if (!data.error) {
+            window.location.reload();
+        } else {
+            alert(data.error);
+        }
+    }
+}
+
 // Gerar gráficos
 async function generateGraphs() {
     const directories = getCheckedValues("directory-list");
@@ -244,5 +260,9 @@ assignSubmitFunction("select-all-metrics-sub", () =>
 assignSubmitFunction("deselect-all-metrics-sub", () =>
     deselectAllCheckboxes("metric-list")
 );
+
+assignSubmitFunction("radio-individual", () => updateMetricType());
+assignSubmitFunction("radio-grouped", () => updateMetricType());
+
 assignSubmitFunction("generate-graphs-sub", generateGraphs);
 assignSubmitFunction("export-results-sub", exportResults);

@@ -1,24 +1,25 @@
-import extraction as ex
 import matplotlib
 import matplotlib.pyplot as plt
 import scipy.stats as st
 import pandas as pd
 import os.path as op
-import json
-from utils import to_json, Logger
+from typing import TypeAlias
+
+from utils import Logger
+import extraction as ex
+from data.filtered_metrics import filtered_metrics
+
+
+GroupedMetricT: TypeAlias = dict[str, list[str]]
 
 matplotlib.use("agg")
 
-LOG = True
-logger = Logger(log=LOG)
+LOG_ENABLE = True
+log = Logger(LOG_ENABLE, __name__).log
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
-
-
-# * Auxiliary functions
-def to_json(obj):
-    return json.dumps(obj, indent=4)
+hatches = []
 
 
 def calculate_standard_error(repetitions_data, number_of_reps):
@@ -49,31 +50,53 @@ def calculate_average(results_data: list[pd.DataFrame]) -> list:
     return [d.mean(axis=1).tolist() for d in results_data]
 
 
-def compile_simulation_results(
-    base_directory: str,
-    directories: list[str],
-    metric_group: str,
+def compile_data_from_result_list(
+    simulation_results: list[pd.DataFrame],
     metric: str,
 ) -> list[pd.DataFrame]:
     """
     Compiles the simulation results for the given metric.
     Args:
-        base_directory (str): The base directory of the simulations.
-        directories (list[str]): The list of simulation directories.
-        metric_group (str): The metric group to filter by.
+        simulation_results (list[pd.DataFrame]): The list of simulations results to be compiled.
         metric (str): The specific metric to filter by.
     Returns:
         list: A list of DataFrames containing the compiled simulation results.
     """
-    length = len(directories)
-    full_directories = [op.join(base_directory, d) for d in directories]
-    csv_paths = ex.get_csv_paths_by_metric(full_directories, metric_group)
-    logger.log(f"CSV paths: {to_json(csv_paths)}")
-    simulation_results = ex.load_simulation_results(csv_paths)
-    del csv_paths
-
+    length = len(simulation_results)
     metric_results = ex.filter_metric(metric, simulation_results)
-    del simulation_results
+
+    loads = ex.extract_load_points(metric_results)
+    final_results = ex.extract_repetitions(metric_results)
+    del metric_results
+
+    number_of_reps = get_number_of_repetitions(final_results)
+    average = calculate_average(final_results)
+    error = calculate_standard_error(final_results, number_of_reps)
+    del final_results
+
+    dataframes = [pd.DataFrame() for i in range(length)]
+
+    for i in range(length):
+        dataframes[i]["loads"] = loads
+        dataframes[i]["mean"] = average[i]
+        dataframes[i]["error"] = error[i]
+    return dataframes
+
+
+def compile_data_from_result(
+    simulation_result: pd.DataFrame,
+    metrics: list[str],
+) -> list[pd.DataFrame]:
+    """
+    Compiles the simulation result for the given metric.
+    Args:
+        simulation_results (list[pd.DataFrame]): The list of simulations results to be compiled.
+        metric (str): The specific metric to filter by.
+    Returns:
+        list: A list of DataFrames containing the compiled simulation results.
+    """
+    length = len(simulation_result)
+    metric_results = ex.filter_metric_list(metrics, simulation_result)
 
     loads = ex.extract_load_points(metric_results)
     final_results = ex.extract_repetitions(metric_results)
@@ -112,47 +135,88 @@ def export_results(
             df.to_excel(writer, sheet_name=label, index=False)
 
 
-def plot_line_graph(
+def generate_graph(
     base_directory,
     directories,
-    grouped_metrics,
+    grouped_metrics: GroupedMetricT,
     labels=[],
     loads=[],
     fontsize="large",
     figsize=(10, 5),
     overwrite=True,
+    metric_type="individual",
+    graph_type="line",
 ):
-    filename_prefix = ex.get_basename(base_directory) + "_Line_"
+    if graph_type == "line":
+        plot_graph = plot_line_graph
+
+    elif graph_type == "bar":
+        plot_graph = plot_bar_graph
+    filename_prefix = op.join(
+        base_directory, f"{ex.get_basename(base_directory)}_{graph_type}"
+    )
     x_label = "Carga na rede (Erlangs)"
     if not labels:
         labels = directories
-    for metric_group, metrics in grouped_metrics.items():
-        for metric in metrics:
-            dataframes = compile_simulation_results(
-                base_directory,
-                directories,
-                metric_group,
-                metric,
-            )
-            if loads == []:
-                loads = dataframes[0]["loads"].tolist()
-            output_file = (
-                f"{op.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
-            )
-            aux_plot_line(
-                dataframes,
-                loads,
-                labels,
-                x_label,
-                y_label=metric,
-                fontsize=fontsize,
-                figsize=figsize,
-                output_file=output_file,
-                overwrite=overwrite,
-            )
+
+    full_directories = [op.join(base_directory, d) for d in directories]
+    if metric_type == "individual":
+        for metric_group, metrics in grouped_metrics.items():
+            csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
+            simulation_results = ex.load_simulation_results(csv_paths)
+            log(simulation_results)
+            del csv_paths
+            for metric in metrics:
+                dataframes = compile_data_from_result_list(
+                    simulation_results,
+                    metric,
+                )
+                if loads == []:
+                    loads = dataframes[0]["loads"].tolist()
+                output_file = f"{filename_prefix}_{metric.replace(' ', '_')}"
+                plot_graph(
+                    dataframes,
+                    loads,
+                    labels,
+                    x_label,
+                    y_label=metric,
+                    fontsize=fontsize,
+                    figsize=figsize,
+                    output_file=output_file,
+                    overwrite=overwrite,
+                )
+    elif metric_type == "by":
+        return
+        for metric_group, metrics in grouped_metrics.items():
+            csv_paths = ex.get_csv_paths_by_metric_group(
+                full_directories, metric_group
+            )  # ? Um arquivo para cada diretório de acordo com um grupo de métrica
+            simulation_results = ex.load_simulation_results(
+                csv_paths
+            )  # ? Um resultado para cada diretório, ou seja, para cada arquivo
+            del csv_paths
+            for label, simulation_result in zip(labels, simulation_results):
+                dataframes = compile_data_from_result(
+                    simulation_result,
+                    metrics,
+                )  # ? Um dataframe para cada
+                if loads == []:
+                    loads = dataframes[0]["loads"].tolist()
+                output_file = f"{filename_prefix}_{label}_{metric_group}"  # TODO substituir pelo rótulo da métrica
+                plot_line_graph(
+                    dataframes,
+                    loads,
+                    labels,
+                    x_label,
+                    y_label=metric,
+                    fontsize=fontsize,
+                    figsize=figsize,
+                    output_file=output_file,
+                    overwrite=overwrite,
+                )
 
 
-def aux_plot_line(
+def plot_line_graph(
     dataframes,
     loads,
     labels,
@@ -196,7 +260,7 @@ def aux_plot_line(
         fontsize=fontsize,
     )
     if output_file != "":
-        logger.log(f"Saving graph to {output_file}.png")
+        log(f"Saving graph to {output_file}.png")
         if not overwrite and op.exists(f"{output_file}.png"):
             i = 0
             while True:
@@ -211,46 +275,6 @@ def aux_plot_line(
 
 
 def plot_bar_graph(
-    base_directory,
-    directories,
-    grouped_metrics,
-    labels=[],
-    loads=[],
-    fontsize="large",
-    figsize=(10, 5),
-    overwrite=True,
-):
-    filename_prefix = op.normpath(base_directory).split("/")[-1] + "_Bar_"
-    x_label = "Carga na rede (Erlangs)"
-    if not labels:
-        labels = directories
-    for metric_group, metrics in grouped_metrics.items():
-        for metric in metrics:
-            dataframes = compile_simulation_results(
-                base_directory,
-                directories,
-                metric_group,
-                metric,
-            )
-            if loads == []:
-                loads = dataframes[0]["loads"].tolist()
-            output_file = (
-                f"{op.join(base_directory, filename_prefix)}{metric.replace(' ', '_')}"
-            )
-            aux_plot_bar(
-                dataframes,
-                loads,
-                labels,
-                x_label,
-                y_label=metric,
-                fontsize=fontsize,
-                figsize=figsize,
-                output_file=output_file,
-                overwrite=overwrite,
-            )
-
-
-def aux_plot_bar(
     dataframes,
     loads,
     labels,
@@ -296,7 +320,7 @@ def aux_plot_bar(
     )
 
     if output_file != "":
-        logger.log(f"Saving graph to {output_file}.png")
+        log(f"Saving graph to {output_file}.png")
         if not overwrite and op.exists(f"{output_file}.png"):
             i = 0
             while True:
@@ -335,7 +359,7 @@ def main():
     #     base_directory, directories, grouped_metrics, labels=labels, overwrite=True
     # )
     export_results(
-        compile_simulation_results(
+        compile_data_from_result_list(
             base_directory,
             directories,
             "BitRateBlockingProbability",

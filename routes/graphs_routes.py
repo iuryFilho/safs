@@ -10,19 +10,16 @@ import graphs as gr
 from utils import Logger
 
 blueprint = Blueprint("graphs", __name__)
-LOG = True
-
-
-@blueprint.record
-def record_params(setup_state):
-    global logger
-    logger = Logger(log=(LOG and setup_state.options.get("debug_output", True)))
+LOG_ENABLE = True
+logger = Logger(LOG_ENABLE, __name__)
 
 
 @blueprint.route("/generate-graphs", methods=["POST"])
 def generate_graphs():
     base_directory = session.get("base_directory", "")
+    metric_type = session.get("metric_type", "individual")
     grouped_metrics = session.get("grouped_metrics", None)
+
     data: dict = request.get_json()
     directories = data.get("directory-list", [])
     raw_labels = data.get("directory-labels", [])
@@ -33,7 +30,7 @@ def generate_graphs():
             labels.append(label)
             session_labels[dir] = label
         else:
-            labels.append(ex.get_default_label(dir))
+            labels.append(dir)
     chosen_metrics = data.get("metric-list", [])
 
     graph_type = data.get("graph-type", "line")
@@ -58,31 +55,18 @@ def generate_graphs():
     if grouped_metrics:
         chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
         try:
-            # TODO implement graph composition logic
-            if graph_type == "line":
-                gr.plot_line_graph(
-                    base_directory,
-                    directories,
-                    chosen_grouped_metrics,
-                    labels=labels,
-                    loads=loads,
-                    fontsize=font_size,
-                    figsize=to_float(*figsize),
-                    overwrite=overwrite,
-                )
-            elif graph_type == "bar":
-                gr.plot_bar_graph(
-                    base_directory,
-                    directories,
-                    chosen_grouped_metrics,
-                    labels=labels,
-                    loads=loads,
-                    fontsize=font_size,
-                    figsize=to_float(*figsize),
-                    overwrite=overwrite,
-                )
-            else:
-                return jsonify({"error": "Unsupported graph type."})
+            gr.generate_graph(
+                base_directory,
+                directories,
+                chosen_grouped_metrics,
+                labels=labels,
+                loads=loads,
+                fontsize=font_size,
+                figsize=to_float(*figsize),
+                overwrite=overwrite,
+                metric_type=metric_type,
+                graph_type=graph_type,
+            )
             return jsonify({"message": "Graphs generated successfully."})
         except Exception as e:
             return jsonify({"error": str(e)})
@@ -107,7 +91,7 @@ def export_results():
     try:
         for metric_group, metrics in chosen_grouped_metrics.items():
             for metric in metrics:
-                results = gr.compile_simulation_results(
+                results = gr.compile_data_from_result_list(
                     base_directory,
                     directories,
                     metric_group,

@@ -10,8 +10,13 @@ from flask import (
 import os.path as op
 import extraction as ex
 
+# from data.all_metrics import all_metrics
+from data.filtered_metrics import filtered_metrics
+from utils import Logger
+
 blueprint = Blueprint("metrics", __name__)
 debug_output = True
+logger = Logger(True, __name__)
 
 
 @blueprint.record
@@ -35,6 +40,7 @@ def metrics_index():
     output_config = session.get("output_config", "")
 
     directories = session.get("directories", None)
+    metric_type = session.get("metric_type", "individual")
     grouped_metrics = session.get("grouped_metrics", None)
     load_count = session.get("load_count", 0)
     has_config_data = session.get("has_config_data", False)
@@ -53,6 +59,7 @@ def metrics_index():
         input_config=input_config,
         output_config=output_config,
         directories=directories,
+        metric_type=metric_type,
         grouped_metrics=grouped_metrics,
         load_count=load_count,
         has_config_data=has_config_data,
@@ -74,14 +81,16 @@ def get_metrics():
     try:
         simulation_directories_paths = ex.get_simulations_directories(base_directory)
         simulation_directories = [op.basename(s) for s in simulation_directories_paths]
-        print(f"Simulation directories: {simulation_directories}")
         csv_paths = ex.get_csv_paths(simulation_directories_paths[0])
-        grouped_metrics = ex.group_metrics(csv_paths)
+
+        metric_type = request.form.get("metric_type", "individual")
+        grouped_metrics = filtered_metrics[metric_type]
         load_count = ex.get_load_count(
             list(grouped_metrics.values())[0][0], csv_paths[0]
         )
 
         session["directories"] = simulation_directories
+        session["metric_type"] = metric_type
         session["grouped_metrics"] = grouped_metrics
         session["load_count"] = load_count
         session["base_dir_error"] = None
@@ -128,3 +137,12 @@ def save_config():
 
     result = ex.save_config(new_config_data, output_config)
     return jsonify({"message": result})
+
+
+@blueprint.route("/update-metric-type", methods=["POST"])
+def update_metric_type():
+    data: dict = request.get_json()
+    metric_type = data.get("metric-type", "individual")
+    session["metric_type"] = metric_type
+    session["grouped_metrics"] = filtered_metrics[metric_type]
+    return jsonify({"message": "Metric updated succesfully."})

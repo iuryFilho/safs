@@ -16,6 +16,11 @@ function getElementValue(id) {
     return document.getElementById(id).value;
 }
 
+function getRadioValue(name) {
+    const radio = document.querySelector(`input[name="${name}"]:checked`);
+    return radio ? radio.value : null;
+}
+
 function getListValues(name) {
     return Array.from(document.querySelectorAll(`[name="${name}"]`)).map(
         (el) => el.value
