@@ -83,29 +83,36 @@ def export_results():
         return jsonify({"error": "No metrics selected."})
 
     directories = request.form.getlist("directory-list")
+    raw_labels = request.form.getlist("directory-labels")
+    labels = []
+    session_labels = {}
+    for dir, label in zip(directories, raw_labels):
+        if label:
+            labels.append(label)
+            session_labels[dir] = label
+        else:
+            labels.append(dir)
+
     chosen_metrics = request.form.getlist("metric-list")
     chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
 
-    filename_prefix = op.normpath(base_directory).split("/")[-1]
+    overwrite = request.form.get("overwrite", "") == "true"
+    filename_prefix = op.join(base_directory, ex.get_basename(base_directory))
     logger.log(f"Filename prefix: {filename_prefix}")
     try:
+        full_directories = [op.join(base_directory, d) for d in directories]
         for metric_group, metrics in chosen_grouped_metrics.items():
+            csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
+            simulation_results = ex.load_simulation_results(csv_paths)
             for metric in metrics:
                 results = gr.compile_data_from_result_list(
-                    base_directory,
-                    directories,
-                    metric_group,
+                    simulation_results,
                     metric,
                 )
                 filename = f"{filename_prefix}_{metric.replace(' ', '_')}"
                 logger.log(f"Exporting results for {metric} to {filename}")
 
-                gr.export_results(
-                    results,
-                    ex.get_labels(directories),
-                    base_directory,
-                    filename,
-                )
+                gr.export_results(results, labels, filename, overwrite)
         return jsonify({"message": "Results exported successfully."})
     except Exception as e:
         return jsonify({"error": str(e)})

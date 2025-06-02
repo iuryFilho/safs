@@ -117,10 +117,7 @@ def compile_data_from_result(
 
 
 def export_results(
-    dataframes: list[pd.DataFrame],
-    labels: list[str],
-    base_directory: str,
-    output_name: str,
+    dataframes: list[pd.DataFrame], labels: list[str], output_name: str, overwrite=True
 ) -> None:
     """
     Exports the compiled results to an Excel file with each DataFrame in a separate sheet.
@@ -130,9 +127,22 @@ def export_results(
         base_directory (str): The base directory where the Excel file will be saved.
         output_name (str): The name of the output Excel file (without extension).
     """
-    with pd.ExcelWriter(f"{op.join(base_directory, output_name)}.xlsx") as writer:
-        for label, df in zip(labels, dataframes):
-            df.to_excel(writer, sheet_name=label, index=False)
+    log(f"Labels: {labels}")
+    log(f"Dataframes: {dataframes}")
+    if not overwrite and op.exists(f"{output_name}.xlsx"):
+        i = 0
+        while True:
+            if op.exists(f"{output_name}_{i}.xlsx"):
+                i += 1
+            else:
+                with pd.ExcelWriter(f"{output_name}_{i}.xlsx") as writer:
+                    for label, df in zip(labels, dataframes):
+                        df.to_excel(writer, sheet_name=label, index=False)
+                break
+    else:
+        with pd.ExcelWriter(f"{output_name}.xlsx") as writer:
+            for label, df in zip(labels, dataframes):
+                df.to_excel(writer, sheet_name=label, index=False)
 
 
 def generate_graph(

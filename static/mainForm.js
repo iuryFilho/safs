@@ -227,10 +227,17 @@ async function generateGraphs() {
 // Exportar resultados
 async function exportResults() {
     const directories = getCheckedValues("directory-list");
+    const directoryLabels = directories.map((dir) => {
+        return document.getElementById(`label-${dir}`).value;
+    });
     const metrics = getCheckedValues("metric-list");
+    const overwrite = getElementValue("overwrite");
+
     const body = createBody({
         "directory-list": directories,
+        "directory-labels": directoryLabels,
         "metric-list": metrics,
+        overwrite: overwrite,
     });
 
     const response = await fetch("/graphs/export-results", {
