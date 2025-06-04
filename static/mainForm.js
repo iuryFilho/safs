@@ -75,8 +75,11 @@ async function loadConfig() {
         }),
     });
     const data = await response.json();
+
+    const showToast = createToastFunction("input-config-toast");
+
     if (data.error) {
-        alert("Erro: " + data.error);
+        showToast("Error: " + data.error, "warning");
     } else {
         const configData = data.config_data;
 
@@ -128,6 +131,7 @@ async function loadConfig() {
         if (debugOutput) {
             setOutput();
         }
+        showToast(data.message || "Configuration loaded successfully!");
     }
 }
 
@@ -138,8 +142,6 @@ async function saveConfig() {
     const labels = directories.map((dir) => {
         return document.getElementById(`label-${dir}`).value;
     });
-    console.log("Labels:", labels);
-
     const metrics = getCheckedValues("metric-list");
 
     const body = createBody({
@@ -155,10 +157,13 @@ async function saveConfig() {
         body: body,
     });
     const data = await response.json();
+
+    const showToast = createToastFunction("output-config-toast");
+
     if (data.error) {
-        alert("Erro: " + data.error);
+        showToast("Erro: " + data.error, "warning");
     } else {
-        alert(data.message);
+        showToast(data.message || "Configuração salva com sucesso!");
     }
 }
 
@@ -217,10 +222,11 @@ async function generateGraphs() {
         body: JSON.stringify(body),
     });
     const data = await response.json();
+    const showToast = createToastFunction("generate-graphs-toast");
     if (data.error) {
-        alert("Erro: " + data.error);
+        showToast("Erro: " + data.error, "warning");
     } else {
-        alert(data.message);
+        showToast(data.message);
     }
 }
 
@@ -246,10 +252,13 @@ async function exportResults() {
         body: body,
     });
     const data = await response.json();
+    console.log(data);
+
+    const showToast = createToastFunction("export-results-toast");
     if (data.error) {
-        alert("Erro: " + data.error);
+        showToast("Erro: " + data.error, "warning");
     } else {
-        alert(data.message);
+        showToast(data.message);
     }
 }
 

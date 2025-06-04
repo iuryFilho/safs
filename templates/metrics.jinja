@@ -1,5 +1,5 @@
 {% extends "__base.jinja" %}
-{% from "__macros.jinja" import navbarNav, section, submit_button, input, select, list_group, list_group_text, input_list %}
+{% from "__macros.jinja" import navbarNav, toast, section, submit_button, input, select, list_group, list_group_text, input_list %}
 
 {% block title %}
   Metrics
@@ -10,8 +10,14 @@
 {% endblock navbarNav %}
 
 {% block content %}
-
   <form id="form">
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      {{ toast("input-config-toast") }}
+      {{ toast("output-config-toast") }}
+      {{ toast("generate-graphs-toast") }}
+      {{ toast("export-results-toast") }}
+    </div>
+
     {% call section("base-directory") %}
       {{ input(label="<h2>Base Directory:</h2>",
             name="base-directory", value=base_directory,

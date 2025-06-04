@@ -31,6 +31,24 @@
   </div>
 {% endmacro %}
 
+{% macro toast(id) %}
+  <div id="{{ id }}"
+       class="toast align-items-center"
+       role="alert"
+       aria-live="polite"
+       aria-atomic="true"
+       data-bs-autohide="true"
+       data-bs-delay="5000">
+    <div class="d-flex">
+      <div class="toast-body fw-medium"></div>
+      <button type="button"
+              class="btn-close me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Close"></button>
+    </div>
+  </div>
+{% endmacro %}
+
 {% macro section(name) %}
   <section id="{{ name }}-section" class="mb-4">
     {{ caller() }}

@@ -61,3 +61,22 @@ function deselectAllCheckboxes(listName) {
         checkbox.checked = false;
     });
 }
+
+function createToastFunction(id) {
+    return (message, type = "success") => {
+        const outputConfigToast = document.getElementById(id);
+        outputConfigToast.classList.remove(
+            "text-bg-success",
+            "text-bg-warning"
+        );
+        outputConfigToast.classList.add("text-bg-" + type);
+        const btnClose = outputConfigToast.querySelector(".btn-close");
+        btnClose.classList.remove("btn-close-success", "btn-close-warning");
+        btnClose.classList.add("btn-close-" + type);
+        const toastBody = outputConfigToast?.querySelector(".toast-body");
+        if (toastBody) toastBody.textContent = message;
+        const toastBootstrap =
+            bootstrap.Toast.getOrCreateInstance(outputConfigToast);
+        toastBootstrap.show();
+    };
+}
