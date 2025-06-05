@@ -99,35 +99,43 @@ async function loadConfig() {
                 }
             });
 
-        Object.entries(configData.directories).forEach(([dir, label]) => {
-            const dirCheckbox = document.getElementById(dir);
-            const labelElement = document.getElementById(`label-${dir}`);
-            dirCheckbox.checked = true;
-            labelElement.disabled = false;
-            labelElement.value = label;
-        });
+        if (configData.directories) {
+            Object.entries(configData.directories).forEach(([dir, label]) => {
+                const dirCheckbox = document.getElementById(dir);
+                const labelElement = document.getElementById(`label-${dir}`);
+                dirCheckbox.checked = true;
+                labelElement.disabled = false;
+                labelElement.value = label;
+            });
+        }
 
-        Object.entries(configData.metrics).forEach(
-            ([metricGroup, metricList]) => {
-                const metricGroupBtn = document.getElementById(
-                    `${metricGroup}-btn`
-                );
-                if (metricGroupBtn) {
-                    metricGroupBtn.classList.remove("collapsed");
-                    metricGroupBtn.ariaExpanded = "true";
-                    document
-                        .getElementById(`${metricGroup}`)
-                        .classList.add("show");
-                }
-
-                metricList.forEach((metric) => {
-                    const metricCheckbox = document.getElementById(metric);
-                    if (metricCheckbox) {
-                        metricCheckbox.checked = true;
+        if (configData.metrics) {
+            Object.entries(configData.metrics).forEach(
+                ([metricGroup, metricList]) => {
+                    const metricGroupBtn = document.getElementById(
+                        `${metricGroup}-btn`
+                    );
+                    if (metricGroupBtn) {
+                        metricGroupBtn.classList.remove("collapsed");
+                        metricGroupBtn.ariaExpanded = "true";
+                        document
+                            .getElementById(`${metricGroup}`)
+                            .classList.add("show");
                     }
-                });
-            }
-        );
+
+                    metricList.forEach((metric) => {
+                        const metricCheckbox = document.getElementById(metric);
+                        if (metricCheckbox) {
+                            metricCheckbox.checked = true;
+                        }
+                    });
+                }
+            );
+        }
+
+        if (configData["graph-config"]) {
+            setLoads(configData["graph-config"]);
+        }
         if (debugOutput) {
             setOutput();
         }
@@ -143,18 +151,21 @@ async function saveConfig() {
         return document.getElementById(`label-${dir}`).value;
     });
     const metrics = getCheckedValues("metric-list");
+    const graphConfig = {};
+    getLoads(graphConfig);
 
-    const body = createBody({
+    const body = {
         "output-config": outputConfig,
         "directory-list": directories,
         labels: labels,
         "metric-list": metrics,
-    });
+        "graph-config": graphConfig,
+    };
 
     const response = await fetch("/metrics/save-config", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
     });
     const data = await response.json();
 
@@ -200,8 +211,12 @@ async function generateGraphs() {
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
     const fontSize = getElementValue("font-size");
-    const loads = getListValues("load-list");
-    console.log("Loads:", loads);
+    const loadMap = getListValues("load-list").reduce((acc, load, index) => {
+        if (load !== "") {
+            acc[index.toString()] = load;
+        }
+        return acc;
+    }, {});
 
     const body = {
         "directory-list": directories,
@@ -213,7 +228,7 @@ async function generateGraphs() {
         "figure-width": figureWidth,
         "figure-height": figureHeight,
         "font-size": fontSize,
-        loads: loads,
+        loads: loadMap,
     };
 
     const response = await fetch("/graphs/generate-graphs", {

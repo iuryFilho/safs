@@ -80,3 +80,88 @@ function createToastFunction(id) {
         toastBootstrap.show();
     };
 }
+
+function getLoads(graphConfig) {
+    const allLoadList = getListValues("load-list");
+    let loadFilter = "";
+    const nonEmptyLoads = allLoadList.filter((load) => load !== "");
+    const nonEmptyIndices = [];
+    allLoadList.forEach((load, index) => {
+        if (load !== "") {
+            nonEmptyIndices.push(index);
+        }
+    });
+    if (nonEmptyIndices.length > 0) {
+        let ranges = [];
+        let start = nonEmptyIndices[0];
+        let end = nonEmptyIndices[0];
+        for (let i = 1; i < nonEmptyIndices.length; i++) {
+            if (nonEmptyIndices[i] === end + 1) {
+                end = nonEmptyIndices[i];
+            } else {
+                if (start === end) {
+                    ranges.push(`${start}`);
+                } else {
+                    ranges.push(`${start}-${end}`);
+                }
+                start = end = nonEmptyIndices[i];
+            }
+        }
+        if (start === end) {
+            ranges.push(`${start}`);
+        } else {
+            ranges.push(`${start}-${end}`);
+        }
+        loadFilter = ranges.join(",");
+        if (loadFilter === `0-${allLoadList.length - 1}`) {
+            loadFilter = "";
+        }
+    }
+    graphConfig["loads"] = nonEmptyLoads;
+    if (loadFilter) {
+        graphConfig["load-filter"] = loadFilter;
+    }
+}
+
+function setLoads(graphConfig) {
+    const loads = graphConfig.loads;
+    const nonEmptyLoads = loads.filter((load) => load !== "");
+    if (nonEmptyLoads) {
+        if (!graphConfig["load-filter"]) {
+            nonEmptyLoads.forEach((load, index) => {
+                const loadInput = document.getElementById(`load-${index}`);
+                if (loadInput) {
+                    loadInput.value = load;
+                }
+            });
+        } else {
+            const ranges = graphConfig["load-filter"].split(",");
+            let loadIndex = 0;
+            ranges.forEach((range) => {
+                if (range.includes("-")) {
+                    const [start, end] = range.split("-").map(Number);
+                    if (isNaN(start) || isNaN(end)) {
+                        return;
+                    }
+                    for (let i = start; i <= end; i++) {
+                        const loadInput = document.getElementById(`load-${i}`);
+                        if (loadInput) {
+                            loadInput.value = nonEmptyLoads[loadIndex] || "";
+                            loadIndex++;
+                        }
+                    }
+                } else {
+                    const i = Number(range);
+                    if (isNaN(i)) {
+                        return;
+                    }
+                    const loadInput = document.getElementById(`load-${i}`);
+                    if (loadInput) {
+                        loadInput.value = nonEmptyLoads[loadIndex] || "";
+                        loadIndex++;
+                    }
+                }
+            });
+        }
+    }
+}

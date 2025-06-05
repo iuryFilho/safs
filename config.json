@@ -8,5 +8,14 @@
         "BitRateBlockingProbability": [
             "BitRate blocking probability"
         ]
+    },
+    "graph-config": {
+        "loads": [
+            "200",
+            "300",
+            "400",
+            "500"
+        ],
+        "load-filter": "1-4"
     }
 }

@@ -115,25 +115,29 @@ def load_config():
 
 @blueprint.route("/save-config", methods=["POST"])
 def save_config():
-    output_config = request.form.get("output-config", "")
+    data: dict = request.get_json()
+    output_config = data.get("output-config", "")
     if not output_config:
         return jsonify({"error": "Output config file is required."})
     session["output_config"] = output_config
 
-    new_config_data = {"directories": {}, "metrics": {}}
-    directories = request.form.getlist("directory-list")
-    labels = request.form.getlist("labels")
+    new_config_data = {"directories": {}, "metrics": {}, "graph-config": {}}
+    directories = data.get("directory-list", [])
+    labels = data.get("labels", [])
     for dir, label in zip(directories, labels):
         new_config_data["directories"][dir] = label
 
     grouped_metrics = session.get("grouped_metrics", None)
-    metric_list_form = request.form.getlist("metric-list")
-    for metric_group, metric_list in grouped_metrics.items():
+    metric_list_form = data.get("metric-list", [])
+    for metric_group, metric_list in (grouped_metrics or {}).items():
         for metric in metric_list_form:
             if metric in metric_list:
                 new_config_data["metrics"][metric_group] = new_config_data[
                     "metrics"
                 ].get(metric_group, []) + [metric]
+
+    graph_config = data.get("graph-config", {})
+    new_config_data["graph-config"] = graph_config
 
     result = ex.save_config(new_config_data, output_config)
     return jsonify({"message": result})

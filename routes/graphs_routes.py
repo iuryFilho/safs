@@ -41,8 +41,9 @@ def generate_graphs():
         data.get("figure-height", "5"),
     )
     font_size = data.get("font-size", "medium")
-    loads = data.get("loads", [])
+    loads: dict = data.get("loads", {})
 
+    session["labels"] = session_labels
     session["graph_type"] = graph_type
     session["graph_composition"] = graph_composition
     session["overwrite"] = overwrite
@@ -60,7 +61,8 @@ def generate_graphs():
                 directories,
                 chosen_grouped_metrics,
                 labels=labels,
-                loads=loads,
+                loads=loads.values(),
+                chosen_loads=loads.keys(),
                 fontsize=font_size,
                 figsize=to_float(*figsize),
                 overwrite=overwrite,
