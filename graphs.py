@@ -19,7 +19,7 @@ log = Logger(LOG_ENABLE, __name__).log
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
-hatches = []
+hatches = ["", "/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
 
 
 def calculate_standard_error(repetitions_data, number_of_reps):
@@ -249,8 +249,8 @@ def plot_line_graph(
             y,
             xerr=0,
             yerr=e,
-            linestyle=linestyles[i],
-            marker=markers[i],
+            linestyle=linestyles[i % len(linestyles)],
+            marker=markers[i % len(markers)],
             label=labels[i],
             fillstyle="none",
         )
@@ -311,6 +311,8 @@ def plot_bar_graph(
             label=labels[i],
             yerr=e,
             capsize=5,
+            hatch=hatches[i % len(hatches)],
+            edgecolor="black",
         )
         plt.xticks([p + (len(dataframes) - 1) * bar_width / 2 for p in x], loads)
 
