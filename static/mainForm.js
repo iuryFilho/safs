@@ -61,6 +61,18 @@ mainForm.addEventListener("submit", function (event) {
     }
 });
 
+mainForm.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+    checkbox.checked = false;
+    const labelElement = document.getElementById(`label-${checkbox.value}`);
+    if (labelElement) {
+        labelElement.disabled = true;
+        labelElement.value = "";
+        checkbox.addEventListener("change", function () {
+            labelElement.disabled = !this.checked;
+        });
+    }
+});
+
 // Carregar configuração
 async function loadConfig() {
     const inputConfig = getElementValue("input-config");
@@ -82,22 +94,6 @@ async function loadConfig() {
         showToast("Error: " + data.error, "warning");
     } else {
         const configData = data.config_data;
-
-        mainForm
-            .querySelectorAll('input[type="checkbox"]')
-            .forEach((checkbox) => {
-                checkbox.checked = false;
-                const labelElement = document.getElementById(
-                    `label-${checkbox.value}`
-                );
-                if (labelElement) {
-                    labelElement.disabled = true;
-                    labelElement.value = "";
-                    checkbox.addEventListener("change", function () {
-                        labelElement.disabled = !this.checked;
-                    });
-                }
-            });
 
         if (configData.directories) {
             Object.entries(configData.directories).forEach(([dir, label]) => {
@@ -280,10 +276,10 @@ async function exportResults() {
 assignSubmitFunction("load-config-sub", loadConfig);
 assignSubmitFunction("save-config-sub", saveConfig);
 assignSubmitFunction("select-all-directories-sub", () =>
-    selectAllCheckboxes("directory-list")
+    selectAllTextCheckboxes("directory-list", "label")
 );
 assignSubmitFunction("deselect-all-directories-sub", () =>
-    deselectAllCheckboxes("directory-list")
+    deselectAllTextCheckboxes("directory-list", "label")
 );
 assignSubmitFunction("select-all-metrics-sub", () =>
     selectAllCheckboxes("metric-list")

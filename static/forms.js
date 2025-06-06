@@ -47,17 +47,33 @@ function selectAllCheckboxes(listName) {
         `input[type="checkbox"][name="${listName}"]`
     );
     checkboxes.forEach((checkbox) => {
-        document.getElementById(`label-${checkbox.value}`).disabled = false;
         checkbox.checked = true;
     });
 }
-
 function deselectAllCheckboxes(listName) {
     const checkboxes = document.querySelectorAll(
         `input[type="checkbox"][name="${listName}"]`
     );
     checkboxes.forEach((checkbox) => {
-        document.getElementById(`label-${checkbox.value}`).disabled = true;
+        checkbox.checked = false;
+    });
+}
+function selectAllTextCheckboxes(listName, prefix) {
+    const checkboxes = document.querySelectorAll(
+        `input[type="checkbox"][name="${listName}"]`
+    );
+    checkboxes.forEach((checkbox) => {
+        document.getElementById(`${prefix}-${checkbox.value}`).disabled = false;
+        checkbox.checked = true;
+    });
+}
+
+function deselectAllTextCheckboxes(listName, prefix) {
+    const checkboxes = document.querySelectorAll(
+        `input[type="checkbox"][name="${listName}"]`
+    );
+    checkboxes.forEach((checkbox) => {
+        document.getElementById(`${prefix}-${checkbox.value}`).disabled = true;
         checkbox.checked = false;
     });
 }
