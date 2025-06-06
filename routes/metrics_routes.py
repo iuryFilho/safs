@@ -8,11 +8,10 @@ from flask import (
     session,
 )
 import os.path as op
-import extraction as ex
+import control.extraction as ex
 
-# from data.all_metrics import all_metrics
 from data.filtered_metrics import filtered_metrics
-from utils import Logger
+from control.utils import Logger
 
 blueprint = Blueprint("metrics", __name__)
 debug_output = True

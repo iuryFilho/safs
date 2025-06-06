@@ -5,9 +5,9 @@ from flask import (
     jsonify,
     session,
 )
-import extraction as ex
-import graphs as gr
-from utils import Logger
+import control.extraction as ex
+import control.graphs as gr
+from control.utils import Logger
 
 blueprint = Blueprint("graphs", __name__)
 LOG_ENABLE = True
@@ -107,7 +107,7 @@ def export_results():
             csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
             simulation_results = ex.load_simulation_results(csv_paths)
             for metric in metrics:
-                results = gr.compile_data_from_result_list(
+                results = gr.compile_individual_data(
                     simulation_results,
                     metric,
                 )

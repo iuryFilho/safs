@@ -5,8 +5,8 @@ import pandas as pd
 import os.path as op
 from typing import TypeAlias
 
-from utils import Logger
-import extraction as ex
+from control.utils import Logger
+import control.extraction as ex
 
 
 GroupedMetricT: TypeAlias = dict[str, list[str]]
@@ -49,10 +49,10 @@ def calculate_average(results_data: list[pd.DataFrame]) -> list:
     return [d.mean(axis=1).tolist() for d in results_data]
 
 
-def compile_data_from_result_list(
+def compile_individual_data(
     simulation_results: list[pd.DataFrame],
     metric: str,
-    loads_filter: list,
+    loads_filter: list = None,
 ) -> list[pd.DataFrame]:
     """
     Compiles the simulation results for the given metric and filters by load points if provided.
@@ -64,7 +64,7 @@ def compile_data_from_result_list(
         list: A list of DataFrames containing the compiled simulation results.
     """
     length = len(simulation_results)
-    metric_results = ex.filter_metric(metric, simulation_results)
+    metric_results = ex.filter_result_list_by_metric(metric, simulation_results)
 
     if loads_filter is not None and len(loads_filter) > 0:
         loads_filter_set = set(str(l) for l in loads_filter)
@@ -82,7 +82,7 @@ def compile_data_from_result_list(
     error = calculate_standard_error(final_results, number_of_reps)
     del final_results
 
-    dataframes = [pd.DataFrame() for i in range(length)]
+    dataframes = [pd.DataFrame() for _ in range(length)]
 
     for i in range(length):
         dataframes[i]["loads"] = loads
@@ -91,37 +91,47 @@ def compile_data_from_result_list(
     return dataframes
 
 
-# def compile_data_from_result(
-#     simulation_result: pd.DataFrame,
-#     metrics: list[str],
-# ) -> list[pd.DataFrame]:
-#     """
-#     Compiles the simulation result for the given metric.
-#     Args:
-#         simulation_results (list[pd.DataFrame]): The list of simulations results to be compiled.
-#         metric (str): The specific metric to filter by.
-#     Returns:
-#         list: A list of DataFrames containing the compiled simulation results.
-#     """
-#     length = len(simulation_result)
-#     metric_results = ex.filter_metric_list(metrics, simulation_result)
+def compile_grouped_data(
+    simulation_result: pd.DataFrame,
+    metrics: list[str],
+    loads_filter: list = None,
+) -> list[pd.DataFrame]:
+    """
+    Compiles the simulation results for the given metrics and filters by load points if provided.
+    This function is used when multiple metrics are grouped together.
+    Args:
+        simulation_result (pd.DataFrame): The simulation result to be compiled.
+        metrics (list[str]): The list of metrics to filter by.
+        loads_filter (list, optional): List of load points to filter. Defaults to None.
+    Returns:
+        list: A list of DataFrames containing the compiled simulation results.
+    """
+    length = len(metrics)
+    metric_results = ex.filter_result_by_metric_list(metrics, simulation_result)
 
-#     loads = ex.extract_load_points(metric_results)
-#     final_results = ex.extract_repetitions(metric_results)
-#     del metric_results
+    if loads_filter is not None and len(loads_filter) > 0:
+        loads_filter_set = set(str(l) for l in loads_filter)
+        for i in range(len(metric_results)):
+            metric_results[i] = metric_results[i][
+                metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
+            ]
 
-#     number_of_reps = get_number_of_repetitions(final_results)
-#     average = calculate_average(final_results)
-#     error = calculate_standard_error(final_results, number_of_reps)
-#     del final_results
+    loads = ex.extract_load_points(metric_results)
+    final_results = ex.extract_repetitions(metric_results)
+    del metric_results
 
-#     dataframes = [pd.DataFrame() for i in range(length)]
+    number_of_reps = get_number_of_repetitions(final_results)
+    average = calculate_average(final_results)
+    error = calculate_standard_error(final_results, number_of_reps)
+    del final_results
 
-#     for i in range(length):
-#         dataframes[i]["loads"] = loads
-#         dataframes[i]["mean"] = average[i]
-#         dataframes[i]["error"] = error[i]
-#     return dataframes
+    dataframes = [pd.DataFrame() for _ in range(length)]
+
+    for i in range(length):
+        dataframes[i]["loads"] = loads
+        dataframes[i]["mean"] = average[i]
+        dataframes[i]["error"] = error[i]
+    return dataframes
 
 
 def export_results(
@@ -169,6 +179,8 @@ def generate_graph(
 
     elif graph_type == "bar":
         plot_graph = plot_bar_graph
+    elif graph_type == "stacked-bar":
+        plot_graph = plot_stacked_bar_graph
     filename_prefix = op.join(
         base_directory, f"{ex.get_basename(base_directory)}_{graph_type}"
     )
@@ -182,7 +194,7 @@ def generate_graph(
             simulation_results = ex.load_simulation_results(csv_paths)
             del csv_paths
             for metric in metrics:
-                dataframes = compile_data_from_result_list(
+                dataframes = compile_individual_data(
                     simulation_results,
                     metric,
                     loads_filter=chosen_loads,
@@ -201,35 +213,45 @@ def generate_graph(
                     output_file=output_file,
                     overwrite=overwrite,
                 )
-    elif metric_type == "by":
-        return
+    elif metric_type == "grouped":
         for metric_group, metrics in grouped_metrics.items():
-            csv_paths = ex.get_csv_paths_by_metric_group(
-                full_directories, metric_group
-            )  # ? Um arquivo para cada diretório de acordo com um grupo de métrica
-            simulation_results = ex.load_simulation_results(
-                csv_paths
-            )  # ? Um resultado para cada diretório, ou seja, para cada arquivo
+            csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
+            simulation_results = ex.load_simulation_results(csv_paths)
             del csv_paths
             for label, simulation_result in zip(labels, simulation_results):
-                dataframes = compile_data_from_result(
+                dataframes = compile_grouped_data(
                     simulation_result,
                     metrics,
-                )  # ? Um dataframe para cada
+                    loads_filter=chosen_loads,
+                )
                 if loads == []:
                     loads = dataframes[0]["loads"].tolist()
-                output_file = f"{filename_prefix}_{label}_{metric_group}"  # TODO substituir pelo rótulo da métrica
-                plot_line_graph(
+                output_file = f"{filename_prefix}_{metric_group}_{label}"
+                plot_graph(
                     dataframes,
                     loads,
-                    labels,
-                    x_label,
-                    y_label=metric,
+                    labels=get_metrics_components(metrics),
+                    x_label=x_label,
+                    y_label=metric_group,
                     fontsize=fontsize,
                     figsize=figsize,
                     output_file=output_file,
                     overwrite=overwrite,
                 )
+
+
+def get_metrics_components(metrics: list[str]) -> list[str]:
+    """
+    Extracts the components of the metrics from a list of metric strings.
+    Args:
+        metrics (list[str]): List of metric strings.
+    Returns:
+        list[str]: List of components extracted from the metric strings.
+    """
+    components = []
+    for metric in metrics:
+        components.append(metric.split("by", 1)[1].strip())
+    return components
 
 
 def plot_line_graph(
@@ -241,9 +263,11 @@ def plot_line_graph(
     fontsize,
     figsize,
     output_file,
-    legend_position="best",
+    legend_position="upper center",
+    bbox_to_anchor=(0.5, -0.15),
     max_columns=5,
     overwrite=True,
+    frameon=True,
 ):
     plt.figure(figsize=figsize)
     load_positions = list(range(len(loads)))
@@ -259,6 +283,7 @@ def plot_line_graph(
             marker=markers[i % len(markers)],
             label=labels[i],
             fillstyle="none",
+            ecolor="black",
         )
         plt.xticks(load_positions, loads)
 
@@ -272,8 +297,10 @@ def plot_line_graph(
 
     plt.legend(
         loc=legend_position,
+        bbox_to_anchor=bbox_to_anchor,
         ncol=max_columns,
         fontsize=fontsize,
+        frameon=frameon,
     )
     if output_file != "":
         if not overwrite and op.exists(f"{output_file}.png"):
@@ -298,9 +325,11 @@ def plot_bar_graph(
     fontsize,
     figsize,
     output_file,
-    legend_position="best",
+    legend_position="upper center",
+    bbox_to_anchor=(0.5, -0.15),
     max_columns=5,
     overwrite=True,
+    frameon=True,
 ):
     plt.figure(figsize=figsize)
     bar_width = 0.15
@@ -332,10 +361,84 @@ def plot_bar_graph(
     if len(labels) < max_columns:
         max_columns = len(labels)
 
+    # Place the legend below the y-axis label
     plt.legend(
         loc=legend_position,
+        bbox_to_anchor=bbox_to_anchor,
         ncol=max_columns,
         fontsize=fontsize,
+        frameon=frameon,
+    )
+
+    if output_file != "":
+        if not overwrite and op.exists(f"{output_file}.png"):
+            i = 0
+            while True:
+                if op.exists(f"{output_file}_{i}.png"):
+                    i += 1
+                else:
+                    plt.savefig(f"{output_file}_{i}.png", dpi=150, bbox_inches="tight")
+                    break
+        else:
+            plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
+
+    plt.close()
+
+
+def plot_stacked_bar_graph(
+    dataframes,
+    loads,
+    labels,
+    x_label,
+    y_label,
+    fontsize,
+    figsize,
+    output_file,
+    legend_position="upper center",
+    bbox_to_anchor=(0.5, -0.15),
+    max_columns=5,
+    overwrite=True,
+    frameon=True,
+):
+    plt.figure(figsize=figsize)
+    bar_width = 0.15
+
+    load_positions = list(range(len(loads)))
+    bottom = [0] * len(loads)
+
+    for i in range(len(dataframes)):
+        y = dataframes[i]["mean"]
+        e = dataframes[i]["error"]
+        plt.bar(
+            load_positions,
+            y,
+            width=bar_width,
+            label=labels[i],
+            yerr=e,
+            capsize=5,
+            hatch=hatches[i % len(hatches)],
+            edgecolor="black",
+            bottom=bottom,
+        )
+        bottom = [b + y_val for b, y_val in zip(bottom, y)]
+        plt.xticks(load_positions, loads)
+
+    plt.xlabel(x_label, fontsize=fontsize)
+    plt.ylabel(y_label, fontsize=fontsize)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+    plt.grid(axis="y")
+
+    if len(labels) < max_columns:
+        max_columns = len(labels)
+
+    # Place the legend below the y-axis label
+    plt.legend(
+        loc=legend_position,
+        bbox_to_anchor=bbox_to_anchor,
+        ncol=max_columns,
+        fontsize=fontsize,
+        frameon=frameon,
     )
 
     if output_file != "":
@@ -377,7 +480,7 @@ def main():
     #     base_directory, directories, grouped_metrics, labels=labels, overwrite=True
     # )
     export_results(
-        compile_data_from_result_list(
+        compile_individual_data(
             base_directory,
             directories,
             "BitRateBlockingProbability",

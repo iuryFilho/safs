@@ -3,7 +3,7 @@ import os.path as op
 import os
 import pandas as pd
 import json
-from utils import Logger
+from control.utils import Logger
 
 
 class ExtractionError(Exception):
@@ -12,7 +12,7 @@ class ExtractionError(Exception):
         self.message = message
 
 
-def filter_metric(
+def filter_result_list_by_metric(
     metric: str, simulation_results: list[pd.DataFrame]
 ) -> list[pd.DataFrame]:
     """
@@ -27,19 +27,21 @@ def filter_metric(
     return [d[d.Metrics == metric] for d in simulation_results]
 
 
-def filter_metric_list(
-    metric: str, simulation_results: list[pd.DataFrame]
+def filter_result_by_metric_list(
+    metrics: list[str], simulation_result: pd.DataFrame
 ) -> list[pd.DataFrame]:
     """
-    Extracts the filtered metrics from the simulation results files.
+    Extracts the filtered metrics from the simulation result DataFrame.
     Args:
-        metric (str): The metric to filter by.
-        simulation_results (list[DataFrame]): List of DataFrames containing the simulation results.
+        metrics (list[str]): The metrics to filter by.
+        simulation_result (DataFrame): The DataFrame containing the simulation results.
     Returns:
         list: A list of DataFrames containing the filtered metrics.
     """
 
-    return [d[d.Metrics == metric] for d in simulation_results]
+    return [
+        simulation_result[simulation_result.Metrics == metric] for metric in metrics
+    ]
 
 
 def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
@@ -276,7 +278,7 @@ def get_load_count(metric: str, csv_path: str) -> int:
     if not op.exists(csv_path):
         raise FileNotFoundError(f"The CSV file '{csv_path}' does not exist.")
     simulation_results = load_simulation_results([csv_path])
-    filtered_results = filter_metric(metric, simulation_results)
+    filtered_results = filter_result_list_by_metric(metric, simulation_results)
     return len(extract_load_points(filtered_results))
 
 
