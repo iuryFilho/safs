@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, session
 import argparse
-from routes import metrics_routes as mr, graphs_routes as gr
+from routes import config as cr, generation as gr
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -8,7 +8,7 @@ app.secret_key = "supersecretkey"
 
 @app.route("/")
 def index():
-    return render_template("index.jinja")
+    return render_template("home.jinja")
 
 
 @app.route("/clear-session", methods=["POST"])
@@ -32,10 +32,10 @@ def main():
     args = parser.parse_args()
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.register_blueprint(
-        mr.blueprint, url_prefix="/metrics", debug_output=args.no_debug
+        cr.blueprint, url_prefix="/config", debug_output=args.no_debug
     )
     app.register_blueprint(
-        gr.blueprint, url_prefix="/graphs", debug_output=args.no_debug
+        gr.blueprint, url_prefix="/generation", debug_output=args.no_debug
     )
     app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
 

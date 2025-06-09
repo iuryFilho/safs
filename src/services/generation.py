@@ -1,12 +1,14 @@
 import matplotlib
 import matplotlib.pyplot as plt
-import scipy.stats as st
 import pandas as pd
 import os.path as op
 from typing import TypeAlias
 
-from control.utils import Logger
-import control.extraction as ex
+from services import (
+    simulation_data as sds,
+    path_utils as pus,
+    utils as us,
+)
 
 
 GroupedMetricT: TypeAlias = dict[str, list[str]]
@@ -14,39 +16,11 @@ GroupedMetricT: TypeAlias = dict[str, list[str]]
 matplotlib.use("agg")
 
 LOG_ENABLE = True
-log = Logger(LOG_ENABLE, __name__).log
+log = us.Logger(LOG_ENABLE, __name__).debug
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
 hatches = ["", "/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
-
-
-def calculate_standard_error(repetitions_data, number_of_reps):
-    return [
-        st.sem(d, axis=1, ddof=number_of_reps - 1).tolist() for d in repetitions_data
-    ]
-
-
-def get_number_of_repetitions(results_data: list[pd.DataFrame]) -> int:
-    """
-    Returns the number of repetitions in the results data.
-    Args:
-        results_data (list[DataFrame]): List of DataFrames containing the results data.
-    Returns:
-        int: The number of repetitions.
-    """
-    return len(results_data[0].columns)
-
-
-def calculate_average(results_data: list[pd.DataFrame]) -> list:
-    """
-    Calculates the average of the results data.
-    Args:
-        results_data (list[DataFrame]): List of DataFrames containing the results data.
-    Returns:
-        list: A list of averages for each DataFrame.
-    """
-    return [d.mean(axis=1).tolist() for d in results_data]
 
 
 def compile_individual_data(
@@ -64,7 +38,7 @@ def compile_individual_data(
         list: A list of DataFrames containing the compiled simulation results.
     """
     length = len(simulation_results)
-    metric_results = ex.filter_result_list_by_metric(metric, simulation_results)
+    metric_results = sds.filter_result_list_by_metric(metric, simulation_results)
 
     if loads_filter is not None and len(loads_filter) > 0:
         loads_filter_set = set(str(l) for l in loads_filter)
@@ -73,13 +47,13 @@ def compile_individual_data(
                 metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
             ]
 
-    loads = ex.extract_load_points(metric_results)
-    final_results = ex.extract_repetitions(metric_results)
+    loads = sds.extract_load_points(metric_results[0])
+    final_results = sds.extract_repetitions(metric_results)
     del metric_results
 
-    number_of_reps = get_number_of_repetitions(final_results)
-    average = calculate_average(final_results)
-    error = calculate_standard_error(final_results, number_of_reps)
+    number_of_reps = sds.get_number_of_repetitions(final_results)
+    average = sds.calculate_average(final_results)
+    error = sds.calculate_standard_error(final_results, number_of_reps)
     del final_results
 
     dataframes = [pd.DataFrame() for _ in range(length)]
@@ -107,7 +81,7 @@ def compile_grouped_data(
         list: A list of DataFrames containing the compiled simulation results.
     """
     length = len(metrics)
-    metric_results = ex.filter_result_by_metric_list(metrics, simulation_result)
+    metric_results = sds.filter_result_by_metric_list(metrics, simulation_result)
 
     if loads_filter is not None and len(loads_filter) > 0:
         loads_filter_set = set(str(l) for l in loads_filter)
@@ -116,13 +90,13 @@ def compile_grouped_data(
                 metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
             ]
 
-    loads = ex.extract_load_points(metric_results)
-    final_results = ex.extract_repetitions(metric_results)
+    loads = sds.extract_load_points(metric_results[0])
+    final_results = sds.extract_repetitions(metric_results)
     del metric_results
 
-    number_of_reps = get_number_of_repetitions(final_results)
-    average = calculate_average(final_results)
-    error = calculate_standard_error(final_results, number_of_reps)
+    number_of_reps = sds.get_number_of_repetitions(final_results)
+    average = sds.calculate_average(final_results)
+    error = sds.calculate_standard_error(final_results, number_of_reps)
     del final_results
 
     dataframes = [pd.DataFrame() for _ in range(length)]
@@ -182,7 +156,7 @@ def generate_graph(
     elif graph_type == "stacked-bar":
         plot_graph = plot_stacked_bar_graph
     filename_prefix = op.join(
-        base_directory, f"{ex.get_basename(base_directory)}_{graph_type}"
+        base_directory, f"{pus.get_basename(base_directory)}_{graph_type}"
     )
     x_label = "Carga na rede (Erlangs)"
     if not labels:
@@ -190,8 +164,10 @@ def generate_graph(
     full_directories = [op.join(base_directory, d) for d in directories]
     if metric_type == "individual":
         for metric_group, metrics in grouped_metrics.items():
-            csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
-            simulation_results = ex.load_simulation_results(csv_paths)
+            csv_paths = pus.get_csv_paths_by_metric_group(
+                full_directories, metric_group
+            )
+            simulation_results = sds.load_simulation_results(csv_paths)
             del csv_paths
             for metric in metrics:
                 dataframes = compile_individual_data(
@@ -215,8 +191,10 @@ def generate_graph(
                 )
     elif metric_type == "grouped":
         for metric_group, metrics in grouped_metrics.items():
-            csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
-            simulation_results = ex.load_simulation_results(csv_paths)
+            csv_paths = pus.get_csv_paths_by_metric_group(
+                full_directories, metric_group
+            )
+            simulation_results = sds.load_simulation_results(csv_paths)
             del csv_paths
             for label, simulation_result in zip(labels, simulation_results):
                 dataframes = compile_grouped_data(
@@ -274,16 +252,28 @@ def plot_line_graph(
     for i in range(len(dataframes)):
         y = dataframes[i]["mean"]
         e = dataframes[i]["error"]
+        color = plt.cm.tab10(i % 10)
+        plt.plot(
+            load_positions,
+            y,
+            linestyle=linestyles[i % len(linestyles)],
+            marker=markers[i % len(markers)],
+            label=labels[i],
+            fillstyle="none",
+            color=color,
+            zorder=1,
+        )
         plt.errorbar(
             load_positions,
             y,
             xerr=0,
             yerr=e,
-            linestyle=linestyles[i % len(linestyles)],
-            marker=markers[i % len(markers)],
-            label=labels[i],
-            fillstyle="none",
+            linestyle="none",
+            marker=None,
+            label=None,
             ecolor="black",
+            color=color,
+            zorder=2,
         )
         plt.xticks(load_positions, loads)
 
@@ -457,39 +447,7 @@ def plot_stacked_bar_graph(
 
 
 def main():
-    base_directory = "TesteGraficoPython/simulations"
-    directories = [
-        "GreedReoptimization_CircuitBlocked_XT_XTO_001",
-        "GreedReoptimization_CircuitFinalized_001",
-        "NoReallocation",
-    ]
-    grouped_metrics = {
-        "BitRateBlockingProbability": [
-            "BitRate blocking probability",
-        ],
-        "BlockingProbability": [
-            "Blocking probability",
-        ],
-    }
-
-    # ? Temporary solution for getting labels
-
-    labels = ex.get_labels(directories)
-
-    # plot_line_graph(
-    #     base_directory, directories, grouped_metrics, labels=labels, overwrite=True
-    # )
-    export_results(
-        compile_individual_data(
-            base_directory,
-            directories,
-            "BitRateBlockingProbability",
-            "BitRate blocking probability",
-        ),
-        labels,
-        base_directory,
-        "BitRate blocking probability",
-    )
+    return
 
 
 if __name__ == "__main__":

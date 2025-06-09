@@ -56,7 +56,7 @@ mainForm.addEventListener("submit", function (event) {
     console.log(action);
     if (action === "get-metrics") {
         mainForm.method = "post";
-        mainForm.action = "/metrics/get-metrics";
+        mainForm.action = "/config/get-metrics";
         mainForm.submit();
     }
 });
@@ -79,7 +79,7 @@ async function loadConfig() {
     if (!inputConfig) {
         return;
     }
-    const response = await fetch("/metrics/load-config", {
+    const response = await fetch("/config/load-config", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: createBody({
@@ -158,7 +158,7 @@ async function saveConfig() {
         "graph-config": graphConfig,
     };
 
-    const response = await fetch("/metrics/save-config", {
+    const response = await fetch("/config/save-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -179,7 +179,7 @@ async function updateMetricType() {
     const metricType = getRadioValue("metric-type");
 
     if (previousMetricType !== metricType) {
-        const response = await fetch("/metrics/update-metric-type", {
+        const response = await fetch("/config/update-metric-type", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ "metric-type": metricType }),
@@ -227,7 +227,7 @@ async function generateGraphs() {
         loads: loadMap,
     };
 
-    const response = await fetch("/graphs/generate-graphs", {
+    const response = await fetch("/generation/generate-graphs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -257,7 +257,7 @@ async function exportResults() {
         overwrite: overwrite,
     });
 
-    const response = await fetch("/graphs/export-results", {
+    const response = await fetch("/generation/export-results", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: body,

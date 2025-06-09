@@ -8,14 +8,19 @@ from flask import (
     session,
 )
 import os.path as op
-import control.extraction as ex
 
-from data.filtered_metrics import filtered_metrics
-from control.utils import Logger
+from services import (
+    simulation_data as ssd,
+    config_data as scd,
+    path_utils as spu,
+    utils as us,
+)
+from data.metric_groups import filtered_metrics
 
-blueprint = Blueprint("metrics", __name__)
+
+blueprint = Blueprint("config", __name__)
 debug_output = True
-logger = Logger(True, __name__)
+logger = us.Logger(True, __name__)
 
 
 @blueprint.record
@@ -25,12 +30,12 @@ def record_params(setup_state):
 
 
 @blueprint.route("", methods=["GET"])
-def metrics_index():
+def index():
     base_directory = session.get("base_directory", "")
     base_dir_error = session.get("base_dir_error", None)
     if base_dir_error:
         return render_template(
-            "metrics.jinja",
+            "config.jinja",
             base_directory=base_directory,
             base_dir_error=base_dir_error,
             debug_output=debug_output,
@@ -53,7 +58,7 @@ def metrics_index():
     loads = session.get("loads", [])
 
     return render_template(
-        "metrics.jinja",
+        "config.jinja",
         base_directory=base_directory,
         input_config=input_config,
         output_config=output_config,
@@ -78,25 +83,25 @@ def get_metrics():
     base_directory = request.form["base-directory"]
     session["base_directory"] = base_directory
     try:
-        simulation_directories_paths = ex.get_simulations_directories(base_directory)
+        simulation_directories_paths = spu.get_simulations_dirs_paths(base_directory)
         simulation_directories = [op.basename(s) for s in simulation_directories_paths]
-        csv_paths = ex.get_csv_paths(simulation_directories_paths[0])
+        csv_paths = spu.get_csv_paths(simulation_directories_paths[0])
+        logger.debug(f"Directories: {simulation_directories}")
 
         metric_type = request.form.get("metric_type", "individual")
         grouped_metrics = filtered_metrics[metric_type]
-        load_count = ex.get_load_count(
+        load_count = ssd.get_load_count(
             list(grouped_metrics.values())[0][0], csv_paths[0]
         )
-
         session["directories"] = simulation_directories
         session["metric_type"] = metric_type
         session["grouped_metrics"] = grouped_metrics
         session["load_count"] = load_count
         session["base_dir_error"] = None
-        return redirect(url_for("metrics.metrics_index"))
+        return redirect(url_for("config.index"))
     except Exception as e:
         session["base_dir_error"] = str(e)
-        return redirect(url_for("metrics.metrics_index"))
+        return redirect(url_for("config.index"))
 
 
 @blueprint.route("/load-config", methods=["POST"])
@@ -104,7 +109,7 @@ def load_config():
     input_config = request.form.get("input-config", "")
     session["input_config"] = input_config
     try:
-        config_data = ex.load_config(input_config)
+        config_data = scd.load_config(input_config)
         session["has_config_data"] = True
         return jsonify({"config_data": config_data})
     except Exception as e:
@@ -120,25 +125,12 @@ def save_config():
         return jsonify({"error": "Output config file is required."})
     session["output_config"] = output_config
 
-    new_config_data = {"directories": {}, "metrics": {}, "graph-config": {}}
-    directories = data.get("directory-list", [])
-    labels = data.get("labels", [])
-    for dir, label in zip(directories, labels):
-        new_config_data["directories"][dir] = label
-
-    grouped_metrics = session.get("grouped_metrics", None)
-    metric_list_form = data.get("metric-list", [])
-    for metric_group, metric_list in (grouped_metrics or {}).items():
-        for metric in metric_list_form:
-            if metric in metric_list:
-                new_config_data["metrics"][metric_group] = new_config_data[
-                    "metrics"
-                ].get(metric_group, []) + [metric]
+    new_config_data = scd.create_config_structure(data)
 
     graph_config = data.get("graph-config", {})
     new_config_data["graph-config"] = graph_config
 
-    result = ex.save_config(new_config_data, output_config)
+    result = scd.save_config(new_config_data, output_config)
     return jsonify({"message": result})
 
 

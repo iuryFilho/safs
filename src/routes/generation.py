@@ -5,13 +5,18 @@ from flask import (
     jsonify,
     session,
 )
-import control.extraction as ex
-import control.graphs as gr
-from control.utils import Logger
 
-blueprint = Blueprint("graphs", __name__)
+from services import (
+    metric_utils as mus,
+    simulation_data as sds,
+    path_utils as pus,
+    generation as gs,
+    utils as us,
+)
+
+blueprint = Blueprint("generation", __name__)
 LOG_ENABLE = True
-logger = Logger(LOG_ENABLE, __name__)
+logger = us.Logger(LOG_ENABLE, __name__)
 
 
 @blueprint.route("/generate-graphs", methods=["POST"])
@@ -52,11 +57,12 @@ def generate_graphs():
     session["font_size"] = font_size
     session["loads"] = loads
 
-    # return jsonify({"message": "Graph generation started."})
     if grouped_metrics:
-        chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
+        chosen_grouped_metrics = mus.filter_chosen_metrics(
+            grouped_metrics, chosen_metrics
+        )
         try:
-            gr.generate_graph(
+            gs.generate_graph(
                 base_directory,
                 directories,
                 chosen_grouped_metrics,
@@ -64,7 +70,7 @@ def generate_graphs():
                 loads=loads.values(),
                 chosen_loads=loads.keys(),
                 fontsize=font_size,
-                figsize=to_float(*figsize),
+                figsize=us.to_float(*figsize),
                 overwrite=overwrite,
                 metric_type=metric_type,
                 graph_type=graph_type,
@@ -96,54 +102,27 @@ def export_results():
             labels.append(dir)
 
     chosen_metrics = request.form.getlist("metric-list")
-    chosen_grouped_metrics = group_selected_metrics(grouped_metrics, chosen_metrics)
+    chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
 
     overwrite = request.form.get("overwrite", "") == "true"
-    filename_prefix = op.join(base_directory, ex.get_basename(base_directory))
-    logger.log(f"Filename prefix: {filename_prefix}")
+    filename_prefix = op.join(base_directory, pus.get_basename(base_directory))
+    logger.debug(f"Filename prefix: {filename_prefix}")
     try:
         full_directories = [op.join(base_directory, d) for d in directories]
         for metric_group, metrics in chosen_grouped_metrics.items():
-            csv_paths = ex.get_csv_paths_by_metric_group(full_directories, metric_group)
-            simulation_results = ex.load_simulation_results(csv_paths)
+            csv_paths = pus.get_csv_paths_by_metric_group(
+                full_directories, metric_group
+            )
+            simulation_results = sds.load_simulation_results(csv_paths)
             for metric in metrics:
-                results = gr.compile_individual_data(
+                results = gs.compile_individual_data(
                     simulation_results,
                     metric,
                 )
                 filename = f"{filename_prefix}_{metric.replace(' ', '_')}"
-                logger.log(f"Exporting results for {metric} to {filename}")
+                logger.debug(f"Exporting results for {metric} to {filename}")
 
-                gr.export_results(results, labels, filename, overwrite)
+                gs.export_results(results, labels, filename, overwrite)
         return jsonify({"message": "Results exported successfully."})
     except Exception as e:
         return jsonify({"error": str(e)})
-
-
-def group_selected_metrics(grouped_metrics, chosen_metrics):
-    chosen_grouped_metrics = {}
-    for metric_group, metric_list in grouped_metrics.items():
-        for metric in chosen_metrics:
-            if metric in metric_list:
-                chosen_grouped_metrics[metric_group] = chosen_grouped_metrics.get(
-                    metric_group, []
-                ) + [metric]
-
-    return chosen_grouped_metrics
-
-
-def to_float(*values: str) -> list[float]:
-    """
-    Converts a string or list of strings to a list of floats.
-    Args:
-        *values (str): A variable number of string values to be converted to floats.
-    Returns:
-        list[float]: The converted values.
-    """
-    float_values = []
-    for value in values:
-        if value.find(",") != -1:
-            float_values.append(float(value.replace(",", ".")))
-        else:
-            float_values.append(float(value))
-    return float_values
