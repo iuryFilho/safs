@@ -132,12 +132,14 @@
 
 {% macro input_list(size, items, list_name, item_name) %}
   <ul class="list-group">
+    {% set digits = size|string|length %}
     {% for i in range(size) %}
       {% set item = items[i] %}
-      <li class="list-group-item bg-secondary-subtle border-0 p-1">
+      {% set i_str = "%0{}d".format(digits) % i %}
+      <li class="list-group-item bg-secondary border-0 p-1">
         <div class="input-group input-group-sm">
-          <label class="input-group-text text-bg-secondary"
-                 for="{{ list_name }}-{{ i }}">{{ item_name }} {{ i }}</label>
+          <label class="input-group-text bg-secondary-subtle text-dark"
+                 for="{{ list_name }}-{{ i }}">{{ item_name }} {{ i_str }}</label>
           <input id="{{ list_name }}-{{ i }}"
                  type="number"
                  class="form-control form-control-sm text-bg-light"
