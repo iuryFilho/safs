@@ -9,13 +9,14 @@ from flask import (
 )
 import os.path as op
 
-from services import (
-    simulation_data as ssd,
-    config_data as scd,
-    path_utils as spu,
-    utils as us,
-)
+
 from data.metric_groups import filtered_metrics
+from services import (
+    config_service as cs,
+    path_service as ps,
+    simulation_service as ss,
+    utils_service as us,
+)
 
 
 blueprint = Blueprint("config", __name__)
@@ -83,17 +84,18 @@ def get_metrics():
     base_directory = request.form["base-directory"]
     session["base_directory"] = base_directory
     try:
-        simulation_directories_paths = spu.get_simulations_dirs_paths(base_directory)
-        simulation_directories = [op.basename(s) for s in simulation_directories_paths]
-        csv_paths = spu.get_csv_paths(simulation_directories_paths[0])
-        logger.debug(f"Directories: {simulation_directories}")
+        simulation_dirs_paths = ps.get_simulations_dirs_paths(base_directory)
+        simulation_dirs = [op.basename(s) for s in simulation_dirs_paths]
 
         metric_type = request.form.get("metric_type", "individual")
         grouped_metrics = filtered_metrics[metric_type]
-        load_count = ssd.get_load_count(
-            list(grouped_metrics.values())[0][0], csv_paths[0]
+        first_metric_group = list(grouped_metrics.keys())[0]
+        first_metric = grouped_metrics[first_metric_group][0]
+        load_count = ss.get_load_count(
+            simulation_dirs_paths[0], first_metric_group, first_metric
         )
-        session["directories"] = simulation_directories
+
+        session["directories"] = simulation_dirs
         session["metric_type"] = metric_type
         session["grouped_metrics"] = grouped_metrics
         session["load_count"] = load_count
@@ -109,7 +111,7 @@ def load_config():
     input_config = request.form.get("input-config", "")
     session["input_config"] = input_config
     try:
-        config_data = scd.load_config(input_config)
+        config_data = cs.load_config(input_config)
         session["has_config_data"] = True
         return jsonify({"config_data": config_data})
     except Exception as e:
@@ -125,12 +127,12 @@ def save_config():
         return jsonify({"error": "Output config file is required."})
     session["output_config"] = output_config
 
-    new_config_data = scd.create_config_structure(data)
+    new_config_data = cs.create_config_structure(data)
 
     graph_config = data.get("graph-config", {})
     new_config_data["graph-config"] = graph_config
 
-    result = scd.save_config(new_config_data, output_config)
+    result = cs.save_config(new_config_data, output_config)
     return jsonify({"message": result})
 
 

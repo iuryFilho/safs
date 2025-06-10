@@ -1,18 +1,26 @@
 import os.path as op
 import pandas as pd
 from scipy import stats as st
-from services import utils as us
+from services import utils_service as us, path_service as ps
 
 
-def load_simulation_results(paths: list[str]) -> list[pd.DataFrame]:
+def load_simulation_results(
+    directory_paths: list[str], metric_group: str
+) -> list[pd.DataFrame]:
     """
-    Loads the simulation results from the given file paths.
+    Loads simulation results from CSV files based on the specified metric group.
     Args:
-        paths (list[str]): List of file paths to the simulation results.
+        directory_paths (list[str]): List of directories containing the simulation results.
+        metric_group (str): The metric group to filter the CSV files by.
     Returns:
-        list: A list of DataFrames containing the simulation results.
+        list[pd.DataFrame]: A list of DataFrames containing the simulation results for the specified metric group.
     """
     dataframes = []
+    paths = ps.get_csv_paths_by_metric_group(directory_paths, metric_group)
+    if not paths:
+        raise us.ExtractionError(
+            f"No CSV files found for the metric group '{metric_group}'."
+        )
     for path in paths:
         if not op.exists(path):
             raise FileNotFoundError(f"The file '{path}' does not exist.")
@@ -79,20 +87,17 @@ def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:
     return [d.filter(like="rep", axis=1) for d in simulation_results]
 
 
-def get_load_count(metric: str, csv_path: str) -> int:
+def get_load_count(directory_path: str, metric_group: str, metric: str) -> int:
     """
-    Retrieves the number of load points from the CSV file based on the given metric.
+    Returns the number of load points for a given metric in a simulation results directory.
     Args:
-        metric (str): The metric to filter by.
-        csv_path (str): The path to the CSV file to analyze.
+        directory_path (str): The path to the directory containing the simulation results.
+        metric_group (str): The metric group to filter the results by.
+        metric (str): The specific metric to count load points for.
     Returns:
-        int: The number of load points found in the CSV file for the specified metric.
-    Raises:
-        FileNotFoundError: If the CSV file does not exist.
+        int: The number of load points for the specified metric.
     """
-    if not op.exists(csv_path):
-        raise FileNotFoundError(f"The CSV file '{csv_path}' does not exist.")
-    simulation_results = load_simulation_results([csv_path])
+    simulation_results = load_simulation_results([directory_path], metric_group)
     filtered_results = filter_result_list_by_metric(metric, simulation_results)
     return len(extract_load_points(filtered_results[0]))
 

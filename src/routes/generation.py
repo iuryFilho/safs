@@ -7,11 +7,11 @@ from flask import (
 )
 
 from services import (
-    metric_utils as mus,
-    simulation_data as sds,
-    path_utils as pus,
-    generation as gs,
-    utils as us,
+    generation_service as gs,
+    metrics_service as ms,
+    path_service as ps,
+    simulation_service as ss,
+    utils_service as us,
 )
 
 blueprint = Blueprint("generation", __name__)
@@ -58,11 +58,11 @@ def generate_graphs():
     session["loads"] = loads
 
     if grouped_metrics:
-        chosen_grouped_metrics = mus.filter_chosen_metrics(
+        chosen_grouped_metrics = ms.filter_chosen_metrics(
             grouped_metrics, chosen_metrics
         )
         try:
-            gs.generate_graph(
+            gs.generate_graphs(
                 base_directory,
                 directories,
                 chosen_grouped_metrics,
@@ -102,18 +102,17 @@ def export_results():
             labels.append(dir)
 
     chosen_metrics = request.form.getlist("metric-list")
-    chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
+    chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
 
     overwrite = request.form.get("overwrite", "") == "true"
-    filename_prefix = op.join(base_directory, pus.get_basename(base_directory))
+    filename_prefix = op.join(base_directory, ps.get_basename(base_directory))
     logger.debug(f"Filename prefix: {filename_prefix}")
     try:
         full_directories = [op.join(base_directory, d) for d in directories]
         for metric_group, metrics in chosen_grouped_metrics.items():
-            csv_paths = pus.get_csv_paths_by_metric_group(
+            simulation_results = ss.load_simulation_results(
                 full_directories, metric_group
             )
-            simulation_results = sds.load_simulation_results(csv_paths)
             for metric in metrics:
                 results = gs.compile_individual_data(
                     simulation_results,

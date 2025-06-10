@@ -22,19 +22,22 @@
           integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
           crossorigin="anonymous">
     <style>
-      .accordion-button::after {
-        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' /></svg>") !important;
+      body {
+        overflow-y: scroll;
       }
       main {
         max-width: 1000px;
+      }
+      .accordion-button::after {
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' /></svg>") !important;
       }
     </style>
   </head>
   <body class="text-bg-dark">
     <nav class="navbar navbar-expand-sm bg-dark border-bottom border-body fixed-top"
          data-bs-theme="dark">
-      <div class="container-fluid mx-4">
-        <span class="navbar-brand mb-0 h1">SAFS</span>
+      <div class="container-fluid px-3">
+        <span class="navbar-brand mb-0 h1 fs-3">SAFS</span>
         {% block navbarNav required %}
         {% endblock navbarNav %}
         <form id="navbar-form" class="d-flex">
