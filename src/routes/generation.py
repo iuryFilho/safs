@@ -7,11 +7,11 @@ from flask import (
 )
 
 from services import (
-    generation_service as gs,
+    graphs_service as gs,
     metrics_service as ms,
     path_service as ps,
-    simulation_service as ss,
     utils_service as us,
+    export_service as es,
 )
 
 blueprint = Blueprint("generation", __name__)
@@ -39,7 +39,6 @@ def generate_graphs():
     chosen_metrics = data.get("metric-list", [])
 
     graph_type = data.get("graph-type", "line")
-    graph_composition = data.get("graph-composition", "individual")
     overwrite = data.get("overwrite", "") == "true"
     figsize = (
         data.get("figure-width", "10"),
@@ -50,7 +49,6 @@ def generate_graphs():
 
     session["labels"] = session_labels
     session["graph_type"] = graph_type
-    session["graph_composition"] = graph_composition
     session["overwrite"] = overwrite
     session["figure_width"] = figsize[0]
     session["figure_height"] = figsize[1]
@@ -85,13 +83,15 @@ def generate_graphs():
 @blueprint.route("/export-results", methods=["POST"])
 def export_results():
     base_directory = session.get("base_directory", "")
+    metric_type = session.get("metric_type", "individual")
     grouped_metrics = session.get("grouped_metrics", None)
 
     if not grouped_metrics:
         return jsonify({"error": "No metrics selected."})
 
-    directories = request.form.getlist("directory-list")
-    raw_labels = request.form.getlist("directory-labels")
+    data: dict = request.get_json()
+    directories = data.get("directory-list", [])
+    raw_labels = data.get("directory-labels", [])
     labels = []
     session_labels = {}
     for dir, label in zip(directories, raw_labels):
@@ -101,27 +101,21 @@ def export_results():
         else:
             labels.append(dir)
 
-    chosen_metrics = request.form.getlist("metric-list")
+    chosen_metrics = data.get("metric-list", [])
     chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
 
-    overwrite = request.form.get("overwrite", "") == "true"
+    overwrite = data.get("overwrite", "") == "true"
     filename_prefix = op.join(base_directory, ps.get_basename(base_directory))
-    logger.debug(f"Filename prefix: {filename_prefix}")
     try:
-        full_directories = [op.join(base_directory, d) for d in directories]
-        for metric_group, metrics in chosen_grouped_metrics.items():
-            simulation_results = ss.load_simulation_results(
-                full_directories, metric_group
-            )
-            for metric in metrics:
-                results = gs.compile_individual_data(
-                    simulation_results,
-                    metric,
-                )
-                filename = f"{filename_prefix}_{metric.replace(' ', '_')}"
-                logger.debug(f"Exporting results for {metric} to {filename}")
-
-                gs.export_results(results, labels, filename, overwrite)
+        es.export_results(
+            base_directory,
+            metric_type,
+            directories,
+            chosen_grouped_metrics,
+            filename_prefix,
+            overwrite,
+            labels,
+        )
         return jsonify({"message": "Results exported successfully."})
     except Exception as e:
         return jsonify({"error": str(e)})

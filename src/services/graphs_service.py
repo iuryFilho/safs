@@ -24,118 +24,6 @@ linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
 hatches = ["", "/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
 
 
-def compile_individual_data(
-    simulation_results: list[pd.DataFrame],
-    metric: str,
-    loads_filter: list = None,
-) -> list[pd.DataFrame]:
-    """
-    Compiles the simulation results for the given metric and filters by load points if provided.
-    Args:
-        simulation_results (list[pd.DataFrame]): The list of simulations results to be compiled.
-        metric (str): The specific metric to filter by.
-        loads_filter (list, optional): List of load points to filter. Defaults to None.
-    Returns:
-        list: A list of DataFrames containing the compiled simulation results.
-    """
-    length = len(simulation_results)
-    metric_results = ss.filter_result_list_by_metric(metric, simulation_results)
-
-    if loads_filter is not None and len(loads_filter) > 0:
-        loads_filter_set = set(str(l) for l in loads_filter)
-        for i in range(len(metric_results)):
-            metric_results[i] = metric_results[i][
-                metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
-            ]
-
-    loads = ss.extract_load_points(metric_results[0])
-    final_results = ss.extract_repetitions(metric_results)
-    del metric_results
-
-    number_of_reps = ss.get_number_of_repetitions(final_results)
-    average = ss.calculate_average(final_results)
-    error = ss.calculate_standard_error(final_results, number_of_reps)
-    del final_results
-
-    dataframes = [pd.DataFrame() for _ in range(length)]
-
-    for i in range(length):
-        dataframes[i]["loads"] = loads
-        dataframes[i]["mean"] = average[i]
-        dataframes[i]["error"] = error[i]
-    return dataframes
-
-
-def compile_grouped_data(
-    simulation_result: pd.DataFrame,
-    metrics: list[str],
-    loads_filter: list = None,
-) -> list[pd.DataFrame]:
-    """
-    Compiles the simulation results for the given metrics and filters by load points if provided.
-    This function is used when multiple metrics are grouped together.
-    Args:
-        simulation_result (pd.DataFrame): The simulation result to be compiled.
-        metrics (list[str]): The list of metrics to filter by.
-        loads_filter (list, optional): List of load points to filter. Defaults to None.
-    Returns:
-        list: A list of DataFrames containing the compiled simulation results.
-    """
-    length = len(metrics)
-    metric_results = ss.filter_result_by_metric_list(metrics, simulation_result)
-
-    if loads_filter is not None and len(loads_filter) > 0:
-        loads_filter_set = set(str(l) for l in loads_filter)
-        for i in range(len(metric_results)):
-            metric_results[i] = metric_results[i][
-                metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
-            ]
-
-    loads = ss.extract_load_points(metric_results[0])
-    final_results = ss.extract_repetitions(metric_results)
-    del metric_results
-
-    number_of_reps = ss.get_number_of_repetitions(final_results)
-    average = ss.calculate_average(final_results)
-    error = ss.calculate_standard_error(final_results, number_of_reps)
-    del final_results
-
-    dataframes = [pd.DataFrame() for _ in range(length)]
-
-    for i in range(length):
-        dataframes[i]["loads"] = loads
-        dataframes[i]["mean"] = average[i]
-        dataframes[i]["error"] = error[i]
-    return dataframes
-
-
-def export_results(
-    dataframes: list[pd.DataFrame], labels: list[str], output_name: str, overwrite=True
-):
-    """
-    Exports the compiled results to an Excel file with each DataFrame in a separate sheet.
-    Args:
-        dataframes (list[pd.DataFrame]): List of DataFrames containing the compiled results.
-        labels (list[str]): List of labels for each DataFrame.
-        base_directory (str): The base directory where the Excel file will be saved.
-        output_name (str): The name of the output Excel file (without extension).
-    """
-    if not overwrite and op.exists(f"{output_name}.xlsx"):
-        i = 0
-        while True:
-            if op.exists(f"{output_name}_{i}.xlsx"):
-                i += 1
-            else:
-                with pd.ExcelWriter(f"{output_name}_{i}.xlsx") as writer:
-                    for label, df in zip(labels, dataframes):
-                        df.to_excel(writer, sheet_name=label, index=False)
-                break
-    else:
-        with pd.ExcelWriter(f"{output_name}.xlsx") as writer:
-            for label, df in zip(labels, dataframes):
-                df.to_excel(writer, sheet_name=label, index=False)
-
-
 def generate_graphs(
     base_directory: str,
     directories: list[str],
@@ -191,7 +79,7 @@ def generate_individual_graphs(
     x_label: str = "",
 ):
     for metric in metrics:
-        dataframes = compile_individual_data(
+        dataframes = ss.compile_individual_data(
             simulation_results,
             metric,
             loads_filter=chosen_loads,
@@ -228,7 +116,7 @@ def generate_grouped_graphs(
     simulation_results: list[pd.DataFrame] = [],
 ):
     for label, simulation_result in zip(labels, simulation_results):
-        dataframes = compile_grouped_data(
+        dataframes = ss.compile_grouped_data(
             simulation_result,
             metrics,
             loads_filter=chosen_loads,

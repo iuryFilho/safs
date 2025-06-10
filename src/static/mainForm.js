@@ -219,7 +219,6 @@ async function generateGraphs() {
         "directory-labels": directoryLabels,
         "metric-list": metrics,
         "graph-type": graphType,
-        "graph-composition": graphComposition,
         overwrite: overwrite,
         "figure-width": figureWidth,
         "figure-height": figureHeight,
@@ -250,17 +249,17 @@ async function exportResults() {
     const metrics = getCheckedValues("metric-list");
     const overwrite = getElementValue("overwrite");
 
-    const body = createBody({
+    const body = {
         "directory-list": directories,
         "directory-labels": directoryLabels,
         "metric-list": metrics,
         overwrite: overwrite,
-    });
+    };
 
     const response = await fetch("/generation/export-results", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
     });
     const data = await response.json();
     console.log(data);
