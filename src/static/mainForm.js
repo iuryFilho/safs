@@ -287,6 +287,31 @@ assignSubmitFunction("select-all-directories-sub", () =>
 assignSubmitFunction("deselect-all-directories-sub", () =>
     deselectAllTextCheckboxes("directory-list", "label")
 );
+
+document.querySelectorAll(".accordion-collapse").forEach((metricGroup) => {
+    const metricCheckboxes = metricGroup.querySelectorAll(
+        'input[type="checkbox"][name="metric-list"]'
+    );
+    const selectAllBtn = metricGroup.querySelector(
+        `#select-all-${metricGroup.id}-sub`
+    );
+    const deselectAllBtn = metricGroup.querySelector(
+        `#deselect-all-${metricGroup.id}-sub`
+    );
+
+    selectAllBtn.addEventListener("click", () => {
+        metricCheckboxes.forEach((checkbox) => {
+            checkbox.checked = true;
+        });
+    });
+
+    deselectAllBtn.addEventListener("click", () => {
+        metricCheckboxes.forEach((checkbox) => {
+            checkbox.checked = false;
+        });
+    });
+});
+
 assignSubmitFunction("select-all-metrics-sub", () =>
     selectAllCheckboxes("metric-list")
 );
