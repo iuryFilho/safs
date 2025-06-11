@@ -63,8 +63,8 @@
 
         <div class="mb-3">{{ list_group_text("directory-list", directories) }}</div>
         <div class="btn-group" role="group" aria-label="Directory Actions">
-          {{ submit_button('Select All', 'select-all-directories', 'btn-outline-primary', class="me-2") }}
-          {{ submit_button('Deselect All', 'deselect-all-directories', 'btn-outline-primary') }}
+          {{ submit_button('Select All Directories', 'select-all-directories', 'btn-outline-secondary', class="me-2") }}
+          {{ submit_button('Deselect All Directories', 'deselect-all-directories', 'btn-outline-secondary') }}
         </div>
       {% endcall %}
     {% endif %}
@@ -72,7 +72,7 @@
     {% if grouped_metrics %}
       {% call section("metrics") %}
         <h2>Metrics List:</h2>
-        <div class="btn-group mb-3"
+        <div class="btn-group mb-3 w-100"
              role="group"
              aria-label="Basic radio toggle button group">
           <input type="radio"
@@ -92,7 +92,6 @@
                  autocomplete="off"
                  {% if metric_type == "grouped" %}checked{% endif %}>
           <label class="btn btn-outline-primary" for="radio-grouped">Grouped</label>
-
         </div>
         <input id="previous-metric-type"
                type="hidden"
@@ -103,23 +102,26 @@
             <div class="accordion-item">
               <h3 class="accordion-header">
                 <button id="{{ metric_group }}-btn"
-                        class="accordion-button text-bg-secondary shadow-none fw-medium collapsed"
+                        class="accordion-button bg-secondary-subtle text-dark shadow-none fw-medium collapsed"
                         type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#{{ metric_group }}"
                         aria-expanded="false"
                         aria-controls="{{ metric_group }}">{{ metric_group }}</button>
               </h3>
-              <div id="{{ metric_group }}"
-                   class="accordion-collapse collapse bg-secondary-subtle">
+              <div id="{{ metric_group }}" class="accordion-collapse collapse bg-dark">
                 <div class="accordion-body p-2">{{ list_group("metric-list", metric_list) }}</div>
+                <div class="btn-group p-2 pt-0" role="group" aria-label="Metrics Actions">
+                  {{ submit_button('Select All', 'select-all-' ~ metric_group, 'btn-outline-light', class="me-2") }}
+                  {{ submit_button('Deselect All', 'deselect-all-' ~ metric_group, 'btn-outline-light') }}
+                </div>
               </div>
             </div>
           {% endfor %}
         </div>
         <div class="btn-group" role="group" aria-label="Metrics Actions">
-          {{ submit_button('Select All', 'select-all-metrics', 'btn-outline-primary', class="me-2") }}
-          {{ submit_button('Deselect All', 'deselect-all-metrics', 'btn-outline-primary') }}
+          {{ submit_button('Select All Metrics', 'select-all-metrics', 'btn-outline-secondary', class="me-2") }}
+          {{ submit_button('Deselect All Metrics', 'deselect-all-metrics', 'btn-outline-secondary') }}
         </div>
       {% endcall %}
     {% endif %}
