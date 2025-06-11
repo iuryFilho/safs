@@ -182,16 +182,8 @@ def plot_graph(
         frameon=frameon,
     )
     if output_file != "":
-        if not overwrite and op.exists(f"{output_file}.png"):
-            i = 0
-            while True:
-                if op.exists(f"{output_file}_{i}.png"):
-                    i += 1
-                else:
-                    plt.savefig(f"{output_file}_{i}.png", dpi=150, bbox_inches="tight")
-                    break
-        else:
-            plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
+        output_file = ps.ensure_unique_filename(output_file, overwrite)
+        plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
     plt.close()
 
 
