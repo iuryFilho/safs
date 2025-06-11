@@ -85,3 +85,15 @@ def get_separator(path: str) -> str:
         first_line = file.readline()
         sep = "," if "," in first_line else ";"
     return sep
+
+
+def extract_labels(directories, raw_labels):
+    labels = []
+    session_labels = {}
+    for dir, label in zip(directories, raw_labels):
+        if label:
+            labels.append(label)
+            session_labels[dir] = label
+        else:
+            labels.append(dir)
+    return labels, session_labels

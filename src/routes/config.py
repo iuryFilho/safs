@@ -10,7 +10,7 @@ from flask import (
 import os.path as op
 
 
-from data.metric_groups import filtered_metrics
+from data.metric_data import FILTERED_METRICS
 from services import (
     config_service as cs,
     path_service as ps,
@@ -88,7 +88,7 @@ def get_metrics():
         simulation_dirs = [op.basename(s) for s in simulation_dirs_paths]
 
         metric_type = request.form.get("metric_type", "individual")
-        grouped_metrics = filtered_metrics[metric_type]
+        grouped_metrics = FILTERED_METRICS[metric_type]
         first_metric_group = list(grouped_metrics.keys())[0]
         first_metric = grouped_metrics[first_metric_group][0]
         load_count = ss.get_load_count(
@@ -141,5 +141,5 @@ def update_metric_type():
     data: dict = request.get_json()
     metric_type = data.get("metric-type", "individual")
     session["metric_type"] = metric_type
-    session["grouped_metrics"] = filtered_metrics[metric_type]
+    session["grouped_metrics"] = FILTERED_METRICS[metric_type]
     return jsonify({"message": "Metric updated succesfully."})

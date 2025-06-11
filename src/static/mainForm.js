@@ -247,6 +247,12 @@ async function exportResults() {
         return document.getElementById(`label-${dir}`).value;
     });
     const metrics = getCheckedValues("metric-list");
+    const loadMap = getListValues("load-list").reduce((acc, load, index) => {
+        if (load !== "") {
+            acc[index.toString()] = load;
+        }
+        return acc;
+    }, {});
     const overwrite = getElementValue("overwrite");
 
     const body = {
@@ -254,6 +260,7 @@ async function exportResults() {
         "directory-labels": directoryLabels,
         "metric-list": metrics,
         overwrite: overwrite,
+        loads: loadMap,
     };
 
     const response = await fetch("/generation/export-results", {

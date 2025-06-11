@@ -83,6 +83,17 @@ def get_metric_suffix(filename: str) -> str:
     return root.split("_")[-1]
 
 
+def get_metric_root(metric: str) -> str:
+    """
+    Extracts the root of the metric from the given metric string.
+    Args:
+        metric (str): The metric string to extract the root from.
+    Returns:
+        str: The root of the metric.
+    """
+    return metric.split(" by ", 1)[0].strip()
+
+
 def get_metrics_components(metrics: list[str]) -> list[str]:
     """
     Extracts the components of the metrics from a list of metric strings.

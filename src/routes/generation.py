@@ -28,14 +28,7 @@ def generate_graphs():
     data: dict = request.get_json()
     directories = data.get("directory-list", [])
     raw_labels = data.get("directory-labels", [])
-    labels = []
-    session_labels = {}
-    for dir, label in zip(directories, raw_labels):
-        if label:
-            labels.append(label)
-            session_labels[dir] = label
-        else:
-            labels.append(dir)
+    labels, session_labels = us.extract_labels(directories, raw_labels)
     chosen_metrics = data.get("metric-list", [])
 
     graph_type = data.get("graph-type", "line")
@@ -66,7 +59,7 @@ def generate_graphs():
                 chosen_grouped_metrics,
                 labels=labels,
                 loads=loads.values(),
-                chosen_loads=loads.keys(),
+                load_points=loads.keys(),
                 fontsize=font_size,
                 figsize=us.to_float(*figsize),
                 overwrite=overwrite,
@@ -92,30 +85,28 @@ def export_results():
     data: dict = request.get_json()
     directories = data.get("directory-list", [])
     raw_labels = data.get("directory-labels", [])
-    labels = []
-    session_labels = {}
-    for dir, label in zip(directories, raw_labels):
-        if label:
-            labels.append(label)
-            session_labels[dir] = label
-        else:
-            labels.append(dir)
+    labels, session_labels = us.extract_labels(directories, raw_labels)
 
     chosen_metrics = data.get("metric-list", [])
     chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
-
+    loads: dict = data.get("loads", {})
     overwrite = data.get("overwrite", "") == "true"
-    filename_prefix = op.join(base_directory, ps.get_basename(base_directory))
+
+    session["labels"] = session_labels
+    session["loads"] = loads
+    session["overwrite"] = overwrite
     try:
         es.export_results(
             base_directory,
             metric_type,
             directories,
-            chosen_grouped_metrics,
-            filename_prefix,
-            overwrite,
             labels,
+            chosen_grouped_metrics,
+            loads=loads.values(),
+            load_points=loads.keys(),
+            overwrite=overwrite,
         )
         return jsonify({"message": "Results exported successfully."})
     except Exception as e:
+        raise e
         return jsonify({"error": str(e)})

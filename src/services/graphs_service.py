@@ -4,6 +4,7 @@ import pandas as pd
 import os.path as op
 from typing import TypeAlias
 
+from data.metric_data import METRIC_GROUP_ALIASES
 from services import (
     utils_service as us,
     metrics_service as ms,
@@ -17,7 +18,7 @@ GroupedMetricT: TypeAlias = dict[str, list[str]]
 matplotlib.use("agg")
 
 LOG_ENABLE = True
-log = us.Logger(LOG_ENABLE, __name__).debug
+logger = us.Logger(LOG_ENABLE, __name__)
 
 markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
 linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
@@ -30,7 +31,7 @@ def generate_graphs(
     grouped_metrics: GroupedMetricT,
     labels: list[str] = [],
     loads: list[str] = [],
-    chosen_loads: list[str] = [],
+    load_points: list[str] = [],
     fontsize: str = "large",
     figsize: tuple[int, int] = (10, 5),
     overwrite: bool = True,
@@ -51,41 +52,43 @@ def generate_graphs(
     for metric_group, metrics in grouped_metrics.items():
         simulation_results = ss.load_simulation_results(full_directories, metric_group)
         generate_graphs_func(
-            metrics,
-            simulation_results,
-            labels,
-            chosen_loads,
-            loads,
-            fontsize,
-            figsize,
-            overwrite,
-            graph_type,
-            filename_prefix,
-            x_label,
+            metrics=metrics,
+            metric_group=metric_group,
+            simulation_results=simulation_results,
+            labels=labels,
+            loads=loads,
+            load_points=load_points,
+            graph_type=graph_type,
+            filename_prefix=filename_prefix,
+            x_label=x_label,
+            fontsize=fontsize,
+            figsize=figsize,
+            overwrite=overwrite,
         )
 
 
 def generate_individual_graphs(
-    metrics: list[str],
-    simulation_results: list[pd.DataFrame],
-    labels: list[str],
-    chosen_loads: list[str],
-    loads: list[str],
-    fontsize: str = "large",
-    figsize: tuple[int, int] = (10, 5),
-    overwrite: bool = True,
+    metrics: list[str] = [],
+    metric_group: str = "",
+    simulation_results: list[pd.DataFrame] = [],
+    labels: list[str] = [],
+    loads: list[str] = [],
+    load_points: list[str] = [],
     graph_type: str = "line",
     filename_prefix: str = "",
     x_label: str = "",
+    fontsize: str = "large",
+    figsize: tuple[int, int] = (10, 5),
+    overwrite: bool = True,
 ):
     for metric in metrics:
         dataframes = ss.compile_individual_data(
             simulation_results,
             metric,
-            loads_filter=chosen_loads,
+            load_points,
         )
         if not loads:
-            loads = dataframes[0]["loads"].tolist()
+            loads = dataframes[0]["means"].tolist()
         output_file = f"{filename_prefix}_{metric.replace(' ', '_')}"
         plot_graph(
             graph_type=graph_type,
@@ -102,35 +105,35 @@ def generate_individual_graphs(
 
 
 def generate_grouped_graphs(
+    metrics: list[str] = [],
+    metric_group: str = "",
+    simulation_results: list[pd.DataFrame] = [],
     labels: list[str] = [],
     loads: list[str] = [],
-    chosen_loads: list[str] = [],
-    fontsize: str = "large",
-    figsize: tuple[int, int] = (10, 5),
-    overwrite: bool = True,
+    load_points: list[str] = [],
     graph_type: str = "line",
     filename_prefix: str = "",
     x_label: str = "",
-    metric_group: str = "",
-    metrics: list[str] = [],
-    simulation_results: list[pd.DataFrame] = [],
+    fontsize: str = "large",
+    figsize: tuple[int, int] = (10, 5),
+    overwrite: bool = True,
 ):
     for label, simulation_result in zip(labels, simulation_results):
         dataframes = ss.compile_grouped_data(
             simulation_result,
             metrics,
-            loads_filter=chosen_loads,
+            load_points,
         )
         if not loads:
             loads = dataframes[0]["loads"].tolist()
-        output_file = f"{filename_prefix}_{metric_group}_{label}"
+        output_file = f"{filename_prefix}_{METRIC_GROUP_ALIASES[metric_group]}_{label}"
         plot_graph(
             graph_type=graph_type,
             dataframes=dataframes,
             loads=loads,
             labels=ms.get_metrics_components(metrics),
             x_label=x_label,
-            y_label=metric_group,
+            y_label=ms.get_metric_root(metrics[0]),
             fontsize=fontsize,
             figsize=figsize,
             output_file=output_file,
@@ -201,30 +204,18 @@ def plot_line_graph(
     for i in range(len(dataframes)):
         y = dataframes[i]["mean"]
         e = dataframes[i]["error"]
-        color = plt.cm.tab10(i % 10)
-        plt.plot(
-            load_positions,
-            y,
-            linestyle=linestyles[i % len(linestyles)],
-            marker=markers[i % len(markers)],
-            label=labels[i],
-            fillstyle="none",
-            color=color,
-            zorder=1,
-        )
         plt.errorbar(
             load_positions,
             y,
             xerr=0,
             yerr=e,
-            linestyle="none",
-            marker=None,
-            label=None,
-            ecolor="black",
-            color=color,
+            linestyle=linestyles[i % len(linestyles)],
+            marker=markers[i % len(markers)],
+            label=labels[i],
+            fillstyle="none",
             zorder=2,
         )
-        plt.xticks(load_positions, loads)
+    plt.xticks(load_positions, loads)
 
 
 def plot_bar_graph(

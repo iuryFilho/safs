@@ -4,10 +4,18 @@ from scipy import stats as st
 from services import utils_service as us, path_service as ps
 
 
-def calculate_standard_error(repetitions_data, number_of_reps):
-    return [
-        st.sem(d, axis=1, ddof=number_of_reps - 1).tolist() for d in repetitions_data
-    ]
+def calculate_standard_error(
+    data_list: list[pd.DataFrame], number_of_reps: int
+) -> list:
+    """
+    Calculates the standard error of the mean for each DataFrame in the data list.
+    Args:
+        data (list[DataFrame]): List of DataFrames containing the data.
+        number_of_reps (int): The number of repetitions.
+    Returns:
+        list: A list of standard errors for each DataFrame.
+    """
+    return [st.sem(d, axis=1, ddof=number_of_reps - 1).tolist() for d in data_list]
 
 
 def get_number_of_repetitions(results_data: list[pd.DataFrame]) -> int:
@@ -133,28 +141,31 @@ def get_load_count(directory_path: str, metric_group: str, metric: str) -> int:
 def compile_individual_data(
     simulation_results: list[pd.DataFrame],
     metric: str,
-    loads_filter: list = None,
+    load_points: list = None,
 ) -> list[pd.DataFrame]:
     """
     Compiles the simulation results for the given metric and filters by load points if provided.
     Args:
         simulation_results (list[pd.DataFrame]): The list of simulations results to be compiled.
         metric (str): The specific metric to filter by.
-        loads_filter (list, optional): List of load points to filter. Defaults to None.
+        load_points (list, optional): List of load points to filter. Defaults to None.
     Returns:
         list: A list of DataFrames containing the compiled simulation results.
     """
     length = len(simulation_results)
     metric_results = filter_result_list_by_metric(metric, simulation_results)
 
-    if loads_filter is not None and len(loads_filter) > 0:
-        loads_filter_set = set(str(l) for l in loads_filter)
+    if load_points is not None and len(load_points) > 0:
+        load_points_set = set(str(l) for l in load_points)
         for i in range(len(metric_results)):
-            metric_results[i] = metric_results[i][
-                metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
-            ]
+            loadpoint_col = metric_results[i]["LoadPoint"]
+            first = loadpoint_col.iloc[0]
+            if isinstance(first, float) and first.is_integer():
+                loadpoint_str = loadpoint_col.astype(int).astype(str)
+            else:
+                loadpoint_str = loadpoint_col.astype(str)
+            metric_results[i] = metric_results[i][loadpoint_str.isin(load_points_set)]
 
-    loads = extract_load_points(metric_results[0])
     final_results = extract_repetitions(metric_results)
     del metric_results
 
@@ -166,7 +177,6 @@ def compile_individual_data(
     dataframes = [pd.DataFrame() for _ in range(length)]
 
     for i in range(length):
-        dataframes[i]["loads"] = loads
         dataframes[i]["mean"] = average[i]
         dataframes[i]["error"] = error[i]
     return dataframes
@@ -175,7 +185,7 @@ def compile_individual_data(
 def compile_grouped_data(
     simulation_result: pd.DataFrame,
     metrics: list[str],
-    loads_filter: list = None,
+    load_points: list = None,
 ) -> list[pd.DataFrame]:
     """
     Compiles the simulation results for the given metrics and filters by load points if provided.
@@ -183,21 +193,24 @@ def compile_grouped_data(
     Args:
         simulation_result (pd.DataFrame): The simulation result to be compiled.
         metrics (list[str]): The list of metrics to filter by.
-        loads_filter (list, optional): List of load points to filter. Defaults to None.
+        load_points (list, optional): List of load points to filter. Defaults to None.
     Returns:
         list: A list of DataFrames containing the compiled simulation results.
     """
     length = len(metrics)
     metric_results = filter_result_by_metric_list(metrics, simulation_result)
 
-    if loads_filter is not None and len(loads_filter) > 0:
-        loads_filter_set = set(str(l) for l in loads_filter)
+    if load_points is not None and len(load_points) > 0:
+        load_points_set = set(str(l) for l in load_points)
         for i in range(len(metric_results)):
-            metric_results[i] = metric_results[i][
-                metric_results[i]["LoadPoint"].astype(str).isin(loads_filter_set)
-            ]
+            loadpoint_col = metric_results[i]["LoadPoint"]
+            first = loadpoint_col.iloc[0]
+            if isinstance(first, float) and first.is_integer():
+                loadpoint_str = loadpoint_col.astype(int).astype(str)
+            else:
+                loadpoint_str = loadpoint_col.astype(str)
+            metric_results[i] = metric_results[i][loadpoint_str.isin(load_points_set)]
 
-    loads = extract_load_points(metric_results[0])
     final_results = extract_repetitions(metric_results)
     del metric_results
 
@@ -209,7 +222,6 @@ def compile_grouped_data(
     dataframes = [pd.DataFrame() for _ in range(length)]
 
     for i in range(length):
-        dataframes[i]["loads"] = loads
         dataframes[i]["mean"] = average[i]
         dataframes[i]["error"] = error[i]
     return dataframes
