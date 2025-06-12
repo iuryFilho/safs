@@ -69,7 +69,6 @@ def generate_graphs(
 
 def generate_individual_graphs(
     metrics: list[str] = [],
-    metric_group: str = "",
     simulation_results: list[pd.DataFrame] = [],
     labels: list[str] = [],
     loads: list[str] = [],
@@ -80,15 +79,15 @@ def generate_individual_graphs(
     fontsize: str = "large",
     figsize: tuple[int, int] = (10, 5),
     overwrite: bool = True,
+    **_,
 ):
     for metric in metrics:
-        dataframes = ss.compile_individual_data(
+        dataframes = ss.compile_data(
             simulation_results,
             metric,
+            "individual",
             load_points,
         )
-        if not loads:
-            loads = dataframes[0]["means"].tolist()
         output_file = f"{filename_prefix}_{metric.replace(' ', '_')}"
         plot_graph(
             graph_type=graph_type,
@@ -119,13 +118,12 @@ def generate_grouped_graphs(
     overwrite: bool = True,
 ):
     for label, simulation_result in zip(labels, simulation_results):
-        dataframes = ss.compile_grouped_data(
+        dataframes = ss.compile_data(
             simulation_result,
             metrics,
+            "grouped",
             load_points,
         )
-        if not loads:
-            loads = dataframes[0]["loads"].tolist()
         output_file = f"{filename_prefix}_{METRIC_GROUP_ALIASES[metric_group]}_{label}"
         plot_graph(
             graph_type=graph_type,
@@ -187,11 +185,7 @@ def plot_graph(
     plt.close()
 
 
-def plot_line_graph(
-    dataframes,
-    loads,
-    labels,
-):
+def plot_line_graph(dataframes, loads, labels):
     load_positions = list(range(len(loads)))
     for i in range(len(dataframes)):
         y = dataframes[i]["mean"]
@@ -199,22 +193,16 @@ def plot_line_graph(
         plt.errorbar(
             load_positions,
             y,
-            xerr=0,
             yerr=e,
             linestyle=linestyles[i % len(linestyles)],
             marker=markers[i % len(markers)],
             label=labels[i],
             fillstyle="none",
-            zorder=2,
         )
     plt.xticks(load_positions, loads)
 
 
-def plot_bar_graph(
-    dataframes,
-    loads,
-    labels,
-):
+def plot_bar_graph(dataframes, loads, labels):
     bar_width = 0.15
     load_positions = list(range(len(loads)))
     for i in range(len(dataframes)):
@@ -235,11 +223,7 @@ def plot_bar_graph(
         )
 
 
-def plot_stacked_bar_graph(
-    dataframes,
-    loads,
-    labels,
-):
+def plot_stacked_bar_graph(dataframes, loads, labels):
     bar_width = 0.15
     load_positions = list(range(len(loads)))
     bottom = [0] * len(loads)

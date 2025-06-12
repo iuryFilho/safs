@@ -1,4 +1,3 @@
-import os.path as op
 from flask import (
     Blueprint,
     request,
@@ -9,7 +8,6 @@ from flask import (
 from services import (
     graphs_service as gs,
     metrics_service as ms,
-    path_service as ps,
     utils_service as us,
     export_service as es,
 )
@@ -108,5 +106,4 @@ def export_results():
         )
         return jsonify({"message": "Results exported successfully."})
     except Exception as e:
-        raise e
         return jsonify({"error": str(e)})
