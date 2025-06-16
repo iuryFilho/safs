@@ -1,25 +1,37 @@
-from flask import Flask, jsonify, render_template, session
+from flask import Blueprint, Flask, jsonify, render_template, session
 import argparse
 from routes import config as cr, generation as gr
 from services import export_service as es
 
-app = Flask(__name__)
-app.secret_key = "supersecretkey"
 
+def create_app(*, blueprints: dict[str, Blueprint] = None, debug=True):
+    app = Flask(__name__)
+    app.secret_key = "supersecretkey"
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
 
-@app.route("/")
-def index():
-    return render_template("home.jinja")
+    @app.route("/")
+    def index():
+        return render_template("home.jinja")
 
+    @app.route("/clear-session", methods=["POST"])
+    def clear_session():
+        """Clear the session data."""
+        try:
+            session.clear()
+            return jsonify({"message": "Session cleared successfully."}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
-@app.route("/clear-session", methods=["POST"])
-def clear_session():
-    """Clear the session data."""
-    try:
-        session.clear()
-        return jsonify({"message": "Session cleared successfully."}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if isinstance(blueprints, dict):
+        for url, blueprint in blueprints.items():
+            if (
+                isinstance(url, str)
+                and url.startswith("/")
+                and isinstance(blueprint, Blueprint)
+            ):
+                app.register_blueprint(blueprint, url_prefix=url)
+
+    return app
 
 
 def main():
@@ -31,13 +43,11 @@ def main():
         "--no-debug", action="store_false", help="Disable debug mode for the server"
     )
     args = parser.parse_args()
-    app.config["TEMPLATES_AUTO_RELOAD"] = True
-    app.register_blueprint(
-        cr.blueprint, url_prefix="/config", debug_output=args.no_debug
-    )
-    app.register_blueprint(
-        gr.blueprint, url_prefix="/generation", debug_output=args.no_debug
-    )
+    blueprints = {
+        "/config": cr.blueprint,
+        "/generation": gr.blueprint,
+    }
+    app = create_app(blueprints=blueprints, debug=args.no_debug)
     app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
 
 
