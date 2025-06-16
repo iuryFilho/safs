@@ -6,7 +6,7 @@ from flask import (
 )
 
 from services import (
-    graphs_service as gs,
+    generation_service as gs,
     metrics_service as ms,
     utils_service as us,
     export_service as es,
@@ -52,9 +52,9 @@ def generate_graphs():
         )
         try:
             gs.generate_graphs(
-                base_directory,
-                directories,
-                chosen_grouped_metrics,
+                base_directory=base_directory,
+                directories=directories,
+                grouped_metrics=chosen_grouped_metrics,
                 labels=labels,
                 loads=loads.values(),
                 load_points=loads.keys(),
