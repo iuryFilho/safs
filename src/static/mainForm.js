@@ -108,12 +108,12 @@ async function loadConfig() {
         if (configData.metrics) {
             Object.entries(configData.metrics).forEach(
                 ([metricGroup, metricList]) => {
-                    const metricGroupBtn = document.getElementById(
-                        `${metricGroup}-btn`
+                    const metricGroupHeader = document.getElementById(
+                        `${metricGroup}-header`
                     );
-                    if (metricGroupBtn) {
-                        metricGroupBtn.classList.remove("collapsed");
-                        metricGroupBtn.ariaExpanded = "true";
+                    if (metricGroupHeader) {
+                        metricGroupHeader.classList.remove("collapsed");
+                        metricGroupHeader.ariaExpanded = "true";
                         document
                             .getElementById(`${metricGroup}`)
                             .classList.add("show");
@@ -281,10 +281,11 @@ async function exportResults() {
 
 assignSubmitFunction("load-config-sub", loadConfig);
 assignSubmitFunction("save-config-sub", saveConfig);
-assignSubmitFunction("select-all-directories-sub", () =>
+
+assignSubmitFunction("select-all-directories-btn", () =>
     selectAllTextCheckboxes("directory-list", "label")
 );
-assignSubmitFunction("deselect-all-directories-sub", () =>
+assignSubmitFunction("deselect-all-directories-btn", () =>
     deselectAllTextCheckboxes("directory-list", "label")
 );
 
@@ -293,10 +294,10 @@ document.querySelectorAll(".accordion-collapse").forEach((metricGroup) => {
         'input[type="checkbox"][name="metric-list"]'
     );
     const selectAllBtn = metricGroup.querySelector(
-        `#select-all-${metricGroup.id}-sub`
+        `#select-all-${metricGroup.id}-btn`
     );
     const deselectAllBtn = metricGroup.querySelector(
-        `#deselect-all-${metricGroup.id}-sub`
+        `#deselect-all-${metricGroup.id}-btn`
     );
 
     selectAllBtn.addEventListener("click", () => {
@@ -312,10 +313,10 @@ document.querySelectorAll(".accordion-collapse").forEach((metricGroup) => {
     });
 });
 
-assignSubmitFunction("select-all-metrics-sub", () =>
+assignSubmitFunction("select-all-metrics-btn", () =>
     selectAllCheckboxes("metric-list")
 );
-assignSubmitFunction("deselect-all-metrics-sub", () =>
+assignSubmitFunction("deselect-all-metrics-btn", () =>
     deselectAllCheckboxes("metric-list")
 );
 

@@ -1,5 +1,5 @@
-{% extends "__base.jinja" %}
-{% from "__macros.jinja" import navbarNav, toast, section, submit_button, input, select, list_group, list_group_text, input_list %}
+{% extends "__base__.jinja" %}
+{% from "__macros__.jinja" import navbarNav, toast, section, submit, button, input, select %}
 
 {% block title %}
   Config
@@ -12,10 +12,10 @@
 {% block content %}
   <form id="form">
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
-      {{ toast("input-config-toast") }}
-      {{ toast("output-config-toast") }}
-      {{ toast("generate-graphs-toast") }}
-      {{ toast("export-results-toast") }}
+      {{ toast("input-config") }}
+      {{ toast("output-config") }}
+      {{ toast("generate-graphs") }}
+      {{ toast("export-results") }}
     </div>
 
     {% call section("base-directory") %}
@@ -23,6 +23,7 @@
             name="base-directory", value=base_directory,
             placeholder="Enter base directory path", required=true,
             button_text="Get Metrics", action="get-metrics",
+            indent=true,
             error=base_dir_error) 
       }}
     {% endcall %}
@@ -30,15 +31,17 @@
     {% if base_directory and not base_dir_error %}
       {% call section("config") %}
         <div class="row">
-          {{ input(label="<h2>Input Configuration File (Optional):</h2>",
+          {{ input(label="<h2>Input Configuration File:</h2>",
                     name="input-config", value=input_config,
                     placeholder="Enter input configuration file path", required=false,
-                    button_text="Load Configuration", action="load-config") 
+                    button_text="Load Configuration", action="load-config",
+                    indent=true) 
           }}
-          {{ input(label="<h2>Output Configuration File (Optional):</h2>",
+          {{ input(label="<h2>Output Configuration File:</h2>",
                     name="output-config", value=output_config,
                     placeholder="Enter output configuration file path", required=false,
-                    button_text="Save Configuration", action="save-config") 
+                    button_text="Save Configuration", action="save-config",
+                    indent=true) 
           }}
         </div>
       {% endcall %}
@@ -59,77 +62,115 @@
 
     {% if directories %}
       {% call section("directories") %}
-        <h2>Simulation Directories List:</h2>
+        <h2 class="mb-3">Simulation Directories List:</h2>
 
-        <div class="mb-3">{{ list_group_text("directory-list", directories) }}</div>
-        <div class="btn-group" role="group" aria-label="Directory Actions">
-          {{ submit_button('Select All Directories', 'select-all-directories', 'btn-outline-secondary', class="me-2") }}
-          {{ submit_button('Deselect All Directories', 'deselect-all-directories', 'btn-outline-secondary') }}
+        <div class="mx-4">
+          <div class="mb-3">
+            <ul class="list-group col">
+              {% for dir in directories %}
+                <li class="list-group-item bg-secondary-subtle text-black border border-0 px-2 py-2">
+                  <div class="col mb-1">
+                    <input id="{{ dir }}"
+                           class="form-check-input me-1"
+                           type="checkbox"
+                           name="directory-list"
+                           value="{{ dir }}" />
+                    <label class="form-check-label" for="{{ dir }}">{{ dir }}</label>
+                  </div>
+                  <input id="label-{{ dir }}"
+                         class="form-control form-control-sm"
+                         type="text"
+                         name="label-{{ dir }}"
+                         placeholder="Label for {{ dir }}"
+                         disabled />
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="btn-group" role="group" aria-label="Directory Actions">
+            {{ button('Select All Directories', 'select-all-directories', 'btn-outline-secondary', class="me-2") }}
+            {{ button('Deselect All Directories', 'deselect-all-directories', 'btn-outline-secondary') }}
+          </div>
         </div>
       {% endcall %}
     {% endif %}
 
     {% if grouped_metrics %}
       {% call section("metrics") %}
-        <h2>Metrics List:</h2>
-        <div class="btn-group mb-3 w-100"
-             role="group"
-             aria-label="Basic radio toggle button group">
-          <input type="radio"
-                 class="btn-check"
-                 name="metric-type"
-                 id="radio-individual"
-                 value="individual"
-                 autocomplete="off"
-                 {% if metric_type == "individual" %}checked{% endif %}>
-          <label class="btn btn-outline-primary" for="radio-individual">Individual</label>
-
-          <input type="radio"
-                 class="btn-check"
-                 name="metric-type"
-                 id="radio-grouped"
-                 value="grouped"
-                 autocomplete="off"
-                 {% if metric_type == "grouped" %}checked{% endif %}>
-          <label class="btn btn-outline-primary" for="radio-grouped">Grouped</label>
-        </div>
-        <input id="previous-metric-type"
-               type="hidden"
-               name="previous-metric-type"
-               value="{{ metric_type }}">
-        <div class="accordion mb-3" id="accordion">
-          {% for metric_group, metric_list in grouped_metrics.items() %}
-            <div class="accordion-item">
-              <h3 class="accordion-header">
-                <button id="{{ metric_group }}-btn"
-                        class="accordion-button bg-secondary-subtle text-dark shadow-none fw-medium collapsed"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#{{ metric_group }}"
-                        aria-expanded="false"
-                        aria-controls="{{ metric_group }}">{{ metric_group }}</button>
-              </h3>
-              <div id="{{ metric_group }}" class="accordion-collapse collapse bg-dark">
-                <div class="accordion-body p-2">{{ list_group("metric-list", metric_list) }}</div>
-                <div class="btn-group p-2 pt-0" role="group" aria-label="Metrics Actions">
-                  {{ submit_button('Select All', 'select-all-' ~ metric_group, 'btn-outline-light', class="me-2") }}
-                  {{ submit_button('Deselect All', 'deselect-all-' ~ metric_group, 'btn-outline-light') }}
+        <h2 class="mb-3">Metrics List:</h2>
+        <div class="mx-4">
+          <div class="btn-group mb-3 w-100"
+               role="group"
+               aria-label="Basic radio toggle button group">
+            <input type="radio"
+                   class="btn-check"
+                   name="metric-type"
+                   id="radio-individual"
+                   value="individual"
+                   autocomplete="off"
+                   {% if metric_type == "individual" %}checked{% endif %}>
+            <label class="btn btn-outline-primary fw-medium" for="radio-individual">Individual</label>
+            <input type="radio"
+                   class="btn-check"
+                   name="metric-type"
+                   id="radio-grouped"
+                   value="grouped"
+                   autocomplete="off"
+                   {% if metric_type == "grouped" %}checked{% endif %}>
+            <label class="btn btn-outline-primary fw-medium" for="radio-grouped">Grouped</label>
+          </div>
+          <input id="previous-metric-type"
+                 type="hidden"
+                 name="previous-metric-type"
+                 value="{{ metric_type }}">
+          <div class="accordion accordion-flush" id="accordion">
+            {% for metric_group, metric_list in grouped_metrics.items() %}
+              <div class="accordion-item bg-dark border-0">
+                <h3 class="accordion-header bg-dark">
+                  <button id="{{ metric_group }}-header"
+                          class="accordion-button text-bg-dark shadow-none fw-medium fs-5 pt-0 pb-3 px-0 collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#{{ metric_group }}"
+                          aria-expanded="false"
+                          aria-controls="{{ metric_group }}">{{ metric_group }}</button>
+                </h3>
+                <div id="{{ metric_group }}"
+                     class="accordion-collapse collapse bg-dark pt-0 pb-3 mx-4">
+                  <div class="accordion-body p-0 pb-2">
+                    <ul class="list-group col">
+                      {% for metric in metric_list %}
+                        <li class="list-group-item bg-secondary-subtle text-black border-0">
+                          <input id="{{ metric }}"
+                                 class="form-check-input me-1"
+                                 type="checkbox"
+                                 name="metric-list"
+                                 value="{{ metric }}" />
+                          <label class="form-check-label stretched-link" for="{{ metric }}">{{ metric }}</label>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  <div class="btn-group p-0" role="group" aria-label="Metrics Actions">
+                    {{ button('Select All', 'select-all-' ~ metric_group, 'btn-outline-secondary', class="me-2") }}
+                    {{ button('Deselect All', 'deselect-all-' ~ metric_group, 'btn-outline-secondary') }}
+                  </div>
                 </div>
               </div>
-            </div>
-          {% endfor %}
-        </div>
-        <div class="btn-group" role="group" aria-label="Metrics Actions">
-          {{ submit_button('Select All Metrics', 'select-all-metrics', 'btn-outline-secondary', class="me-2") }}
-          {{ submit_button('Deselect All Metrics', 'deselect-all-metrics', 'btn-outline-secondary') }}
+            {% endfor %}
+          </div>
+          <div class="btn-group" role="group" aria-label="Metrics Actions">
+            {{ button('Select All Metrics', 'select-all-metrics', 'btn-outline-secondary', class="me-2") }}
+            {{ button('Deselect All Metrics', 'deselect-all-metrics', 'btn-outline-secondary') }}
+          </div>
         </div>
       {% endcall %}
     {% endif %}
 
     {% if base_directory and not base_dir_error %}
       {% call section("graph") %}
-        <h2>Graph Generation:</h2>
-        <div class="col">
+        <h2 class="mb-3">Graph Generation:</h2>
+        <div class="col mx-4">
           <div class="row mb-2">
             {{ select(label="Graph Type:",
                         name="graph-type",
@@ -176,11 +217,27 @@
           </div>
           <div class="mb-3">
             <div class="fw-medium mb-2">Custom Loads:</div>
-            {{ input_list(load_count, loads, "load", "Load") }}
+            <ul class="list-group">
+              {% set digits = load_count|string|length %}
+              {% for i in range(load_count) %}
+                {% set i_str = "%0{}d".format(digits) % i %}
+                <li class="list-group-item bg-secondary border-0 p-1">
+                  <div class="input-group input-group-sm">
+                    <label class="input-group-text bg-secondary-subtle text-dark"
+                           for="load-{{ i }}">Load {{ i_str }}</label>
+                    <input id="load-{{ i }}"
+                           type="number"
+                           class="form-control form-control-sm text-bg-light"
+                           name="load-{{ i }}"
+                           value="{{ loads[i] }}">
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
           </div>
           <div class="btn-group" role="group" aria-label="Graph Actions">
-            {{ submit_button('Generate Graphs', 'generate-graphs', 'btn-primary', class="me-2") }}
-            {{ submit_button('Export Results', 'export-results', 'btn-primary') }}
+            {{ submit('Generate Graphs', 'generate-graphs', 'btn-primary', class="me-2") }}
+            {{ submit('Export Results', 'export-results', 'btn-primary') }}
           </div>
         </div>
       {% endcall %}

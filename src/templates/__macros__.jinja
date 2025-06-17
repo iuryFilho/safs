@@ -1,0 +1,102 @@
+{% macro navbarNav(page) %}
+  <div class="collapse navbar-collapse justify-content-center p-0 m-0"
+       id="navbarNav">
+    <ul class="navbar-nav fs-4 fw-medium">
+      <li class="nav-item">
+        {% if page == "home" %}
+          <span class="nav-link active" aria-current="page">Home</span>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+        {% endif %}
+      </li>
+      <li class="nav-item">
+        {% if page == "config" %}
+          <span class="nav-link active" aria-current="page">Config</span>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('config.index') }}">Config</a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+{% endmacro %}
+
+{% macro toast(name) %}
+  <div id="{{ name }}-toast"
+       class="toast align-items-center"
+       role="alert"
+       aria-live="polite"
+       aria-atomic="true"
+       data-bs-autohide="true"
+       data-bs-delay="5000">
+    <div class="d-flex">
+      <div class="toast-body fw-medium"></div>
+      <button type="button"
+              class="btn-close me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Close"></button>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro section(name) %}
+  <section id="{{ name }}-section" class="mb-4">
+    {{ caller() }}
+  </section>
+{% endmacro %}
+
+{% macro submit(text, action, style, class="") %}
+  <button type="submit"
+          id="{{ action }}-sub"
+          class="btn fw-medium {{ style }} {{ class }}"
+          name="action"
+          value="{{ action }}">{{ text }}</button>
+{% endmacro %}
+
+{% macro button(text, action, style, class="") %}
+  <button type="button"
+          id="{{ action }}-btn"
+          class="btn fw-medium {{ style }} {{ class }}"
+          name="action"
+          value="{{ action }}">{{ text }}</button>
+{% endmacro %}
+
+{% macro input(label, name, value, placeholder, required, button_text, action, size="", type="text", label_class="", indent=false, error=None) %}
+  {% set has_button = button_text and action %}
+  <div class="col">
+    <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
+    <div {% if indent %}class="mx-4"{% endif %}>
+      <input type="{{ type }}"
+             id="{{ name }}"
+             class="form-control text-bg-light border border-0 {{ size }} {% if has_button %}mb-3{% endif %}"
+             name="{{ name }}"
+             value="{{ value }}"
+             placeholder="{{ placeholder }}"
+             {% if type == "number" %}step="any"{% endif %}
+             {% if required %}required{% endif %}>
+      {% if has_button %}{{ submit(button_text, action, 'btn-primary') }}{% endif %}
+    </div>
+  </div>
+  {% if error %}<div id="{{ name }}-error" class="alert alert-danger mt-3" role="alert">{{ error|e }}</div>{% endif %}
+{% endmacro %}
+
+{% macro select(label, name, selected, options) %}
+  <div class="col">
+    <label for="{{ name }}" class="form-label fw-medium">{{ label }}</label>
+    <select id="{{ name }}"
+            class="form-select form-select-sm text-bg-light border border-0 "
+            name="{{ name }}">
+      {% if options[0]|length == 3 %}
+        {% for op_value, option, enabled in options %}
+          <option value="{{ op_value }}"
+                  {% if not enabled %}disabled{% endif %}
+                  {% if op_value == selected %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      {% else %}
+        {% for op_value, option in options %}
+          <option value="{{ op_value }}"
+                  {% if op_value == selected %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      {% endif %}
+    </select>
+  </div>
+{% endmacro %}
