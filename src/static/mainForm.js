@@ -208,7 +208,6 @@ async function generateGraphs() {
     });
     const metrics = getCheckedValues("metric-list");
     const graphType = getElementValue("graph-type");
-    const graphComposition = getElementValue("graph-composition");
     const overwrite = getElementValue("overwrite");
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");

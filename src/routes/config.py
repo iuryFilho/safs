@@ -56,7 +56,6 @@ def index():
     has_config_data = session.get("has_config_data", False)
 
     graph_type = session.get("graph_type", "line")
-    graph_composition = session.get("graph_composition", "individual")
     overwrite = session.get("overwrite", False)
     figure_width = session.get("figure_width", "10")
     figure_height = session.get("figure_height", "5")
@@ -74,7 +73,6 @@ def index():
         load_count=load_count,
         has_config_data=has_config_data,
         graph_type=graph_type,
-        graph_composition=graph_composition,
         overwrite=overwrite,
         figure_width=figure_width,
         figure_height=figure_height,
