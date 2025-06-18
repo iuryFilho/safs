@@ -127,6 +127,14 @@ function getLoads(graphConfig) {
 
 function setLoads(graphConfig) {
     const loads = graphConfig.loads;
+    Array.from(document.querySelectorAll(`[name="load-list"]`)).forEach(
+        (_, index) => {
+            const loadInput = document.getElementById(`load-${index}`);
+            if (loadInput) {
+                loadInput.value = "";
+            }
+        }
+    );
     const nonEmptyLoads = loads.filter((load) => load !== "");
     if (nonEmptyLoads) {
         if (!graphConfig["load-filter"]) {

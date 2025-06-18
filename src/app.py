@@ -4,7 +4,7 @@ from routes import config as cr, generation as gr
 from services import export_service as es
 
 
-def create_app(*, blueprints: dict[str, Blueprint] = None, debug=True):
+def create_app(*, blueprints: dict[str, Blueprint] = None):
     app = Flask(__name__)
     app.secret_key = "supersecretkey"
     app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -47,8 +47,12 @@ def main():
         "/config": cr.blueprint,
         "/generation": gr.blueprint,
     }
-    app = create_app(blueprints=blueprints, debug=args.no_debug)
-    app.run(host="127.0.0.1", port=args.port, debug=args.no_debug)
+    app = create_app(blueprints=blueprints)
+    app.run(
+        host="127.0.0.1",
+        port=args.port,
+        debug=args.no_debug,
+    )
 
 
 if __name__ == "__main__":

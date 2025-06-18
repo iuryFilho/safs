@@ -178,7 +178,7 @@
                         options=[
                         ["line", "Line Graph"] ,
                         ["bar", "Bar Graph"],
-                        ["stacked-bar", "Stacked Bar Graph"],
+                        ["stacked", "Stacked Bar Graph"],
                         ]) }}
             {{ select(label="Overwrite Files:",
                         name="overwrite",
@@ -189,12 +189,18 @@
                         ]) }}
           </div>
           <div class="row mb-2">
-            {{ input(label="Figure Width:",
-                        name="figure-width", value=figure_width,
-                        placeholder="Enter figure width in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
-            {{ input(label="Figure Height:",
-                        name="figure-height", value=figure_height,
-                        placeholder="Enter figure height in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
+            {{ select(label="Frame On:",
+                        name="frameon",
+                        selected=frameon,
+                        options=[
+                        ["true", "Yes"],
+                        ["false", "No"]
+                        ]) }}
+            {{ input(label="Max Columns (Default: 5):",
+                        name="max-columns", value=max_columns,
+                        placeholder="Enter max columns", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
+          </div>
+          <div class="row mb-2">
             {{ select(label="Font Size:",
                         name="font-size",
                         selected=font_size,
@@ -207,12 +213,43 @@
                         ["x-large", "X-Large"],
                         ["xx-large", "XX-Large"],
                         ]) }}
+            {{ input(label="Figure Width (Default: 10):",
+                        name="figure-width", value=figure_width,
+                        placeholder="Enter figure width in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
+            {{ input(label="Figure Height (Default: 5):",
+                        name="figure-height", value=figure_height,
+                        placeholder="Enter figure height in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
+          </div>
+          <div class="row mb-2">
+            {{ select(label="Legend Position:",
+                        name="legend-position",
+                        selected=legend_position,
+                        options=[
+                        ["none", "None"],
+                        ["upper center", "Upper Center"],
+                        ["upper left", "Upper Left"],
+                        ["upper right", "Upper Right"],
+                        ["lower center", "Lower Center"],
+                        ["lower left", "Lower Left"],
+                        ["lower right", "Lower Right"],
+                        ["center left", "Center Left"],
+                        ["center right", "Center Right"],
+                        ["center", "Center"]
+                        ]) }}
+            {{ input(label="Anchor X (Default: 0.5):",
+                        name="anchor-x", value=anchor_x,
+                        placeholder="Enter anchor x position", size="form-control-sm", type="number", label_class="fw-medium") }}
+            {{ input(label="Anchor Y (Default: -0.15):",
+                        name="anchor-y", value=anchor_y,
+                        placeholder="Enter anchor y position", size="form-control-sm", type="number", label_class="fw-medium") }}
           </div>
           <div class="mb-3">
             <div class="fw-medium mb-2">Custom Loads:</div>
             <ul class="list-group">
               {% set digits = load_count|string|length %}
               {% for i in range(load_count) %}
+                {% set load = loads[i|string] %}
+
                 {% set i_str = "%0{}d".format(digits) % i %}
                 <li class="list-group-item bg-secondary border-0 p-1">
                   <div class="input-group input-group-sm">
@@ -222,7 +259,7 @@
                            type="number"
                            class="form-control form-control-sm text-bg-light"
                            name="load-list"
-                           value="{{ loads[i] }}">
+                           value="{{ load }}">
                   </div>
                 </li>
               {% endfor %}

@@ -13,8 +13,7 @@ from services import (
 )
 
 blueprint = Blueprint("generation", __name__)
-LOG_ENABLE = True
-logger = us.Logger(LOG_ENABLE, __name__)
+logger = us.Logger(True, __name__)
 
 
 @blueprint.route("/generate-graphs", methods=["POST"])
@@ -49,11 +48,18 @@ def generate_graphs():
 
     graph_type = data.get("graph-type", "line")
     overwrite = data.get("overwrite", "") == "true"
-    figsize = (
+    figsize = us.to_float(
         data.get("figure-width", "10"),
         data.get("figure-height", "5"),
     )
     font_size = data.get("font-size", "medium")
+    anchor = us.to_float(
+        data.get("anchor-x", "0.5"),
+        data.get("anchor-y", "-0.15"),
+    )
+    legend_position = data.get("legend-position", "upper center")
+    max_columns = int(data.get("max-columns", "5"))
+    frameon = data.get("frameon", "") == "true"
     loads: dict = data.get("loads", {})
 
     session["labels"] = session_labels
@@ -62,6 +68,11 @@ def generate_graphs():
     session["figure_width"] = figsize[0]
     session["figure_height"] = figsize[1]
     session["font_size"] = font_size
+    session["legend_position"] = legend_position
+    session["anchor_x"] = anchor[0]
+    session["anchor_y"] = anchor[1]
+    session["frameon"] = frameon
+    session["max_columns"] = max_columns
     session["loads"] = loads
 
     if grouped_metrics:
@@ -72,15 +83,19 @@ def generate_graphs():
             gs.generate_graphs(
                 base_directory=base_directory,
                 directories=directories,
-                grouped_metrics=chosen_grouped_metrics,
                 dir_labels=labels,
+                grouped_metrics=chosen_grouped_metrics,
                 loads=loads.values(),
                 load_points=loads.keys(),
-                fontsize=font_size,
-                figsize=us.to_float(*figsize),
-                overwrite=overwrite,
                 metric_type=metric_type,
                 graph_type=graph_type,
+                overwrite=overwrite,
+                figsize=figsize,
+                fontsize=font_size,
+                bbox_to_anchor=anchor,
+                legend_position=legend_position,
+                max_columns=max_columns,
+                frameon=frameon,
             )
             return jsonify({"message": "Graphs generated successfully."})
         except Exception as e:

@@ -58,11 +58,15 @@ mainForm.addEventListener("submit", function (event) {
         const formData = new FormData(mainForm);
         const jsonData = {};
         jsonData["base-directory"] = formData.get("base-directory");
-        jsonData["metric-type"] = formData.get("metric-type");
+        jsonData["metric-type"] = formData.get("metric-type") || "individual";
         fetch("/config/get-metrics", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(jsonData),
+        }).then((response) => {
+            if (response.ok) {
+                window.location.reload();
+            }
         });
     }
 });
@@ -136,7 +140,9 @@ async function loadConfig() {
         }
 
         if (configData["graph-config"]) {
-            setLoads(configData["graph-config"]);
+            if (configData["graph-config"]["loads"]) {
+                setLoads(configData["graph-config"]);
+            }
         }
         if (debugOutput) {
             setOutput();
@@ -212,6 +218,11 @@ async function generateGraphs() {
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
     const fontSize = getElementValue("font-size");
+    const legendPosition = getElementValue("legend-position");
+    const anchorX = getElementValue("anchor-x");
+    const anchorY = getElementValue("anchor-y");
+    const frameon = getElementValue("frameon");
+    const maxColumns = getElementValue("max-columns");
     const loadMap = getListValues("load-list").reduce((acc, load, index) => {
         if (load !== "") {
             acc[index.toString()] = load;
@@ -229,6 +240,11 @@ async function generateGraphs() {
         "figure-width": figureWidth,
         "figure-height": figureHeight,
         "font-size": fontSize,
+        "legend-position": legendPosition,
+        "anchor-x": anchorX,
+        "anchor-y": anchorY,
+        frameon: frameon,
+        "max-columns": maxColumns,
         loads: loadMap,
     };
 

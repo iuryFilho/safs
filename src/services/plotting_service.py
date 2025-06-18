@@ -117,7 +117,7 @@ PLOTTING_STRATEGIES: dict[
 ] = {
     "line": plot_line_graph,
     "bar": plot_bar_graph,
-    "stacked-bar": plot_stacked_bar_graph,
+    "stacked": plot_stacked_bar_graph,
 }
 
 
@@ -133,17 +133,17 @@ def plot_graph(
     figsize: tuple[int, int],
     output_file: str,
     overwrite: bool,
-    legend_position: str = "upper center",
-    bbox_to_anchor: tuple[float, float] = (0.5, -0.15),
-    max_columns: int = 5,
-    frameon: bool = True,
+    legend_position: str,
+    bbox_to_anchor: tuple[float, float],
+    max_columns: int,
+    frameon: bool,
 ):
     """
     Plot a graph based on the provided parameters.\\
-    This function generates a graph using the specified type (line, bar, or stacked-bar)
+    This function generates a graph using the specified type (line, bar, or stacked)
     and saves it to the specified output file.
     Args:
-        graph_type (str): Type of graph to generate (e.g., "line", "bar", "stacked-bar").
+        graph_type (str): Type of graph to generate (e.g., "line", "bar", "stacked").
         dataframes (list[pd.DataFrame]): List of DataFrames containing the data to plot.
         loads (list[str]): List of loads for the x-axis.
         labels (list[str]): List of labels for the graph legend.
@@ -174,13 +174,16 @@ def plot_graph(
     if len(labels) < max_columns:
         max_columns = len(labels)
 
-    plt.legend(
-        loc=legend_position,
-        bbox_to_anchor=bbox_to_anchor,
-        ncol=max_columns,
-        fontsize=fontsize,
-        frameon=frameon,
-    )
+    if legend_position == "none":
+        plt.legend().set_visible(False)
+    else:
+        plt.legend(
+            loc=legend_position,
+            bbox_to_anchor=bbox_to_anchor,
+            ncol=max_columns,
+            fontsize=fontsize,
+            frameon=frameon,
+        )
     if output_file != "":
         output_file = ps.ensure_unique_filename(output_file, overwrite)
         plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")

@@ -2,8 +2,6 @@ from flask import (
     Blueprint,
     render_template,
     request,
-    redirect,
-    url_for,
     jsonify,
     session,
 )
@@ -20,14 +18,8 @@ from services import (
 
 
 blueprint = Blueprint("config", __name__)
-debug_output = True
+debug_output = False
 logger = us.Logger(True, __name__)
-
-
-@blueprint.record
-def record_params(setup_state: dict):
-    global debug_output
-    debug_output = setup_state.options.get("debug_output", True)
 
 
 @blueprint.route("", methods=["GET"])
@@ -57,10 +49,15 @@ def index():
 
     graph_type = session.get("graph_type", "line")
     overwrite = session.get("overwrite", False)
-    figure_width = session.get("figure_width", "10")
-    figure_height = session.get("figure_height", "5")
+    figure_width = session.get("figure_width", 10)
+    figure_height = session.get("figure_height", 5)
     font_size = session.get("font_size", "medium")
-    loads = session.get("loads", [])
+    max_columns = session.get("max_columns", 5)
+    anchor_x = session.get("anchor_x", 0.5)
+    anchor_y = session.get("anchor_y", -0.15)
+    frameon = session.get("frameon", False)
+    legend_position = session.get("legend_position", "upper center")
+    loads = session.get("loads", {})
 
     return render_template(
         "config.jinja",
@@ -77,6 +74,11 @@ def index():
         figure_width=figure_width,
         figure_height=figure_height,
         font_size=font_size,
+        anchor_x=anchor_x,
+        anchor_y=anchor_y,
+        legend_position=legend_position,
+        max_columns=max_columns,
+        frameon=frameon,
         loads=loads,
         debug_output=debug_output,
     )
@@ -97,6 +99,7 @@ def get_metrics():
     """
     data: dict = request.get_json()
     base_directory = data.get("base-directory", "")
+    print(f"Base directory: {base_directory}")
     session["base_directory"] = base_directory
     try:
         simulation_dirs_paths = ps.get_simulations_dirs_paths(base_directory)
@@ -115,10 +118,10 @@ def get_metrics():
         session["grouped_metrics"] = grouped_metrics
         session["load_count"] = load_count
         session["base_dir_error"] = None
-        return redirect(url_for("config.index"))
+        return "Ok"
     except Exception as e:
         session["base_dir_error"] = str(e)
-        return redirect(url_for("config.index"))
+        return "Ok"
 
 
 @blueprint.route("/load-config", methods=["POST"])

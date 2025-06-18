@@ -4,7 +4,7 @@ import os.path as op
 from data.metric_data import METRIC_GROUP_ALIASES
 from services import (
     metrics_service as ms,
-    path_service as ps,
+    utils_service as us,
     plotting_service as pls,
     simulation_service as ss,
 )
@@ -35,7 +35,7 @@ def generate_individual_graphs(
         filename_prefix (str): Prefix for the output file names.
         graph_kwargs: Keyword arguments containing the following keys
             - **graph_type** (str): Type of graph to generate
-                (e.g., "line", "bar", "stacked-bar").
+                (e.g., "line", "bar", "stacked").
             - **x_label** (str): Label for the x-axis.
             - **fontsize** (str): Font size for the labels.
             - **figsize** (tuple[int, int]): Size of the figure for the graph.
@@ -85,7 +85,7 @@ def generate_grouped_graphs(
         filename_prefix (str): Prefix for the output file names.
         graph_kwargs: Keyword arguments containing the following keys
             - **graph_type** (str): Type of graph to generate
-                (e.g., "line", "bar", "stacked-bar").
+                (e.g., "line", "bar", "stacked").
             - **x_label** (str): Label for the x-axis.
             - **fontsize** (str): Font size for the labels.
             - **figsize** (tuple[int, int]): Size of the figure for the graph.
@@ -119,20 +119,24 @@ def generate_graphs(
     *,
     base_directory: str,
     directories: list[str],
-    grouped_metrics: GroupedMetricT,
     dir_labels: list[str],
+    grouped_metrics: GroupedMetricT,
     loads: list[str],
     load_points: list[str],
+    metric_type: str,
+    graph_type: str,
     fontsize: str,
     figsize: tuple[int, int],
     overwrite: bool,
-    metric_type: str,
-    graph_type: str,
+    bbox_to_anchor: tuple[float, float],
+    legend_position: str,
+    max_columns: int,
+    frameon: bool,
 ):
     """
     Generate graphs based on the provided parameters.\\
     This function compiles data for individual or grouped metrics and generates
-    graphs based on the specified graph type (line, bar, or stacked-bar).
+    graphs based on the specified graph type (line, bar, or stacked).
     Args:
         base_directory (str): Base directory where the simulation results are stored.
         directories (list[str]): List of directories containing simulation results.
@@ -146,14 +150,15 @@ def generate_graphs(
         metric_type (str): Type of metrics to generate graphs for
             ("individual" or "grouped", default is "individual").
         graph_type (str): Type of graph to generate
-            ("line", "bar", or "stacked-bar", default is "line").
+            ("line", "bar", or "stacked", default is "line").
     """
     generate_function = GENERATION_STRATEGIES.get(metric_type)
     if generate_function is None:
         raise ValueError(f"Metric type not supported: {metric_type}")
 
     filename_prefix = op.join(
-        base_directory, f"{ps.get_basename(base_directory)}_{graph_type}"
+        base_directory,
+        us.capitalize_first_letters(graph_type, metric_type),
     )
     x_label = "Carga na rede (Erlangs)"
     if not dir_labels:
@@ -175,4 +180,8 @@ def generate_graphs(
             fontsize=fontsize,
             figsize=figsize,
             overwrite=overwrite,
+            legend_position=legend_position,
+            bbox_to_anchor=bbox_to_anchor,
+            max_columns=max_columns,
+            frameon=frameon,
         )

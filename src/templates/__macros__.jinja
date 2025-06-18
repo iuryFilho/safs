@@ -60,7 +60,8 @@
           value="{{ action }}">{{ text }}</button>
 {% endmacro %}
 
-{% macro input(label, name, value, placeholder, required, button_text, action, size="", type="text", label_class="", indent=false, error=None) %}
+{% macro input(label, name, value, placeholder, required, button_text, action,
+  size="", type="text", label_class="", step="any", min="", max="", indent=false, error=None) %}
   {% set has_button = button_text and action %}
   <div class="col">
     <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
@@ -71,7 +72,9 @@
              name="{{ name }}"
              value="{{ value }}"
              placeholder="{{ placeholder }}"
-             {% if type == "number" %}step="any"{% endif %}
+             {% if type == "number" %}step="{{ step }}"{% if min %}min="{{ min }}"{% endif %}
+             {% if max %}max="{{ max }}"{% endif %}
+             {% endif %}
              {% if required %}required{% endif %}>
       {% if has_button %}{{ submit(button_text, action, 'btn-primary') }}{% endif %}
     </div>

@@ -56,11 +56,11 @@ def to_json(obj: dict) -> str:
     return json.dumps(obj, indent=4)
 
 
-def to_float(*values: list[str]) -> list[float]:
+def to_float(*values: str) -> list[float]:
     """
     Converts a string or list of strings to a list of floats.
     Args:
-        values (list[str]): A variable number of string values to be converted to floats.
+        values (str): A variable number of string values to be converted to floats.
     Returns:
         list[float]: The converted values.
     """
@@ -109,3 +109,20 @@ def extract_labels(
         else:
             labels.append(dir)
     return labels, session_labels
+
+
+def capitalize_first_letters(*strings: str) -> str:
+    """
+    Capitalizes the first letter of each string in a list.
+    Args:
+        strings (str): The strings to capitalize.
+    Raises:
+        ValueError: If any element in the list is not a string.
+    Returns:
+        str: A string with the first letter of each input string capitalized.
+    """
+    if not strings:
+        return ""
+    if not all(isinstance(s, str) for s in strings):
+        raise ValueError("All elements in the list must be strings.")
+    return "".join([s[0].upper() for s in strings if s])

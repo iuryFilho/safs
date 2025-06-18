@@ -170,9 +170,7 @@ def export_results(
     export_func = EXPORTATION_STRATEGIES.get(metric_type)
     if export_func is None:
         raise ValueError(f"Metric type not supported: {metric_type}")
-    filename = op.join(
-        base_directory, f"{ps.get_basename(base_directory)}_{metric_type}"
-    )
+    filename = op.join(base_directory, metric_type)
     filename = ps.ensure_unique_filename(filename, overwrite)
     full_directories = [op.join(base_directory, d) for d in directories]
     int_loads = [int(l) for l in loads]
