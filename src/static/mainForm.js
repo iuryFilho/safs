@@ -213,6 +213,7 @@ async function generateGraphs() {
         }
         return acc;
     }, {});
+    console.log("Load Map:", loadMap);
 
     const body = {
         "directory-list": directories,
