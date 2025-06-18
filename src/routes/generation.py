@@ -19,6 +19,24 @@ logger = us.Logger(LOG_ENABLE, __name__)
 
 @blueprint.route("/generate-graphs", methods=["POST"])
 def generate_graphs():
+    """
+    Generates graphs based on the provided data and session information.
+    Returns:
+        A JSON response indicating the success or failure of the graph generation.
+    Examples:
+        >>> # This endpoint expects a JSON payload with the following structure:
+        >>> {
+        ...    "directory-list": ["dir1", "dir2", ..., "dirN"],
+        ...    "directory-labels": ["label1", "label2", ..., "labelN"],
+        ...    "metric-list": ["metric1", "metric2", ...],
+        ...    "graph-type": "line", "bar" or "scatter",
+        ...    "overwrite": true or false,
+        ...    "figure-width": 10,
+        ...    "figure-height": 5,
+        ...    "font-size": "medium",
+        ...    "loads": {"1": "100", "2": "200", ...}
+        ... }
+    """
     base_directory = session.get("base_directory", "")
     metric_type = session.get("metric_type", "individual")
     grouped_metrics = session.get("grouped_metrics", None)
@@ -55,7 +73,7 @@ def generate_graphs():
                 base_directory=base_directory,
                 directories=directories,
                 grouped_metrics=chosen_grouped_metrics,
-                labels=labels,
+                dir_labels=labels,
                 loads=loads.values(),
                 load_points=loads.keys(),
                 fontsize=font_size,
@@ -73,6 +91,20 @@ def generate_graphs():
 
 @blueprint.route("/export-results", methods=["POST"])
 def export_results():
+    """
+    Exports the results of the simulations based on the provided data and session information.
+    Returns:
+        A JSON response indicating the success or failure of the export operation.
+    Examples:
+        >>> # This endpoint expects a JSON payload with the following structure:
+        >>> {
+        ...    "directory-list": ["dir1", "dir2", ..., "dirN"],
+        ...    "directory-labels": ["label1", "label2", ..., "labelN"],
+        ...    "metric-list": ["metric1", "metric2", ...],
+        ...    "loads": {"1": "100", "2": "200", ...},
+        ...    "overwrite": true or false
+        ... }
+    """
     base_directory = session.get("base_directory", "")
     metric_type = session.get("metric_type", "individual")
     grouped_metrics = session.get("grouped_metrics", None)

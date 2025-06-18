@@ -8,9 +8,9 @@ from services import path_service as ps
 
 matplotlib.use("agg")
 
-markers = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
-linestyles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
-hatches = ["", "/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
+MARKERS = ["o", "v", "^", "s", "P", "x", "D", "_", "*", "2"]
+LINESTYLES = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-", "--"]
+HATCHES = ["", "/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
 
 
 def plot_line_graph(
@@ -35,8 +35,8 @@ def plot_line_graph(
             load_positions,
             y,
             yerr=e,
-            linestyle=linestyles[i % len(linestyles)],
-            marker=markers[i % len(markers)],
+            linestyle=LINESTYLES[i % len(LINESTYLES)],
+            marker=MARKERS[i % len(MARKERS)],
             label=labels[i],
             fillstyle="none",
         )
@@ -69,7 +69,7 @@ def plot_bar_graph(
             label=labels[i],
             yerr=e,
             capsize=5,
-            hatch=hatches[i % len(hatches)],
+            hatch=HATCHES[i % len(HATCHES)],
             edgecolor="black",
         )
         plt.xticks(
@@ -104,7 +104,7 @@ def plot_stacked_bar_graph(
             label=labels[i],
             yerr=e,
             capsize=5,
-            hatch=hatches[i % len(hatches)],
+            hatch=HATCHES[i % len(HATCHES)],
             edgecolor="black",
             bottom=bottom,
         )
@@ -112,7 +112,7 @@ def plot_stacked_bar_graph(
         plt.xticks(load_positions, loads)
 
 
-plotting_strategies: dict[
+PLOTTING_STRATEGIES: dict[
     str, Callable[[list[pd.DataFrame], list[str], list[str]], None]
 ] = {
     "line": plot_line_graph,
@@ -160,7 +160,7 @@ def plot_graph(
     """
     plt.figure(figsize=figsize)
 
-    plot_function = plotting_strategies.get(graph_type)
+    plot_function = PLOTTING_STRATEGIES.get(graph_type)
     if plot_function is not None:
         plot_function(dataframes, loads, labels)
     else:

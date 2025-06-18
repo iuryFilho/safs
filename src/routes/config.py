@@ -25,13 +25,18 @@ logger = us.Logger(True, __name__)
 
 
 @blueprint.record
-def record_params(setup_state):
+def record_params(setup_state: dict):
     global debug_output
     debug_output = setup_state.options.get("debug_output", True)
 
 
 @blueprint.route("", methods=["GET"])
 def index():
+    """
+    Renders the configuration page with the current session data.
+    Returns:
+        Rendered HTML template for the configuration page.
+    """
     base_directory = session.get("base_directory", "")
     base_dir_error = session.get("base_dir_error", None)
     if base_dir_error:
@@ -81,13 +86,25 @@ def index():
 
 @blueprint.route("/get-metrics", methods=["POST"])
 def get_metrics():
-    base_directory = request.form["base-directory"]
+    """
+    Retrieves the metrics based on the base directory and metric type from the session.
+    Returns:
+        A JSON response containing the grouped metrics for the selected metric type.
+    Examples:
+        >>> # This endpoint expects a JSON payload with the following structure:
+        >>> {
+        ... "base-directory": "path/to/base/directory",
+        ... "metric-type": "individual"  # or "grouped"
+        ... }
+    """
+    data: dict = request.get_json()
+    base_directory = data.get("base-directory", "")
     session["base_directory"] = base_directory
     try:
         simulation_dirs_paths = ps.get_simulations_dirs_paths(base_directory)
         simulation_dirs = [op.basename(s) for s in simulation_dirs_paths]
 
-        metric_type = request.form.get("metric_type", "individual")
+        metric_type = data.get("metric-type", "individual")
         grouped_metrics = FILTERED_METRICS[metric_type]
         first_metric_group = list(grouped_metrics.keys())[0]
         first_metric = grouped_metrics[first_metric_group][0]
@@ -108,7 +125,18 @@ def get_metrics():
 
 @blueprint.route("/load-config", methods=["POST"])
 def load_config():
-    input_config = request.form.get("input-config", "")
+    """
+    Loads the configuration from the input config file specified in the request.
+    Returns:
+        A JSON response containing the loaded configuration data or an error message.
+    Examples:
+        >>> # This endpoint expects a JSON payload with the following structure:
+        >>> {
+        ... "input-config": "path/to/input/config/file"
+        ... }
+    """
+    data: dict = request.get_json()
+    input_config = data.get("input-config", "")
     session["input_config"] = input_config
     try:
         config_data = cs.load_config(input_config)
@@ -121,6 +149,24 @@ def load_config():
 
 @blueprint.route("/save-config", methods=["POST"])
 def save_config():
+    """
+    Saves the configuration data to the output config file specified in the request.
+    Returns:
+        A JSON response indicating the success or failure of the save operation.
+    Examples:
+        >>> # This endpoint expects a JSON payload with the following structure:
+        >>> {
+        ... "output-config": "path/to/output/config/file",
+        ... "config-data": {
+        ...     "base-directory": "path/to/base/directory",
+        ...     "directories": ["dir1", "dir2"],
+        ...     "metric-type": "individual",
+        ...     "graph-config": {
+        ...         "loads": ["100", "200"],
+        ...         "load-filter": "1-2"
+        ...     }
+        ... }
+    """
     data: dict = request.get_json()
     output_config = data.get("output-config", "")
     if not output_config:
@@ -129,17 +175,24 @@ def save_config():
 
     new_config_data = cs.create_config_structure(data)
 
-    graph_config = data.get("graph-config", {})
-    new_config_data["graph-config"] = graph_config
-
     result = cs.save_config(new_config_data, output_config)
     return jsonify({"message": result})
 
 
 @blueprint.route("/update-metric-type", methods=["POST"])
 def update_metric_type():
+    """
+    Updates the metric type in the session based on the request data.
+    Returns:
+        A JSON response indicating the success of the update operation.
+    Examples:
+        >>> # This endpoint expects a JSON payload with the following structure:
+        >>> {
+        ... "metric-type": "individual" or "grouped"
+        ... }
+    """
     data: dict = request.get_json()
     metric_type = data.get("metric-type", "individual")
     session["metric_type"] = metric_type
     session["grouped_metrics"] = FILTERED_METRICS[metric_type]
-    return jsonify({"message": "Metric updated succesfully."})
+    return jsonify({"message": "Metric updated successfully."})

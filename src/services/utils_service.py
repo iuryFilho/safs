@@ -56,11 +56,11 @@ def to_json(obj: dict) -> str:
     return json.dumps(obj, indent=4)
 
 
-def to_float(*values: str) -> list[float]:
+def to_float(*values: list[str]) -> list[float]:
     """
     Converts a string or list of strings to a list of floats.
     Args:
-        *values (str): A variable number of string values to be converted to floats.
+        values (list[str]): A variable number of string values to be converted to floats.
     Returns:
         list[float]: The converted values.
     """
@@ -87,7 +87,19 @@ def get_separator(path: str) -> str:
     return sep
 
 
-def extract_labels(directories, raw_labels):
+def extract_labels(
+    directories: list[str], raw_labels: list[str]
+) -> tuple[list[str], dict[str, str]]:
+    """
+    Extracts labels for directories based on provided raw labels.
+    Args:
+        directories (list[str]): List of directory names.
+        raw_labels (list[str]): List of raw labels corresponding to the directories.
+    Returns:
+        tuple[list[str],dict[str,str]]: A tuple containing
+        - A list of processed labels.
+        - A dictionary mapping directory names to their labels.
+    """
     labels = []
     session_labels = {}
     for dir, label in zip(directories, raw_labels):

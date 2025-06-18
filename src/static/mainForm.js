@@ -55,9 +55,15 @@ mainForm.addEventListener("submit", function (event) {
     const action = event.submitter.value;
     console.log(action);
     if (action === "get-metrics") {
-        mainForm.method = "post";
-        mainForm.action = "/config/get-metrics";
-        mainForm.submit();
+        const formData = new FormData(mainForm);
+        const jsonData = {};
+        jsonData["base-directory"] = formData.get("base-directory");
+        jsonData["metric-type"] = formData.get("metric-type");
+        fetch("/config/get-metrics", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(jsonData),
+        });
     }
 });
 
@@ -81,8 +87,8 @@ async function loadConfig() {
     }
     const response = await fetch("/config/load-config", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: createBody({
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
             "input-config": inputConfig,
         }),
     });

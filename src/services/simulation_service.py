@@ -222,11 +222,3 @@ def verify_args_type(
     ):
         return "grouped"
     return ""
-
-
-def main():
-    return
-
-
-if __name__ == "__main__":
-    main()

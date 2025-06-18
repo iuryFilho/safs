@@ -1,17 +1,3 @@
-function createBody(data) {
-    const body = new URLSearchParams();
-    for (const [key, value] of Object.entries(data)) {
-        if (Array.isArray(value)) {
-            value.forEach((item) => body.append(key, item));
-        } else if (typeof value === "object" && value !== null) {
-            body.append(key, JSON.stringify(value));
-        } else {
-            body.append(key, value);
-        }
-    }
-    return body;
-}
-
 function getElementValue(id) {
     return document.getElementById(id).value;
 }

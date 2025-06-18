@@ -5,20 +5,30 @@ from services import utils_service as us
 
 
 def create_config_structure(data: dict) -> dict:
+    """
+    Creates a configuration structure from the provided data.
+    Args:
+        data (dict): The data containing directory and metric information.
+    Returns:
+        dict: A dictionary with the configuration structure.
+    """
     new_config_data = {"directories": {}, "metrics": {}, "graph-config": {}}
     directories = data.get("directory-list", [])
     labels = data.get("labels", [])
     for dir, label in zip(directories, labels):
         new_config_data["directories"][dir] = label
 
-    grouped_metrics = session.get("grouped_metrics", None)
+    grouped_metrics = session.get("grouped_metrics", {})
     metric_list_form = data.get("metric-list", [])
-    for metric_group, metric_list in (grouped_metrics or {}).items():
+    for metric_group, metric_list in grouped_metrics.items():
         for metric in metric_list_form:
             if metric in metric_list:
                 new_config_data["metrics"][metric_group] = new_config_data[
                     "metrics"
                 ].get(metric_group, []) + [metric]
+
+    graph_config = data.get("graph-config", {})
+    new_config_data["graph-config"] = graph_config
 
     return new_config_data
 
