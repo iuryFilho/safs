@@ -31,10 +31,12 @@ def plot_line_graph(
     for i in range(len(dataframes)):
         y = dataframes[i]["mean"]
         e = dataframes[i]["error"]
+        capsize = 0 if all(e == 0) else 3
         plt.errorbar(
             load_positions,
             y,
             yerr=e,
+            capsize=capsize,
             linestyle=LINESTYLES[i % len(LINESTYLES)],
             marker=MARKERS[i % len(MARKERS)],
             label=labels[i],
