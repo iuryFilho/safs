@@ -2,20 +2,16 @@
   <div class="collapse navbar-collapse justify-content-center p-0 m-0"
        id="navbarNav">
     <ul class="navbar-nav fs-4 fw-medium">
-      <li class="nav-item">
-        {% if page == "home" %}
-          <span class="nav-link active" aria-current="page">Home</span>
-        {% else %}
-          <a class="nav-link" href="{{ url_for('index') }}">Home</a>
-        {% endif %}
-      </li>
-      <li class="nav-item">
-        {% if page == "config" %}
-          <span class="nav-link active" aria-current="page">Config</span>
-        {% else %}
-          <a class="nav-link" href="{{ url_for('config.index') }}">Config</a>
-        {% endif %}
-      </li>
+      {% set pages = [('home', 'Home', 'home.index'), ('config', 'Config', 'config.index'), ('tutorial', 'Tutorial', 'tutorial.index')] %}
+      {% for name, title, route in pages %}
+        <li class="nav-item">
+          {% if page == name %}
+            <span class="nav-link active" aria-current="page">{{ title }}</span>
+          {% else %}
+            <a class="nav-link" href="{{ url_for(route) }}">{{ title }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
     </ul>
   </div>
 {% endmacro %}

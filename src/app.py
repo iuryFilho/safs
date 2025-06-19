@@ -1,26 +1,12 @@
 from flask import Blueprint, Flask, jsonify, render_template, session
 import argparse
-from routes import config as cr, generation as gr
-from services import export_service as es
+from routes import home as hr, config as cr, generation as gr, tutorial as tr
 
 
 def create_app(*, blueprints: dict[str, Blueprint] = None):
     app = Flask(__name__)
     app.secret_key = "supersecretkey"
     app.config["TEMPLATES_AUTO_RELOAD"] = True
-
-    @app.route("/")
-    def index():
-        return render_template("home.jinja")
-
-    @app.route("/clear-session", methods=["POST"])
-    def clear_session():
-        """Clear the session data."""
-        try:
-            session.clear()
-            return jsonify({"message": "Session cleared successfully."}), 200
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
 
     if isinstance(blueprints, dict):
         for url, blueprint in blueprints.items():
@@ -44,8 +30,10 @@ def main():
     )
     args = parser.parse_args()
     blueprints = {
+        "/": hr.blueprint,
         "/config": cr.blueprint,
         "/generation": gr.blueprint,
+        "/tutorial": tr.blueprint,
     }
     app = create_app(blueprints=blueprints)
     app.run(

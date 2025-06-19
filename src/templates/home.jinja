@@ -11,13 +11,19 @@
 
 {% block content %}
   <div class="container">
-    <h2>Welcome to the SAFS Dashboard</h2>
-    <p class="lead">This dashboard provides an overview of simulation metrics and configurations.</p>
-    <p>Use the navigation bar to explore different sections.</p>
+    <h2>Bem-vindo ao Painel SAFS</h2>
+    <p class="lead">Este painel fornece uma visão geral das métricas e configurações da simulação.</p>
+    <p>Use a barra de navegação para explorar diferentes seções.</p>
   </div>
 
   <div class="container mt-5">
-    <h2>Getting Started</h2>
-    <p>To begin, please navigate to the Config section to set up your base directory and configurations.</p>
+    <h2>Primeiros Passos</h2>
+    <p>
+      Para começar, acesse a seção <a href="{{ url_for('config.index') }}">Config</a> para definir seu diretório base e configurações.
+    </p>
+    <p>Em seguida, você pode gerar gráficos e exportar resultados usando as opções disponíveis.</p>
+    <p>
+      Para mais detalhes, consulte o <a href="{{ url_for('tutorial.index') }}">Tutorial</a>.
+    </p>
   </div>
 {% endblock content %}
