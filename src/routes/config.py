@@ -84,12 +84,13 @@ def index():
     )
 
 
-@blueprint.route("/get-metrics", methods=["POST"])
-def get_metrics():
+@blueprint.route("/load-directory", methods=["POST"])
+def load_directory():
     """
-    Retrieves the metrics based on the base directory and metric type from the session.
+    Loads the directory specified in the request and retrieves simulation directories and metrics.
     Returns:
-        A JSON response containing the grouped metrics for the selected metric type.
+        A JSON response containing the simulation directories and metrics or an error message.
+        - If the base directory is not found or an error occurs, it sets an error message in the session.
     Examples:
         >>> # This endpoint expects a JSON payload with the following structure:
         >>> {

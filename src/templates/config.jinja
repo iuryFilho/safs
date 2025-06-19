@@ -2,7 +2,7 @@
 {% from "__macros__.jinja" import navbarNav, toast, section, submit, button, input, select %}
 
 {% block title %}
-  Config
+  Configuração
 {% endblock title %}
 
 {% block navbarNav %}
@@ -19,10 +19,10 @@
     </div>
 
     {% call section("base-directory") %}
-      {{ input(label="<h2>Base Directory:</h2>",
+      {{ input(label="<h2>Diretório Base:</h2>",
             name="base-directory", value=base_directory,
-            placeholder="Enter base directory path", required=true,
-            button_text="Get Metrics", action="get-metrics",
+            placeholder="Informe o caminho do diretório base", required=true,
+            button_text="Carregar Diretório", action="load-directory",
             indent=true,
             error=base_dir_error) 
       }}
@@ -31,16 +31,16 @@
     {% if base_directory and not base_dir_error %}
       {% call section("config") %}
         <div class="row">
-          {{ input(label="<h2>Input Configuration File:</h2>",
+          {{ input(label="<h2>Arquivo de Configuração de Entrada:</h2>",
                     name="input-config", value=input_config,
-                    placeholder="Enter input configuration file path", required=false,
-                    button_text="Load Configuration", action="load-config",
+                    placeholder="Informe o caminho do arquivo de configuração de entrada", required=false,
+                    button_text="Carregar Configuração", action="load-config",
                     indent=true) 
           }}
-          {{ input(label="<h2>Output Configuration File:</h2>",
+          {{ input(label="<h2>Arquivo de Configuração de Saída:</h2>",
                     name="output-config", value=output_config,
-                    placeholder="Enter output configuration file path", required=false,
-                    button_text="Save Configuration", action="save-config",
+                    placeholder="Informe o caminho do arquivo de configuração de saída", required=false,
+                    button_text="Salvar Configuração", action="save-config",
                     indent=true) 
           }}
         </div>
@@ -62,7 +62,7 @@
 
     {% if directories %}
       {% call section("directories") %}
-        <h2 class="mb-3">Simulation Directories List:</h2>
+        <h2 class="mb-3">Lista de Diretórios de Simulação:</h2>
 
         <div class="mx-4">
           <div class="mb-3">
@@ -81,15 +81,15 @@
                          class="form-control form-control-sm"
                          type="text"
                          name="label-{{ dir }}"
-                         placeholder="Label for {{ dir }}"
+                         placeholder="Rótulo para {{ dir }}"
                          disabled />
                 </li>
               {% endfor %}
             </ul>
           </div>
-          <div class="btn-group" role="group" aria-label="Directory Actions">
-            {{ button('Select All Directories', 'select-all-directories', 'btn-outline-secondary', class="me-2") }}
-            {{ button('Deselect All Directories', 'deselect-all-directories', 'btn-outline-secondary') }}
+          <div class="btn-group" role="group" aria-label="Ações de Diretório">
+            {{ button('Selecionar Todos', 'select-all-directories', 'btn-outline-secondary', class="me-2") }}
+            {{ button('Desmarcar Todos', 'deselect-all-directories', 'btn-outline-secondary') }}
           </div>
         </div>
       {% endcall %}
@@ -97,11 +97,11 @@
 
     {% if grouped_metrics %}
       {% call section("metrics") %}
-        <h2 class="mb-3">Metrics List:</h2>
+        <h2 class="mb-3">Lista de Métricas:</h2>
         <div class="mx-4">
           <div class="btn-group mb-3 w-100"
                role="group"
-               aria-label="Basic radio toggle button group">
+               aria-label="Tipo de Métrica">
             <input type="radio"
                    class="btn-check"
                    name="metric-type"
@@ -117,7 +117,7 @@
                    value="grouped"
                    autocomplete="off"
                    {% if metric_type == "grouped" %}checked{% endif %}>
-            <label class="btn btn-outline-primary fw-medium" for="radio-grouped">Grouped</label>
+            <label class="btn btn-outline-primary fw-medium" for="radio-grouped">Agrupada</label>
           </div>
           <input id="previous-metric-type"
                  type="hidden"
@@ -151,17 +151,17 @@
                       {% endfor %}
                     </ul>
                   </div>
-                  <div class="btn-group p-0" role="group" aria-label="Metrics Actions">
-                    {{ button('Select All', 'select-all-' ~ metric_group, 'btn-outline-secondary', class="me-2") }}
-                    {{ button('Deselect All', 'deselect-all-' ~ metric_group, 'btn-outline-secondary') }}
+                  <div class="btn-group p-0" role="group" aria-label="Ações de Métricas">
+                    {{ button('Selecionar Todas do Grupo', 'select-all-' ~ metric_group, 'btn-outline-secondary', class="me-2") }}
+                    {{ button('Desmarcar Todas do Grupo', 'deselect-all-' ~ metric_group, 'btn-outline-secondary') }}
                   </div>
                 </div>
               </div>
             {% endfor %}
           </div>
-          <div class="btn-group" role="group" aria-label="Metrics Actions">
-            {{ button('Select All Metrics', 'select-all-metrics', 'btn-outline-secondary', class="me-2") }}
-            {{ button('Deselect All Metrics', 'deselect-all-metrics', 'btn-outline-secondary') }}
+          <div class="btn-group" role="group" aria-label="Ações de Métricas">
+            {{ button('Selecionar Todas', 'select-all-metrics', 'btn-outline-secondary', class="me-2") }}
+            {{ button('Desmarcar Todas', 'deselect-all-metrics', 'btn-outline-secondary') }}
           </div>
         </div>
       {% endcall %}
@@ -169,82 +169,82 @@
 
     {% if base_directory and not base_dir_error %}
       {% call section("graph") %}
-        <h2 class="mb-3">Graph Generation:</h2>
+        <h2 class="mb-3">Geração de Gráficos:</h2>
         <div class="col mx-4">
           <div class="row mb-2">
-            {{ select(label="Graph Type:",
+            {{ select(label="Tipo de Gráfico:",
                         name="graph-type",
                         selected=graph_type,
                         options=[
-                        ["line", "Line Graph"] ,
-                        ["bar", "Bar Graph"],
-                        ["stacked", "Stacked Bar Graph"],
+                        ["line", "Linha"] ,
+                        ["bar", "Barra"],
+                        ["stacked", "Barra Empilhada"],
                         ]) }}
-            {{ select(label="Overwrite Files:",
+            {{ select(label="Sobrescrever Arquivos:",
                         name="overwrite",
                         selected=overwrite,
                         options=[
-                        ["true", "Yes"],
-                        ["false", "No"]
+                        ["true", "Sim"],
+                        ["false", "Não"]
                         ]) }}
           </div>
           <div class="row mb-2">
-            {{ select(label="Frame On:",
+            {{ select(label="Exibir Moldura:",
                         name="frameon",
                         selected=frameon,
                         options=[
-                        ["true", "Yes"],
-                        ["false", "No"]
+                        ["true", "Sim"],
+                        ["false", "Não"]
                         ]) }}
-            {{ input(label="Max Columns (Default: 5):",
+            {{ input(label="Máx. Colunas (Padrão: 5):",
                         name="max-columns", value=max_columns,
-                        placeholder="Enter max columns", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
+                        placeholder="Informe o número máximo de colunas", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
           </div>
           <div class="row mb-2">
-            {{ select(label="Font Size:",
+            {{ select(label="Tamanho da Fonte:",
                         name="font-size",
                         selected=font_size,
                         options=[
-                        ["xx-small", "XX-Small"],
-                        ["x-small", "X-Small"],
-                        ["small", "Small"],
-                        ["medium", "Medium"],
-                        ["large", "Large"],
-                        ["x-large", "X-Large"],
-                        ["xx-large", "XX-Large"],
+                        ["xx-small", "XX-Pequeno"],
+                        ["x-small", "X-Pequeno"],
+                        ["small", "Pequeno"],
+                        ["medium", "Médio"],
+                        ["large", "Grande"],
+                        ["x-large", "X-Grande"],
+                        ["xx-large", "XX-Grande"],
                         ]) }}
-            {{ input(label="Figure Width (Default: 10):",
+            {{ input(label='Largura da Figura (Padrão: 10"):',
                         name="figure-width", value=figure_width,
-                        placeholder="Enter figure width in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
-            {{ input(label="Figure Height (Default: 5):",
+                        placeholder="Informe a largura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
+            {{ input(label='Altura da Figura (Padrão: 5"):',
                         name="figure-height", value=figure_height,
-                        placeholder="Enter figure height in inches", size="form-control-sm", type="number", label_class="fw-medium") }}
+                        placeholder="Informe a altura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
           </div>
           <div class="row mb-2">
-            {{ select(label="Legend Position:",
+            {{ select(label="Posição da Legenda:",
                         name="legend-position",
                         selected=legend_position,
                         options=[
-                        ["none", "None"],
-                        ["upper center", "Upper Center"],
-                        ["upper left", "Upper Left"],
-                        ["upper right", "Upper Right"],
-                        ["lower center", "Lower Center"],
-                        ["lower left", "Lower Left"],
-                        ["lower right", "Lower Right"],
-                        ["center left", "Center Left"],
-                        ["center right", "Center Right"],
-                        ["center", "Center"]
+                        ["none", "Nenhuma"],
+                        ["upper center", "Superior Centro"],
+                        ["upper left", "Superior Esquerda"],
+                        ["upper right", "Superior Direita"],
+                        ["lower center", "Inferior Centro"],
+                        ["lower left", "Inferior Esquerda"],
+                        ["lower right", "Inferior Direita"],
+                        ["center left", "Centro Esquerda"],
+                        ["center right", "Centro Direita"],
+                        ["center", "Centro"]
                         ]) }}
-            {{ input(label="Anchor X (Default: 0.5):",
+            {{ input(label="Âncora X (Padrão: 0.5):",
                         name="anchor-x", value=anchor_x,
-                        placeholder="Enter anchor x position", size="form-control-sm", type="number", label_class="fw-medium") }}
-            {{ input(label="Anchor Y (Default: -0.15):",
+                        placeholder="Informe a posição X da âncora", size="form-control-sm", type="number", label_class="fw-medium") }}
+            {{ input(label="Âncora Y (Padrão: -0.15):",
                         name="anchor-y", value=anchor_y,
-                        placeholder="Enter anchor y position", size="form-control-sm", type="number", label_class="fw-medium") }}
+                        placeholder="Informe a posição Y da âncora", size="form-control-sm", type="number", label_class="fw-medium") }}
           </div>
           <div class="mb-3">
-            <div class="fw-medium mb-2">Custom Loads:</div>
+            <div class="fw-medium mb-2">Cargas Personalizadas:</div>
             <ul class="list-group">
               {% set digits = load_count|string|length %}
               {% for i in range(load_count) %}
@@ -254,7 +254,7 @@
                 <li class="list-group-item bg-secondary border-0 p-1">
                   <div class="input-group input-group-sm">
                     <label class="input-group-text bg-secondary-subtle text-dark"
-                           for="load-{{ i }}">Load {{ i_str }}</label>
+                           for="load-{{ i }}">Carga {{ i_str }}</label>
                     <input id="load-{{ i }}"
                            type="number"
                            class="form-control form-control-sm text-bg-light"
@@ -265,9 +265,9 @@
               {% endfor %}
             </ul>
           </div>
-          <div class="btn-group" role="group" aria-label="Graph Actions">
-            {{ submit('Generate Graphs', 'generate-graphs', 'btn-primary', class="me-2") }}
-            {{ submit('Export Results', 'export-results', 'btn-primary') }}
+          <div class="btn-group" role="group" aria-label="Ações de Gráfico">
+            {{ submit('Gerar Gráficos', 'generate-graphs', 'btn-primary', class="me-2") }}
+            {{ submit('Exportar Resultados', 'export-results', 'btn-primary') }}
           </div>
         </div>
       {% endcall %}
@@ -276,7 +276,7 @@
 
   {% if debug_output %}
     {% call section("debug") %}
-      <h2>Debug Output:</h2>
+      <h2>Saída de Depuração:</h2>
       <pre id="debug-output" class="text-bg-secondary p-3">{{ debug_output }}</pre>
     {% endcall %}
   {% endif %}

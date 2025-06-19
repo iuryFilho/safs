@@ -54,12 +54,12 @@ mainForm.addEventListener("submit", function (event) {
     event.preventDefault();
     const action = event.submitter.value;
     console.log(action);
-    if (action === "get-metrics") {
+    if (action === "load-directory") {
         const formData = new FormData(mainForm);
         const jsonData = {};
         jsonData["base-directory"] = formData.get("base-directory");
         jsonData["metric-type"] = formData.get("metric-type") || "individual";
-        fetch("/config/get-metrics", {
+        fetch("/config/load-directory", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(jsonData),

@@ -18,6 +18,6 @@ def clear_session():
     """Clear the session data."""
     try:
         session.clear()
-        return jsonify({"message": "Session cleared successfully."}), 200
+        return jsonify({"message": "Sessão limpa com sucesso."}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
