@@ -125,7 +125,8 @@ def generate_graphs(
     load_points: list[str],
     metric_type: str,
     graph_type: str,
-    fontsize: str,
+    graph_fontsize: str,
+    legend_fontsize: str,
     figsize: tuple[int, int],
     overwrite: bool,
     bbox_to_anchor: tuple[float, float],
@@ -144,7 +145,8 @@ def generate_graphs(
         dir_labels (list[str]): List of directory labels for the graphs.
         loads (list[str]): List of loads for the x-axis.
         load_points (list[str]): List of load points for the x-axis.
-        fontsize (str): Font size for the labels (default is "large").
+        graph_fontsize (str): Font size for the graph text.
+        legend_fontsize (str): Font size for the legend text.
         figsize (tuple[int, int]): Size of the figure for the graph (default is (10, 5)).
         overwrite (bool): Whether to overwrite existing files (default is True).
         metric_type (str): Type of metrics to generate graphs for
@@ -177,7 +179,8 @@ def generate_graphs(
             graph_type=graph_type,
             filename_prefix=filename_prefix,
             x_label=x_label,
-            fontsize=fontsize,
+            graph_fontsize=graph_fontsize,
+            legend_fontsize=legend_fontsize,
             figsize=figsize,
             overwrite=overwrite,
             legend_position=legend_position,

@@ -176,7 +176,7 @@
                         name="graph-type",
                         selected=graph_type,
                         options=[
-                        ["line", "Linha"] ,
+                        ["line", "Linha"],
                         ["bar", "Barra"],
                         ["stacked", "Barra Empilhada"],
                         ]) }}
@@ -189,30 +189,44 @@
                         ]) }}
           </div>
           <div class="row mb-2">
-            {{ select(label="Exibir Moldura:",
+            {{ select(label="Exibir Moldura da Legenda:",
                         name="frameon",
                         selected=frameon,
                         options=[
                         ["true", "Sim"],
                         ["false", "Não"]
                         ]) }}
-            {{ input(label="Máx. Colunas (Padrão: 5):",
+            {{ input(label="Máx. Colunas da Legenda (Padrão: 5):",
                         name="max-columns", value=max_columns,
-                        placeholder="Informe o número máximo de colunas", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
+                        placeholder="Informe o número máximo de colunas da legenda", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
           </div>
           <div class="row mb-2">
-            {{ select(label="Tamanho da Fonte:",
-                        name="font-size",
-                        selected=font_size,
+            {{ select(label="Tamanho da Fonte do Gráfico:",
+                        name="graph-font-size",
+                        selected=graph_fontsize,
                         options=[
                         ["xx-small", "XX-Pequeno"],
                         ["x-small", "X-Pequeno"],
                         ["small", "Pequeno"],
-                        ["medium", "Médio"],
+                        ["medium", "Médio (Padrão)"],
                         ["large", "Grande"],
                         ["x-large", "X-Grande"],
                         ["xx-large", "XX-Grande"],
                         ]) }}
+            {{ select(label="Tamanho da Fonte da Legenda:",
+                        name="legend-font-size",
+                        selected=legend_fontsize,
+                        options=[
+                        ["xx-small", "XX-Pequeno"],
+                        ["x-small", "X-Pequeno"],
+                        ["small", "Pequeno"],
+                        ["medium", "Médio (Padrão)"],
+                        ["large", "Grande"],
+                        ["x-large", "X-Grande"],
+                        ["xx-large", "XX-Grande"],
+                        ]) }}
+          </div>
+          <div class="row mb-2">
             {{ input(label='Largura da Figura (Padrão: 10"):',
                         name="figure-width", value=figure_width,
                         placeholder="Informe a largura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
@@ -226,7 +240,7 @@
                         selected=legend_position,
                         options=[
                         ["none", "Nenhuma"],
-                        ["upper center", "Superior Centro"],
+                        ["upper center", "Superior Centro (Padrão)"],
                         ["upper left", "Superior Esquerda"],
                         ["upper right", "Superior Direita"],
                         ["lower center", "Inferior Centro"],

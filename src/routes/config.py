@@ -51,7 +51,8 @@ def index():
     overwrite = session.get("overwrite", False)
     figure_width = session.get("figure_width", 10)
     figure_height = session.get("figure_height", 5)
-    font_size = session.get("font_size", "medium")
+    graph_fontsize = session.get("graph_fontsize", "medium")
+    legend_fontsize = session.get("legend_fontsize", "medium")
     max_columns = session.get("max_columns", 5)
     anchor_x = session.get("anchor_x", 0.5)
     anchor_y = session.get("anchor_y", -0.15)
@@ -73,7 +74,8 @@ def index():
         overwrite=overwrite,
         figure_width=figure_width,
         figure_height=figure_height,
-        font_size=font_size,
+        graph_fontsize=graph_fontsize,
+        legend_fontsize=legend_fontsize,
         anchor_x=anchor_x,
         anchor_y=anchor_y,
         legend_position=legend_position,

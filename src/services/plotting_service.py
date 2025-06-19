@@ -129,7 +129,8 @@ def plot_graph(
     labels: list[str],
     x_label: str,
     y_label: str,
-    fontsize: str,
+    graph_fontsize: str,
+    legend_fontsize: str,
     figsize: tuple[int, int],
     output_file: str,
     overwrite: bool,
@@ -149,7 +150,8 @@ def plot_graph(
         labels (list[str]): List of labels for the graph legend.
         x_label (str): Label for the x-axis.
         y_label (str): Label for the y-axis.
-        fontsize (str): Font size for the labels.
+        graph_fontsize (str): Font size for the graph text.
+        legend_fontsize (str): Font size for the legend text.
         figsize (tuple[int, int]): Size of the figure for the graph.
         output_file (str): Path to save the output file (without extension).
         overwrite (bool): Whether to overwrite existing files.
@@ -166,10 +168,10 @@ def plot_graph(
     else:
         raise ValueError(f"Graph type not supported: {graph_type}")
 
-    plt.xlabel(x_label, fontsize=fontsize)
-    plt.ylabel(y_label, fontsize=fontsize)
-    plt.xticks(fontsize=fontsize)
-    plt.yticks(fontsize=fontsize)
+    plt.xlabel(x_label, fontsize=graph_fontsize)
+    plt.ylabel(y_label, fontsize=graph_fontsize)
+    plt.xticks(fontsize=graph_fontsize)
+    plt.yticks(fontsize=graph_fontsize)
     plt.grid(axis="y")
     if len(labels) < max_columns:
         max_columns = len(labels)
@@ -181,7 +183,7 @@ def plot_graph(
             loc=legend_position,
             bbox_to_anchor=bbox_to_anchor,
             ncol=max_columns,
-            fontsize=fontsize,
+            fontsize=legend_fontsize,
             frameon=frameon,
         )
     if output_file != "":

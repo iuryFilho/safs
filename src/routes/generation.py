@@ -32,7 +32,13 @@ def generate_graphs():
         ...    "overwrite": true or false,
         ...    "figure-width": 10,
         ...    "figure-height": 5,
-        ...    "font-size": "medium",
+        ...    "frameon": true or false,
+        ...    "max-columns": 5,
+        ...    "graph-font-size": "medium",
+        ...    "legend-font-size": "medium",
+        ...    "legend-position": "upper center",
+        ...    "anchor-x": 0.5,
+        ...    "anchor-y": -0.15,
         ...    "loads": {"1": "100", "2": "200", ...}
         ... }
     """
@@ -52,7 +58,8 @@ def generate_graphs():
         data.get("figure-width", "10"),
         data.get("figure-height", "5"),
     )
-    font_size = data.get("font-size", "medium")
+    graph_fontsize = data.get("graph-font-size", "medium")
+    legend_fontsize = data.get("legend-font-size", "medium")
     anchor = us.to_float(
         data.get("anchor-x", "0.5"),
         data.get("anchor-y", "-0.15"),
@@ -67,7 +74,8 @@ def generate_graphs():
     session["overwrite"] = overwrite
     session["figure_width"] = figsize[0]
     session["figure_height"] = figsize[1]
-    session["font_size"] = font_size
+    session["graph_fontsize"] = graph_fontsize
+    session["legend_fontsize"] = legend_fontsize
     session["legend_position"] = legend_position
     session["anchor_x"] = anchor[0]
     session["anchor_y"] = anchor[1]
@@ -91,7 +99,8 @@ def generate_graphs():
                 graph_type=graph_type,
                 overwrite=overwrite,
                 figsize=figsize,
-                fontsize=font_size,
+                graph_fontsize=graph_fontsize,
+                legend_fontsize=legend_fontsize,
                 bbox_to_anchor=anchor,
                 legend_position=legend_position,
                 max_columns=max_columns,

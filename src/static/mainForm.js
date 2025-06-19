@@ -217,7 +217,8 @@ async function generateGraphs() {
     const overwrite = getElementValue("overwrite");
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
-    const fontSize = getElementValue("font-size");
+    const graphFontSize = getElementValue("graph-font-size");
+    const legendFontSize = getElementValue("legend-font-size");
     const legendPosition = getElementValue("legend-position");
     const anchorX = getElementValue("anchor-x");
     const anchorY = getElementValue("anchor-y");
@@ -239,7 +240,8 @@ async function generateGraphs() {
         overwrite: overwrite,
         "figure-width": figureWidth,
         "figure-height": figureHeight,
-        "font-size": fontSize,
+        "graph-font-size": graphFontSize,
+        "legend-font-size": legendFontSize,
         "legend-position": legendPosition,
         "anchor-x": anchorX,
         "anchor-y": anchorY,
