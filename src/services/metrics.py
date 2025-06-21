@@ -1,7 +1,7 @@
 import pandas as pd
 import os.path as op
 
-from services import utils_service as us, path_service as ps
+from services import path as ps, utils as us
 
 
 def get_metric_names(path: str) -> list[str]:

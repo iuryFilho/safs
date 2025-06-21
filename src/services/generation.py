@@ -3,10 +3,10 @@ import pandas as pd
 import os.path as op
 from data.metric_data import METRIC_GROUP_ALIASES
 from services import (
-    metrics_service as ms,
-    utils_service as us,
-    plotting_service as pls,
-    simulation_service as ss,
+    metrics as ms,
+    plotting as pls,
+    simulation as ss,
+    utils as us,
 )
 
 GroupedMetricT: TypeAlias = dict[str, list[str]]

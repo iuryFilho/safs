@@ -10,10 +10,10 @@ import os.path as op
 
 from data.metric_data import FILTERED_METRICS
 from services import (
-    config_service as cs,
-    path_service as ps,
-    simulation_service as ss,
-    utils_service as us,
+    config as cs,
+    path as ps,
+    simulation as ss,
+    utils as us,
 )
 
 

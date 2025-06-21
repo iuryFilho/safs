@@ -2,7 +2,7 @@ import pandas as pd
 import os.path as op
 
 from data.metric_data import METRIC_GROUP_ALIASES
-from services import simulation_service as ss, path_service as ps
+from services import path as ps, simulation as ss
 
 
 def assemble_results_table(

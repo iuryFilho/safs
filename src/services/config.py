@@ -1,7 +1,7 @@
 import json
 from flask import session
 
-from services import utils_service as us
+from services import utils as us
 
 
 def create_config_structure(data: dict) -> dict:

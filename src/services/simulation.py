@@ -1,7 +1,7 @@
 import os.path as op
 import pandas as pd
 from scipy import stats as st
-from services import utils_service as us, path_service as ps
+from services import path as ps, utils as us
 
 
 def compile_data(

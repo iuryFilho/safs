@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from typing import Callable
 
-from services import path_service as ps
+from services import path as ps
 
 
 matplotlib.use("agg")

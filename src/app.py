@@ -1,6 +1,11 @@
 from flask import Blueprint, Flask
 import argparse
-from routes import home as hr, config as cr, generation as gr, tutorial as tr
+from routes import (
+    config_route as cr,
+    generation_route as gr,
+    home_route as hr,
+    tutorial_route as tr,
+)
 
 
 def create_app(*, blueprints: dict[str, Blueprint] = None):

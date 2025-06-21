@@ -6,10 +6,10 @@ from flask import (
 )
 
 from services import (
-    generation_service as gs,
-    metrics_service as ms,
-    utils_service as us,
-    export_service as es,
+    export as es,
+    generation as gs,
+    metrics as ms,
+    utils as us,
 )
 
 blueprint = Blueprint("generation", __name__)
