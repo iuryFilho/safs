@@ -2,11 +2,11 @@
 {% from "__macros__.jinja" import navbarNav, toast, section, submit, button, input, select %}
 
 {% block title %}
-  Configuração
+  Geração
 {% endblock title %}
 
 {% block navbarNav %}
-  {{ navbarNav("config") }}
+  {{ navbarNav("generation") }}
 {% endblock navbarNav %}
 
 {% block content %}
@@ -196,7 +196,7 @@
                         ["true", "Sim"],
                         ["false", "Não"]
                         ]) }}
-            {{ input(label="Máx. Colunas da Legenda (Padrão: 5):",
+            {{ input(label="Máximo de Colunas da Legenda (Padrão: 5):",
                         name="max-columns", value=max_columns,
                         placeholder="Informe o número máximo de colunas da legenda", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
           </div>
@@ -230,7 +230,7 @@
             {{ input(label='Largura da Figura (Padrão: 10"):',
                         name="figure-width", value=figure_width,
                         placeholder="Informe a largura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
-            {{ input(label='Altura da Figura (Padrão: 5"):',
+            {{ input(label='Altura da Figura (Padrão: 6"):',
                         name="figure-height", value=figure_height,
                         placeholder="Informe a altura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
           </div>

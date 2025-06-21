@@ -11,46 +11,89 @@
 
 {% block content %}
   <div class="container">
-    <div class="mb-5">
-      <div>
-        <h4>Acesse a página de Configuração:</h4>
-        <p>
-          No menu superior, clique em <b>Configuração</b> para acessar as opções de configuração do sistema.
-        </p>
-      </div>
-      <div class="mt-4">
-        <h4>Selecione o diretório base:</h4>
-        <p>
-          Informe o caminho do diretório onde estão localizadas as simulações. Clique em <b>Obter Métricas</b> para carregar as opções.
-        </p>
-      </div>
-      <div class="mt-4">
-        <h4>Configuração de diretórios e métricas:</h4>
-        <p>
-          Selecione os diretórios de simulação desejados e atribua rótulos se necessário. Escolha as métricas que deseja analisar.
-        </p>
-      </div>
-      <div class="mt-4">
-        <h4>Configuração dos gráficos:</h4>
-        <p>
-          Defina o tipo de gráfico, opções de visualização, cargas personalizadas e demais parâmetros conforme sua necessidade.
-        </p>
-      </div>
-      <div class="mt-4">
-        <h4>Gerar gráficos e exportar resultados:</h4>
-        <p>
-          Clique em <b>Gerar Gráficos</b> para gerar os gráficos ou em <b>Exportar Resultados</b> para exportar os resultados em XLSX.
-        </p>
-      </div>
-      <div class="mt-4">
-        <h4>Limpar sessão:</h4>
-        <p>
-          Use o botão <b>Limpar Sessão</b> no menu para reiniciar as configurações e limpar dados temporários.
-        </p>
-      </div>
-    </div>
+    <ol class="mb-4">
+      <li class="h4">Acesse a página de Geração:</li>
+      <p>
+        No menu superior, clique em <a href="{{ url_for('generation.index') }}">Geração</a> para gerar gráficos e exportar resultados baseados nas configurações fornecidas.
+      </p>
+      <li class="mt-4 h4">Selecione o diretório base:</li>
+      <p>
+        Informe o caminho do diretório onde estão localizadas as simulações e clique em <b>Carregar Diretório</b> para carregar as simulações disponíveis nesse diretório.
+      </p>
+      <li class="mt-4 h4">Configuração de diretórios:</li>
+      <p>Selecione os diretórios de simulação desejados e atribua rótulos se necessário.</p>
+      <li class="mt-4 h4">Configuração de métricas:</li>
+      <p>Selecione o tipo de métrica que deseja analisar e escolha as métricas específicas.</p>
+      <li class="mt-4 h4">Configuração dos gráficos:</li>
+      <ul>
+        <li>
+          <div class="fw-bold">Tipo de Gráfico:</div>
+          <p>
+            Selecione entre <b>Linha</b>, <b>Barra</b> ou <b>Barra Empilhada</b>.
+          </p>
+        </li>
+        <li>
+          <div class="fw-bold">Sobrescrever Arquivos:</div>
+          <p>Permita que arquivos existentes sejam sobrescritos.</p>
+        </li>
+        <li class="mb-3">
+          <div class="fw-bold mb-2">Opções de Visualização:</div>
+          <ul>
+            <li>
+              <div class="fw-medium">Moldura da Legenda:</div>
+              <p class="mb-2">Ative ou desative a moldura ao redor da legenda.</p>
+            </li>
+            <li>
+              <div class="fw-medium">Máximo de Colunas da Legenda:</div>
+              <p class="mb-2">Defina o número máximo de colunas que a legenda pode ter. (Padrão: 5)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Tamanho da Fonte do Gráfico:</div>
+              <p class="mb-2">Defina o tamanho da fonte usada no gráfico. (Padrão: Médio)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Tamanho da Fonte da Legenda:</div>
+              <p class="mb-2">Defina o tamanho da fonte da legenda. (Padrão: Médio)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Largura:</div>
+              <p class="mb-2">Especifique a largura do gráfico em polegadas. (Padrão: 10)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Altura:</div>
+              <p class="mb-2">Especifique a altura do gráfico em polegadas. (Padrão: 6)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Posição da Legenda:</div>
+              <p class="mb-2">Escolha onde a legenda será exibida ou se deve ser ocultada. (Padrão: Superior Centro)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Âncora X:</div>
+              <p class="mb-2">Defina a posição horizontal da âncora do gráfico. (Padrão: 0.5)</p>
+            </li>
+            <li>
+              <div class="fw-medium">Âncora Y:</div>
+              <p>Defina a posição vertical da âncora do gráfico. (Padrão: -0.15)</p>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <div class="fw-bold">Cargas Personalizadas:</div>
+          <p>Adicione valores de cargas personalizadas para serem usadas nos gráficos.</p>
+        </li>
+      </ul>
+      <li class="mt-4 h4">Gerar gráficos e exportar resultados:</li>
+      <p>
+        Clique em <b>Gerar Gráficos</b> para gerar os gráficos ou em <b>Exportar Resultados</b> para exportar os resultados em XLSX.
+      </p>
+      <li class="mt-4 h4">Limpar sessão:</li>
+      <p>
+        Use o botão <b>Limpar Sessão</b> no menu para reiniciar as configurações e limpar dados temporários.
+      </p>
+    </ol>
     <div class="alert alert-info">
-      <b>Dica:</b> Você pode salvar e carregar configurações usando os campos de <b>Arquivo de Configuração de Entrada</b> e <b>Arquivo de Configuração de Saída</b>.
+      <b>Dica:</b> Você pode salvar e carregar configurações usando os campos de <b>Arquivo de Configuração de Entrada</b>
+      e <b>Arquivo de Configuração de Saída</b>.
     </div>
   </div>
 {% endblock content %}

@@ -2,7 +2,7 @@
   <div class="collapse navbar-collapse justify-content-center p-0 m-0"
        id="navbarNav">
     <ul class="navbar-nav fs-4 fw-medium">
-      {% set pages = [('home', 'Início', 'home.index'), ('config', 'Configuração', 'config.index'), ('tutorial', 'Tutorial', 'tutorial.index')] %}
+      {% set pages = [('home', 'Início', 'home.index'), ('generation', 'Geração', 'generation.index'), ('tutorial', 'Tutorial', 'tutorial.index')] %}
       {% for name, title, route in pages %}
         <li class="nav-item">
           {% if page == name %}

@@ -12,7 +12,7 @@ async function clearSession() {
     );
     if (!confirmation) return;
 
-    const response = await fetch("/clear-session", {
+    const response = await fetch("/config/clear-session", {
         method: "POST",
     });
     const data = await response.json();

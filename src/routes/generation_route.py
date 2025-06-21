@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    render_template,
     request,
     jsonify,
     session,
@@ -13,7 +14,72 @@ from services import (
 )
 
 blueprint = Blueprint("generation", __name__)
+debug_output = False
 logger = us.Logger(True, __name__)
+
+
+@blueprint.route("/", methods=["GET"])
+def index():
+    """
+    Renders the configuration page with the current session data.
+    Returns:
+        Rendered HTML template for the configuration page.
+    """
+    base_directory = session.get("base_directory", "")
+    base_dir_error = session.get("base_dir_error", None)
+    if base_dir_error:
+        return render_template(
+            "generation.jinja",
+            base_directory=base_directory,
+            base_dir_error=base_dir_error,
+            debug_output=debug_output,
+        )
+    input_config = session.get("input_config", "")
+    output_config = session.get("output_config", "")
+
+    directories = session.get("directories", None)
+    metric_type = session.get("metric_type", "individual")
+    grouped_metrics = session.get("grouped_metrics", None)
+    load_count = session.get("load_count", 0)
+    has_config_data = session.get("has_config_data", False)
+
+    graph_type = session.get("graph_type", "line")
+    overwrite = session.get("overwrite", False)
+    figure_width = session.get("figure_width", 10)
+    figure_height = session.get("figure_height", 6)
+    graph_fontsize = session.get("graph_fontsize", "medium")
+    legend_fontsize = session.get("legend_fontsize", "medium")
+    max_columns = session.get("max_columns", 5)
+    anchor_x = session.get("anchor_x", 0.5)
+    anchor_y = session.get("anchor_y", -0.15)
+    frameon = session.get("frameon", False)
+    legend_position = session.get("legend_position", "upper center")
+    loads = session.get("loads", {})
+
+    return render_template(
+        "generation.jinja",
+        base_directory=base_directory,
+        input_config=input_config,
+        output_config=output_config,
+        directories=directories,
+        metric_type=metric_type,
+        grouped_metrics=grouped_metrics,
+        load_count=load_count,
+        has_config_data=has_config_data,
+        graph_type=graph_type,
+        overwrite=overwrite,
+        figure_width=figure_width,
+        figure_height=figure_height,
+        graph_fontsize=graph_fontsize,
+        legend_fontsize=legend_fontsize,
+        anchor_x=anchor_x,
+        anchor_y=anchor_y,
+        legend_position=legend_position,
+        max_columns=max_columns,
+        frameon=frameon,
+        loads=loads,
+        debug_output=debug_output,
+    )
 
 
 @blueprint.route("/generate-graphs", methods=["POST"])
@@ -31,7 +97,7 @@ def generate_graphs():
         ...    "graph-type": "line", "bar" or "scatter",
         ...    "overwrite": true or false,
         ...    "figure-width": 10,
-        ...    "figure-height": 5,
+        ...    "figure-height": 6,
         ...    "frameon": true or false,
         ...    "max-columns": 5,
         ...    "graph-font-size": "medium",
@@ -65,7 +131,7 @@ def generate_graphs():
         data.get("anchor-y", "-0.15"),
     )
     legend_position = data.get("legend-position", "upper center")
-    max_columns = int(data.get("max-columns", "5"))
+    max_columns = int(data.get("max-columns", "6"))
     frameon = data.get("frameon", "") == "true"
     loads: dict = data.get("loads", {})
 
