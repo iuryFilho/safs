@@ -22,6 +22,18 @@ def get_simulations_dirs_paths(base_directory: str) -> list[str]:
     return dirs
 
 
+def get_full_paths(base_directory: str, directories: list[str]) -> list[str]:
+    """
+    Retrieves the full paths of the directories by joining them with the base directory.
+    Args:
+        base_directory (str): The base directory to join with the directories.
+        directories (list[str]): List of directory names to be joined with the base directory.
+    Returns:
+        list: A list of full paths for the directories.
+    """
+    return [op.join(base_directory, d) for d in directories]
+
+
 def get_csv_paths(simulation_directory: str) -> list[str]:
     """
     Retrieves the csv file paths from the simulation directory.

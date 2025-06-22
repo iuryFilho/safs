@@ -7,7 +7,7 @@ from flask import (
 )
 
 from services import (
-    export as es,
+    exportation as es,
     generation as gs,
     metrics as ms,
     utils as us,
@@ -216,7 +216,8 @@ def export_results():
     session["loads"] = loads
     session["overwrite"] = overwrite
     try:
-        es.export_results(
+        exporter = es.ResultExporter()
+        exporter.export_results(
             base_directory,
             metric_type,
             directories,

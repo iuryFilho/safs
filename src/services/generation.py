@@ -1,11 +1,11 @@
 from typing import Callable, TypeAlias
-import pandas as pd
 import os.path as op
 from data.metric_data import METRIC_GROUP_ALIASES
 from services import (
     metrics as ms,
     plotting as pls,
     simulation as ss,
+    path as ps,
     utils as us,
 )
 
@@ -21,8 +21,8 @@ class GraphGenerator:
 
     def __init__(self):
         self.GENERATION_STRATEGIES: dict[str, Callable] = {
-            "individual": self.__generate_individual,
-            "grouped": self.__generate_grouped,
+            "individual": self.generate_individual,
+            "grouped": self.generate_grouped,
         }
         self.x_label = "Carga na rede (Erlangs)"
 
@@ -37,16 +37,15 @@ class GraphGenerator:
         loads: list[str],
         load_points: list[str],
     ):
-        self.metric_type = metric_type
         self.graph_type = graph_type
-        self.__set_generation_strategy(metric_type)
-        self.__set_filename_prefix(
+        self.set_generation_strategy(metric_type)
+        self.set_filename_prefix(
             base_directory,
             graph_type,
             metric_type,
         )
-        self.__set_dir_labels(dir_labels, directories)
-        self.__set_full_dirs(base_directory, directories)
+        self.set_dir_labels(dir_labels, directories)
+        self.set_full_dirs(base_directory, directories)
         self.grouped_metrics = grouped_metrics
         self.loads = loads
         self.load_points = load_points
@@ -77,11 +76,11 @@ class GraphGenerator:
         }
         for self.metric_group, self.metrics in self.grouped_metrics.items():
             self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
-            self.__set_simulation_results()
+            self.set_simulation_results()
             self.generation_func()
         return self
 
-    def __set_simulation_results(self):
+    def set_simulation_results(self):
         """
         Sets the simulation results based on the full directories and metric group.
         This method loads the simulation results from the specified directories
@@ -91,7 +90,7 @@ class GraphGenerator:
             self.full_directories, self.metric_group
         )
 
-    def __set_generation_strategy(self, metric_type: str):
+    def set_generation_strategy(self, metric_type: str):
         """
         Sets the generation strategy based on the metric type.
         Args:
@@ -104,7 +103,7 @@ class GraphGenerator:
             raise ValueError(f"Metric type not supported: {metric_type}")
         self.generation_func = generation_func
 
-    def __set_filename_prefix(
+    def set_filename_prefix(
         self,
         base_directory: str,
         graph_type: str,
@@ -123,7 +122,7 @@ class GraphGenerator:
             us.capitalize_first_letters(graph_type, metric_type),
         )
 
-    def __set_dir_labels(self, dir_labels: list[str], directories: list[str]):
+    def set_dir_labels(self, dir_labels: list[str], directories: list[str]):
         """
         Sets the directory labels for the graphs. If no labels are provided,
         it uses the directory names as labels.
@@ -135,7 +134,7 @@ class GraphGenerator:
             dir_labels = directories
         self.dir_labels = dir_labels
 
-    def __set_full_dirs(self, base_directory: str, directories: list[str]):
+    def set_full_dirs(self, base_directory: str, directories: list[str]):
         """
         Sets the full directories for the graphs by joining the base directory
         with the provided directory names.
@@ -144,13 +143,11 @@ class GraphGenerator:
                 and where the graphs will be saved.
             directories (list[str]): List of directory names.
         """
-        self.full_directories = [
-            op.join(base_directory, directory) for directory in directories
-        ]
+        self.full_directories = ps.get_full_paths(base_directory, directories)
 
-    def __generate_individual(self):
+    def generate_individual(self):
         """
-        Generates graphs for metrics of the individual type.\\
+        Generates graphs for metrics of type 'individual'.\\
         This function compiles data for each individual metric and generates graphs
         based on the provided parameters.
         """
@@ -171,9 +168,9 @@ class GraphGenerator:
                 **self.graph_config,
             )
 
-    def __generate_grouped(self):
+    def generate_grouped(self):
         """
-        Generates graphs for metrics of the grouped type.\\
+        Generates graphs for metrics of type 'grouped'.\\
         This function compiles data for each metric group and generates graphs
         based on the provided parameters.
         """
