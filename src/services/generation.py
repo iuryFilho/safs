@@ -12,179 +12,184 @@ from services import (
 GroupedMetricT: TypeAlias = dict[str, list[str]]
 
 
-def generate_individual_graphs(
-    *,
-    metrics: list[str],
-    simulation_results: list[pd.DataFrame],
-    dir_labels: list[str],
-    loads: list[str],
-    load_points: list[str],
-    filename_prefix: str,
-    **graph_kwargs: dict[str, any],
-):
+class GraphGenerator:
     """
-    Generate graphs for individual metrics.\\
-    This function compiles data for each individual metric and generates graphs
+    Class to generate graphs based on simulation results and metrics.
+    This class provides methods to generate individual or grouped graphs
     based on the provided parameters.
-    Args:
-        metrics (list[str]): List of individual metrics to plot.
-        simulation_results (list[pd.DataFrame]): List of DataFrames containing simulation results.
-        dir_labels (list[str]): List of directory labels.
-        loads (list[str]): List of loads for the x-axis.
-        load_points (list[str]): List of load points for the x-axis.
-        filename_prefix (str): Prefix for the output file names.
-        graph_kwargs: Keyword arguments containing the following keys
-            - **graph_type** (str): Type of graph to generate
-                (e.g., "line", "bar", "stacked").
-            - **x_label** (str): Label for the x-axis.
-            - **fontsize** (str): Font size for the labels.
-            - **figsize** (tuple[int, int]): Size of the figure for the graph.
-            - **overwrite** (bool): Whether to overwrite existing files.
     """
-    graph_kwargs.pop("metric_group", None)
-    for metric in metrics:
-        dataframes = ss.compile_data(
-            simulation_results,
-            metric,
-            "individual",
-            load_points,
-        )
-        filename = f"{filename_prefix}_{metric.replace(' ', '_')}"
-        pls.plot_graph(
-            dataframes=dataframes,
-            loads=loads,
-            labels=dir_labels,
-            y_label=metric,
-            output_file=filename,
-            **graph_kwargs,
-        )
 
+    def __init__(self):
+        self.GENERATION_STRATEGIES: dict[str, Callable] = {
+            "individual": self.__generate_individual,
+            "grouped": self.__generate_grouped,
+        }
+        self.x_label = "Carga na rede (Erlangs)"
 
-def generate_grouped_graphs(
-    *,
-    metrics: list[str],
-    metric_group: str,
-    simulation_results: list[pd.DataFrame],
-    dir_labels: list[str],
-    loads: list[str],
-    load_points: list[str],
-    filename_prefix: str,
-    **graph_kwargs: dict[str, any],
-):
-    """
-    Generate graphs for grouped metrics.\\
-    This function compiles data for each metric group and generates graphs
-    based on the provided parameters.
-    Args:
-        metrics (list[str]): List of individual metrics to plot.
-        metric_group (str): The metric group to which the metrics belong.
-        simulation_results (list[pd.DataFrame]): List of DataFrames containing simulation results.
-        dir_labels (list[str]): List of directory labels.
-        loads (list[str]): List of loads for the x-axis.
-        load_points (list[str]): List of load points for the x-axis.
-        filename_prefix (str): Prefix for the output file names.
-        graph_kwargs: Keyword arguments containing the following keys
-            - **graph_type** (str): Type of graph to generate
-                (e.g., "line", "bar", "stacked").
-            - **x_label** (str): Label for the x-axis.
-            - **fontsize** (str): Font size for the labels.
-            - **figsize** (tuple[int, int]): Size of the figure for the graph.
-            - **overwrite** (bool): Whether to overwrite existing files.
-    """
-    for label, simulation_result in zip(dir_labels, simulation_results):
-        dataframes = ss.compile_data(
-            simulation_result,
-            metrics,
-            "grouped",
-            load_points,
+    def initialize_graphs_data(
+        self,
+        base_directory: str,
+        metric_type: str,
+        graph_type: str,
+        dir_labels: list[str],
+        directories: list[str],
+        grouped_metrics: GroupedMetricT,
+        loads: list[str],
+        load_points: list[str],
+    ):
+        self.metric_type = metric_type
+        self.graph_type = graph_type
+        self.__set_generation_strategy(metric_type)
+        self.__set_filename_prefix(
+            base_directory,
+            graph_type,
+            metric_type,
         )
-        filename = f"{filename_prefix}_{metric_group}_{label}"
-        pls.plot_graph(
-            dataframes=dataframes,
-            loads=loads,
-            labels=ms.get_metrics_components(metrics),
-            y_label=ms.get_metric_root(metrics[0]),
-            output_file=filename,
-            **graph_kwargs,
+        self.__set_dir_labels(dir_labels, directories)
+        self.__set_full_dirs(base_directory, directories)
+        self.grouped_metrics = grouped_metrics
+        self.loads = loads
+        self.load_points = load_points
+        return self
+
+    def generate_graphs(
+        self,
+        graph_fontsize: int,
+        legend_fontsize: int,
+        figsize: list[float],
+        overwrite: bool,
+        bbox_to_anchor: list[float],
+        legend_position: str,
+        max_columns: int,
+        frameon: bool,
+    ):
+        self.graph_config = {
+            "graph_type": self.graph_type,
+            "x_label": self.x_label,
+            "legend_fontsize": legend_fontsize,
+            "graph_fontsize": graph_fontsize,
+            "figsize": figsize,
+            "overwrite": overwrite,
+            "bbox_to_anchor": bbox_to_anchor,
+            "legend_position": legend_position,
+            "max_columns": max_columns,
+            "frameon": frameon,
+        }
+        for self.metric_group, self.metrics in self.grouped_metrics.items():
+            self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
+            self.__set_simulation_results()
+            self.generation_func()
+        return self
+
+    def __set_simulation_results(self):
+        """
+        Sets the simulation results based on the full directories and metric group.
+        This method loads the simulation results from the specified directories
+        and prepares them for graph generation.
+        """
+        self.simulation_results = ss.load_simulation_results(
+            self.full_directories, self.metric_group
         )
 
+    def __set_generation_strategy(self, metric_type: str):
+        """
+        Sets the generation strategy based on the metric type.
+        Args:
+            metric_type (str): The type of metric for which the generation strategy is set.
+        Raises:
+            ValueError: If the metric type is not supported.
+        """
+        generation_func = self.GENERATION_STRATEGIES.get(metric_type, None)
+        if generation_func is None:
+            raise ValueError(f"Metric type not supported: {metric_type}")
+        self.generation_func = generation_func
 
-GENERATION_STRATEGIES: dict[str, Callable] = {
-    "individual": generate_individual_graphs,
-    "grouped": generate_grouped_graphs,
-}
-
-
-def generate_graphs(
-    *,
-    base_directory: str,
-    directories: list[str],
-    dir_labels: list[str],
-    grouped_metrics: GroupedMetricT,
-    loads: list[str],
-    load_points: list[str],
-    metric_type: str,
-    graph_type: str,
-    graph_fontsize: str,
-    legend_fontsize: str,
-    figsize: tuple[int, int],
-    overwrite: bool,
-    bbox_to_anchor: tuple[float, float],
-    legend_position: str,
-    max_columns: int,
-    frameon: bool,
-):
-    """
-    Generate graphs based on the provided parameters.\\
-    This function compiles data for individual or grouped metrics and generates
-    graphs based on the specified graph type (line, bar, or stacked).
-    Args:
-        base_directory (str): Base directory where the simulation results are stored.
-        directories (list[str]): List of directories containing simulation results.
-        grouped_metrics (GroupedMetricT): Dictionary containing grouped metrics.
-        dir_labels (list[str]): List of directory labels for the graphs.
-        loads (list[str]): List of loads for the x-axis.
-        load_points (list[str]): List of load points for the x-axis.
-        graph_fontsize (str): Font size for the graph text.
-        legend_fontsize (str): Font size for the legend text.
-        figsize (tuple[int, int]): Size of the figure for the graph (default is (10, 5)).
-        overwrite (bool): Whether to overwrite existing files (default is True).
-        metric_type (str): Type of metrics to generate graphs for
-            ("individual" or "grouped", default is "individual").
-        graph_type (str): Type of graph to generate
-            ("line", "bar", or "stacked", default is "line").
-    """
-    generate_function = GENERATION_STRATEGIES.get(metric_type)
-    if generate_function is None:
-        raise ValueError(f"Metric type not supported: {metric_type}")
-
-    filename_prefix = op.join(
-        base_directory,
-        us.capitalize_first_letters(graph_type, metric_type),
-    )
-    x_label = "Carga na rede (Erlangs)"
-    if not dir_labels:
-        dir_labels = directories
-    full_directories = [op.join(base_directory, d) for d in directories]
-    for metric_group, metrics in grouped_metrics.items():
-        simulation_results = ss.load_simulation_results(full_directories, metric_group)
-        metric_group_alias = METRIC_GROUP_ALIASES[metric_group]
-        generate_function(
-            metrics=metrics,
-            metric_group=metric_group_alias,
-            simulation_results=simulation_results,
-            dir_labels=dir_labels,
-            loads=loads,
-            load_points=load_points,
-            graph_type=graph_type,
-            filename_prefix=filename_prefix,
-            x_label=x_label,
-            graph_fontsize=graph_fontsize,
-            legend_fontsize=legend_fontsize,
-            figsize=figsize,
-            overwrite=overwrite,
-            legend_position=legend_position,
-            bbox_to_anchor=bbox_to_anchor,
-            max_columns=max_columns,
-            frameon=frameon,
+    def __set_filename_prefix(
+        self,
+        base_directory: str,
+        graph_type: str,
+        metric_type: str,
+    ):
+        """
+        Sets the filename prefix for the graphs based on the base directory,
+        graph type, and metric type.
+        Args:
+            base_directory (str): The base directory where the graphs will be saved.
+            graph_type (str): The type of graph to be generated.
+            metric_type (str): The type of metric for the graphs.
+        """
+        self.filename_prefix = op.join(
+            base_directory,
+            us.capitalize_first_letters(graph_type, metric_type),
         )
+
+    def __set_dir_labels(self, dir_labels: list[str], directories: list[str]):
+        """
+        Sets the directory labels for the graphs. If no labels are provided,
+        it uses the directory names as labels.
+        Args:
+            dir_labels (list[str]): List of labels for the directories.
+            directories (list[str]): List of directory names.
+        """
+        if not dir_labels:
+            dir_labels = directories
+        self.dir_labels = dir_labels
+
+    def __set_full_dirs(self, base_directory: str, directories: list[str]):
+        """
+        Sets the full directories for the graphs by joining the base directory
+        with the provided directory names.
+        Args:
+            base_directory (str): The base directory where the data is stored
+                and where the graphs will be saved.
+            directories (list[str]): List of directory names.
+        """
+        self.full_directories = [
+            op.join(base_directory, directory) for directory in directories
+        ]
+
+    def __generate_individual(self):
+        """
+        Generates graphs for metrics of the individual type.\\
+        This function compiles data for each individual metric and generates graphs
+        based on the provided parameters.
+        """
+        for metric in self.metrics:
+            dataframes = ss.compile_data(
+                self.simulation_results,
+                [metric],
+                "individual",
+                self.load_points,
+            )
+            filename = f"{self.filename_prefix}_{metric.replace(' ', '_')}"
+            pls.plot_graph(
+                dataframes=dataframes,
+                loads=self.loads,
+                labels=self.dir_labels,
+                y_label=metric,
+                output_file=filename,
+                **self.graph_config,
+            )
+
+    def __generate_grouped(self):
+        """
+        Generates graphs for metrics of the grouped type.\\
+        This function compiles data for each metric group and generates graphs
+        based on the provided parameters.
+        """
+        for label, simulation_result in zip(self.dir_labels, self.simulation_results):
+            dataframes = ss.compile_data(
+                [simulation_result],
+                self.metrics,
+                "grouped",
+                self.load_points,
+            )
+            filename = f"{self.filename_prefix}_{self.metric_group_alias}_{label}"
+            pls.plot_graph(
+                dataframes=dataframes,
+                loads=self.loads,
+                labels=ms.get_metrics_components(self.metrics),
+                y_label=ms.get_metric_root(self.metrics[0]),
+                output_file=filename,
+                **self.graph_config,
+            )

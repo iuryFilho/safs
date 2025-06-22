@@ -5,35 +5,36 @@ from services import path as ps, utils as us
 
 
 def compile_data(
-    simulation_results: list[pd.DataFrame] | pd.DataFrame,
-    metrics: list[str] | str,
-    metric_type: str = "individual",
-    load_points: list = None,
+    simulation_results: list[pd.DataFrame],
+    metrics: list[str],
+    metric_type: str,
+    load_points: list[str],
 ) -> list[pd.DataFrame]:
     """
     Compiles data from simulation results based on the specified metrics and metric type.
     Args:
-        simulation_results (list[pd.DataFrame] | pd.DataFrame): The simulation results to compile.
-        metrics (list[str] | str): The metrics to filter the results by.
+        simulation_results (list[pd.DataFrame]): The simulation results to compile.
+        metrics (list[str]): The metrics to filter the results by.
         metric_type (str): The type of metrics, either "individual" or "grouped".
-        load_points (list, optional): A list of load points to filter the results by. Defaults to None.
+        load_points (list[str]): A list of load points to filter the results by. Defaults to None.
     Returns:
         list[pd.DataFrame]: A list of DataFrames containing the compiled data.
     """
     verified_type = verify_args_type(simulation_results, metrics, metric_type)
     if verified_type == "individual":
         length = len(simulation_results)
-        metric_results = filter_result_list_by_metric(metrics, simulation_results)
+        metric_results = filter_result_list_by_metric(metrics[0], simulation_results)
     elif verified_type == "grouped":
         length = len(metrics)
-        metric_results = filter_result_by_metric_list(metrics, simulation_results)
+        metric_results = filter_result_by_metric_list(metrics, simulation_results[0])
     else:
         raise ValueError(
-            "Invalid arguments: 'simulation_results' must be a list of DataFrames for individual metrics or a single DataFrame for grouped metrics, and 'metrics' must be a string for individual metrics or a list of strings for grouped metrics."
+            "Invalid arguments: 'simulation_results' must be a list of DataFrames "
+            "and 'metrics' must be a string for individual metrics or a list of strings for grouped metrics."
         )
 
     if load_points is not None and len(load_points) > 0:
-        load_points_set = set(str(l) for l in load_points)
+        load_points_set = {str(l) for l in load_points}
         for i in range(len(metric_results)):
             loadpoint_col = metric_results[i]["LoadPoint"]
             first = loadpoint_col.iloc[0]
@@ -194,31 +195,21 @@ def get_load_count(directory_path: str, metric_group: str, metric: str) -> int:
 
 
 def verify_args_type(
-    simulation_results: list[pd.DataFrame] | pd.DataFrame,
-    metrics: list[str] | str,
+    simulation_results: list[pd.DataFrame],
+    metrics: list[str],
     metric_type: str,
 ):
     """
     Checks the types of the arguments to determine if they match the expected types for individual or grouped metrics.
     Args:
-        simulation_results (list[pd.DataFrame] | pd.DataFrame): The simulation results to check.
-        metrics (list[str] | str): The metrics to check.
+        simulation_results (list[pd.DataFrame]): The simulation results to check.
+        metrics (list[str]): The metrics to check.
         metric_type (str): The type of metrics, either "individual" or "grouped".
     Returns:
-        str: Returns the verification result.
+        str: Returns the metric type if it matches the expected types, otherwise returns an empty string.
     """
-    if (
-        metric_type == "individual"
-        and isinstance(simulation_results, list)
-        and all(isinstance(sr, pd.DataFrame) for sr in simulation_results)
-        and isinstance(metrics, str)
-    ):
+    if metric_type == "individual" and len(metrics) == 1:
         return "individual"
-    if (
-        metric_type == "grouped"
-        and isinstance(simulation_results, pd.DataFrame)
-        and isinstance(metrics, list)
-        and all(isinstance(m, str) for m in metrics)
-    ):
+    if metric_type == "grouped" and len(simulation_results) == 1:
         return "grouped"
     return ""

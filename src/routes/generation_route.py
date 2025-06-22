@@ -110,7 +110,7 @@ def generate_graphs():
     """
     base_directory = session.get("base_directory", "")
     metric_type = session.get("metric_type", "individual")
-    grouped_metrics = session.get("grouped_metrics", None)
+    grouped_metrics: gs.GroupedMetricT = session.get("grouped_metrics", None)
 
     data: dict = request.get_json()
     directories = data.get("directory-list", [])
@@ -149,34 +149,34 @@ def generate_graphs():
     session["max_columns"] = max_columns
     session["loads"] = loads
 
-    if grouped_metrics:
-        chosen_grouped_metrics = ms.filter_chosen_metrics(
-            grouped_metrics, chosen_metrics
-        )
+    chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
+    if chosen_grouped_metrics:
         try:
-            gs.generate_graphs(
+            generator = gs.GraphGenerator()
+            generator.initialize_graphs_data(
                 base_directory=base_directory,
+                metric_type=metric_type,
+                graph_type=graph_type,
                 directories=directories,
                 dir_labels=labels,
                 grouped_metrics=chosen_grouped_metrics,
-                loads=loads.values(),
-                load_points=loads.keys(),
-                metric_type=metric_type,
-                graph_type=graph_type,
-                overwrite=overwrite,
-                figsize=figsize,
+                loads=list(loads.values()),
+                load_points=list(loads.keys()),
+            ).generate_graphs(
                 graph_fontsize=graph_fontsize,
                 legend_fontsize=legend_fontsize,
+                figsize=figsize,
+                overwrite=overwrite,
                 bbox_to_anchor=anchor,
                 legend_position=legend_position,
                 max_columns=max_columns,
                 frameon=frameon,
             )
-            return jsonify({"message": "Graphs generated successfully."})
+            return jsonify({"message": "Gráficos gerados com sucesso."})
         except Exception as e:
             return jsonify({"error": str(e)})
     else:
-        return jsonify({"error": "No metrics selected."})
+        return jsonify({"error": "Nenhuma métrica selecionada."})
 
 
 @blueprint.route("/export-results", methods=["POST"])
@@ -222,8 +222,8 @@ def export_results():
             directories,
             labels,
             chosen_grouped_metrics,
-            loads=loads.values(),
-            load_points=loads.keys(),
+            loads=list(loads.values()),
+            load_points=list(loads.keys()),
             overwrite=overwrite,
         )
         return jsonify({"message": "Results exported successfully."})

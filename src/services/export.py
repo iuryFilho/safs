@@ -8,7 +8,7 @@ from services import path as ps, simulation as ss
 def assemble_results_table(
     headers: list[str],
     int_loads: list[int],
-    load_points: list[str],
+    load_points: list[int],
     results: list[pd.DataFrame],
 ) -> dict:
     """
@@ -17,13 +17,13 @@ def assemble_results_table(
     Args:
         headers (list[str]): List of headers for the results.
         int_loads (list[int]): List of integer loads.
-        load_points (list[str]): List of load points.
+        load_points (list[int]): List of load points.
         results (list[pd.DataFrame]): List of DataFrames containing the results.
     Returns:
         dict: A dictionary with MultiIndex columns and corresponding data.
     """
     columns = [("", "point"), ("", "load")]
-    data = [load_points, int_loads]
+    data: list = [load_points, int_loads]
     for header, df in zip(headers, results):
         columns.append((header, "mean"))
         columns.append((header, "error"))
@@ -87,11 +87,13 @@ def export_individual_results(
     """
     all_tables = []
     for metric in metrics:
-        results = ss.compile_data(simulation_results, metric, "individual", load_points)
+        results = ss.compile_data(
+            simulation_results, [metric], "individual", load_points
+        )
 
         table = assemble_results_table(labels, int_loads, int_load_points, results)
         out_df = pd.DataFrame(table)
-        out_df.columns = pd.MultiIndex.from_tuples(out_df.columns)
+        out_df.columns = pd.MultiIndex.from_tuples(out_df.columns)  # type: ignore
 
         out_df = add_label_column("metric", metric, out_df)
         all_tables.append(out_df)
@@ -125,11 +127,11 @@ def export_grouped_results(
     """
     all_tables = []
     for label, simulation_result in zip(labels, simulation_results):
-        results = ss.compile_data(simulation_result, metrics, "grouped", load_points)
+        results = ss.compile_data([simulation_result], metrics, "grouped", load_points)
 
         table = assemble_results_table(metrics, int_loads, int_load_points, results)
         out_df = pd.DataFrame(table)
-        out_df.columns = pd.MultiIndex.from_tuples(out_df.columns)
+        out_df.columns = pd.MultiIndex.from_tuples(out_df.columns)  # type: ignore
 
         out_df = add_label_column("solution", label, out_df)
         all_tables.append(out_df)

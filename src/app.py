@@ -8,7 +8,7 @@ from routes import (
 )
 
 
-def create_app(*, blueprints: dict[str, Blueprint] = None):
+def create_app(*, blueprints: dict[str, Blueprint] = {}) -> Flask:
     app = Flask(__name__)
     app.secret_key = "supersecretkey"
     app.config["TEMPLATES_AUTO_RELOAD"] = True
