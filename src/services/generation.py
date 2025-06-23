@@ -1,11 +1,14 @@
 from typing import Callable, TypeAlias
 import os.path as op
+
+import pandas as pd
 from data.metric_data import METRIC_GROUP_ALIASES
 from services import (
     metrics as ms,
     plotting as pls,
-    simulation as ss,
+    compilation as cs,
     path as ps,
+    simulation_data as sds,
     utils as us,
 )
 
@@ -31,8 +34,8 @@ class GraphGenerator:
         base_directory: str,
         metric_type: str,
         graph_type: str,
-        dir_labels: list[str],
         directories: list[str],
+        dir_labels: list[str],
         grouped_metrics: GroupedMetricT,
         loads: list[str],
         load_points: list[str],
@@ -49,6 +52,8 @@ class GraphGenerator:
         self.grouped_metrics = grouped_metrics
         self.loads = loads
         self.load_points = load_points
+
+        self.compiler = cs.DataCompiler(metric_type, load_points)
         return self
 
     def generate_graphs(
@@ -57,7 +62,7 @@ class GraphGenerator:
         legend_fontsize: int,
         figsize: list[float],
         overwrite: bool,
-        bbox_to_anchor: list[float],
+        anchor: list[float],
         legend_position: str,
         max_columns: int,
         frameon: bool,
@@ -69,26 +74,19 @@ class GraphGenerator:
             "graph_fontsize": graph_fontsize,
             "figsize": figsize,
             "overwrite": overwrite,
-            "bbox_to_anchor": bbox_to_anchor,
+            "bbox_to_anchor": anchor,
             "legend_position": legend_position,
             "max_columns": max_columns,
             "frameon": frameon,
         }
-        for self.metric_group, self.metrics in self.grouped_metrics.items():
-            self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
-            self.set_simulation_results()
-            self.generation_func()
-        return self
 
-    def set_simulation_results(self):
-        """
-        Sets the simulation results based on the full directories and metric group.
-        This method loads the simulation results from the specified directories
-        and prepares them for graph generation.
-        """
-        self.simulation_results = ss.load_simulation_results(
-            self.full_directories, self.metric_group
-        )
+        for self.metric_group, metrics in self.grouped_metrics.items():
+            self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
+            simulation_results = sds.load_simulation_results(
+                self.full_directories, self.metric_group
+            )
+            self.generation_func(metrics, simulation_results)
+        return self
 
     def set_generation_strategy(self, metric_type: str):
         """
@@ -145,19 +143,21 @@ class GraphGenerator:
         """
         self.full_directories = ps.get_full_paths(base_directory, directories)
 
-    def generate_individual(self):
+    def generate_individual(
+        self, metrics: list[str], simulation_results: list[pd.DataFrame]
+    ):
         """
         Generates graphs for metrics of type 'individual'.\\
         This function compiles data for each individual metric and generates graphs
         based on the provided parameters.
+        Args:
+            metrics (list[str]): List of metrics to be plotted.
+            simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
-        for metric in self.metrics:
-            dataframes = ss.compile_data(
-                self.simulation_results,
-                [metric],
-                "individual",
-                self.load_points,
-            )
+        self.compiler.set_simulation_results(simulation_results)
+        for metric in metrics:
+            self.compiler.set_metrics([metric])
+            dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{metric.replace(' ', '_')}"
             pls.plot_graph(
                 dataframes=dataframes,
@@ -168,25 +168,27 @@ class GraphGenerator:
                 **self.graph_config,
             )
 
-    def generate_grouped(self):
+    def generate_grouped(
+        self, metrics: list[str], simulation_results: list[pd.DataFrame]
+    ):
         """
         Generates graphs for metrics of type 'grouped'.\\
         This function compiles data for each metric group and generates graphs
         based on the provided parameters.
+        Args:
+            metrics (list[str]): List of metrics to be plotted.
+            simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
-        for label, simulation_result in zip(self.dir_labels, self.simulation_results):
-            dataframes = ss.compile_data(
-                [simulation_result],
-                self.metrics,
-                "grouped",
-                self.load_points,
-            )
+        self.compiler.set_metrics(metrics)
+        for label, simulation_result in zip(self.dir_labels, simulation_results):
+            self.compiler.set_simulation_results([simulation_result])
+            dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{self.metric_group_alias}_{label}"
             pls.plot_graph(
                 dataframes=dataframes,
                 loads=self.loads,
-                labels=ms.get_metrics_components(self.metrics),
-                y_label=ms.get_metric_root(self.metrics[0]),
+                labels=ms.get_metrics_components(metrics),
+                y_label=ms.get_metric_root(metrics[0]),
                 output_file=filename,
                 **self.graph_config,
             )

@@ -4,62 +4,6 @@ from scipy import stats as st
 from services import path as ps, utils as us
 
 
-def compile_data(
-    simulation_results: list[pd.DataFrame],
-    metrics: list[str],
-    metric_type: str,
-    load_points: list[str],
-) -> list[pd.DataFrame]:
-    """
-    Compiles data from simulation results based on the specified metrics and metric type.
-    Args:
-        simulation_results (list[pd.DataFrame]): The simulation results to compile.
-        metrics (list[str]): The metrics to filter the results by.
-        metric_type (str): The type of metrics, either "individual" or "grouped".
-        load_points (list[str]): A list of load points to filter the results by. Defaults to None.
-    Returns:
-        list[pd.DataFrame]: A list of DataFrames containing the compiled data.
-    """
-    verified_type = verify_args_type(simulation_results, metrics, metric_type)
-    if verified_type == "individual":
-        length = len(simulation_results)
-        metric_results = filter_result_list_by_metric(metrics[0], simulation_results)
-    elif verified_type == "grouped":
-        length = len(metrics)
-        metric_results = filter_result_by_metric_list(metrics, simulation_results[0])
-    else:
-        raise ValueError(
-            "Invalid arguments: 'simulation_results' must be a list of DataFrames "
-            "and 'metrics' must be a string for individual metrics or a list of strings for grouped metrics."
-        )
-
-    if load_points is not None and len(load_points) > 0:
-        load_points_set = {str(l) for l in load_points}
-        for i in range(len(metric_results)):
-            loadpoint_col = metric_results[i]["LoadPoint"]
-            first = loadpoint_col.iloc[0]
-            if isinstance(first, float) and first.is_integer():
-                loadpoint_str = loadpoint_col.astype(int).astype(str)
-            else:
-                loadpoint_str = loadpoint_col.astype(str)
-            metric_results[i] = metric_results[i][loadpoint_str.isin(load_points_set)]
-
-    final_results = extract_repetitions(metric_results)
-    del metric_results
-
-    number_of_reps = get_number_of_repetitions(final_results)
-    average = calculate_average(final_results)
-    error = calculate_standard_error(final_results, number_of_reps)
-    del final_results
-
-    dataframes = [pd.DataFrame() for _ in range(length)]
-
-    for i in range(length):
-        dataframes[i]["mean"] = average[i]
-        dataframes[i]["error"] = error[i]
-    return dataframes
-
-
 def calculate_standard_error(
     data_list: list[pd.DataFrame], number_of_reps: int
 ) -> list:
@@ -192,24 +136,3 @@ def get_load_count(directory_path: str, metric_group: str, metric: str) -> int:
     simulation_results = load_simulation_results([directory_path], metric_group)
     filtered_results = filter_result_list_by_metric(metric, simulation_results)
     return len(extract_load_points(filtered_results[0]))
-
-
-def verify_args_type(
-    simulation_results: list[pd.DataFrame],
-    metrics: list[str],
-    metric_type: str,
-):
-    """
-    Checks the types of the arguments to determine if they match the expected types for individual or grouped metrics.
-    Args:
-        simulation_results (list[pd.DataFrame]): The simulation results to check.
-        metrics (list[str]): The metrics to check.
-        metric_type (str): The type of metrics, either "individual" or "grouped".
-    Returns:
-        str: Returns the metric type if it matches the expected types, otherwise returns an empty string.
-    """
-    if metric_type == "individual" and len(metrics) == 1:
-        return "individual"
-    if metric_type == "grouped" and len(simulation_results) == 1:
-        return "grouped"
-    return ""

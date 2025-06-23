@@ -11,7 +11,7 @@ from data.metric_data import FILTERED_METRICS
 from services import (
     config as cs,
     path as ps,
-    simulation as ss,
+    simulation_data as sds,
     utils as us,
 )
 
@@ -56,7 +56,7 @@ def load_directory():
         grouped_metrics = FILTERED_METRICS[metric_type]
         first_metric_group = list(grouped_metrics.keys())[0]
         first_metric = grouped_metrics[first_metric_group][0]
-        load_count = ss.get_load_count(
+        load_count = sds.get_load_count(
             simulation_dirs_paths[0], first_metric_group, first_metric
         )
 

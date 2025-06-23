@@ -2,7 +2,7 @@ import pandas as pd
 import os.path as op
 
 from data.metric_data import METRIC_GROUP_ALIASES
-from services import path as ps, simulation as ss
+from services import path as ps, compilation as cs, simulation_data as sds
 
 
 class ResultExporter:
@@ -28,31 +28,23 @@ class ResultExporter:
             op.join(base_directory, metric_type), overwrite
         )
         self.set_full_dirs(base_directory, directories)
-        self.labels = labels
-        self.set_float_loads(loads)
-        self.load_points = load_points
-        self.set_int_load_points(load_points)
-        self.fmt = TableFormatter(self.float_loads, self.int_load_points)
-        with pd.ExcelWriter(f"{filename}.xlsx") as self.writer:
-            for self.metric_group, self.metrics in chosen_grouped_metrics.items():
-                self.set_simulation_results()
-                self.set_tables_func()
-                self.write_to_excel()
+        float_loads = self.get_float_loads(loads)
+        int_load_points = self.get_int_load_points(load_points)
 
-    def write_to_excel(self):
-        metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
+        self.compiler = cs.DataCompiler(metric_type, load_points)
+        self.fmt = TableFormatter(float_loads, int_load_points)
+        with pd.ExcelWriter(f"{filename}.xlsx") as self.writer:
+            for metric_group, metrics in chosen_grouped_metrics.items():
+                simulation_results = sds.load_simulation_results(
+                    self.full_directories, metric_group
+                )
+                self.set_tables_func(metrics, simulation_results, labels)
+                self.write_to_excel(metric_group)
+
+    def write_to_excel(self, metric_group: str):
+        metric_group_alias = METRIC_GROUP_ALIASES[metric_group]
         final_df = pd.concat(self.all_tables, ignore_index=True)
         final_df.to_excel(self.writer, sheet_name=metric_group_alias)
-
-    def set_simulation_results(self):
-        """
-        Sets the simulation results based on the full directories and metric group.
-        This method loads the simulation results from the specified directories
-        and prepares them for graph generation.
-        """
-        self.simulation_results = ss.load_simulation_results(
-            self.full_directories, self.metric_group
-        )
 
     def set_table_format(self, metric_type: str):
         """
@@ -76,46 +68,68 @@ class ResultExporter:
         """
         self.full_directories = ps.get_full_paths(base_directory, directories)
 
-    def set_float_loads(self, loads: list[str]):
+    def get_float_loads(self, loads: list[str]) -> list[float]:
         """
         Converts the list of loads from strings to floats.
         Args:
             loads (list[str]): List of loads as strings.
+        Returns:
+            list[float]: List of loads as floats.
         """
-        self.float_loads = [float(load) for load in loads]
+        return [float(load) for load in loads]
 
-    def set_int_load_points(self, load_points: list[str]):
+    def get_int_load_points(self, load_points: list[str]) -> list[int]:
         """
         Converts the list of load points from strings to integers.
         Args:
             load_points (list[str]): List of load points as strings.
+        Returns:
+            list[int]: List of load points as integers.
         """
-        self.int_load_points = [int(lp) for lp in load_points]
+        return [int(lp) for lp in load_points]
 
-    def set_tables_individual(self):
+    def set_tables_individual(
+        self,
+        metrics: list[str],
+        simulation_results: list[pd.DataFrame],
+        labels: list[str],
+    ):
         """
         Sets the tables for metric of type 'individual'.
+        Args:
+            metrics (list[str]): List of metrics to be included in the tables.
+            simulation_results (list[pd.DataFrame]): List of DataFrames containing simulation results.
+            labels (list[str]): List of labels for the simulation results.
         """
-        self.fmt.initialize_table_list(self.labels)
-        for metric in self.metrics:
-            results = ss.compile_data(
-                self.simulation_results, [metric], "individual", self.load_points
-            )
+        self.fmt.initialize_table_list(labels)
+        self.compiler.set_simulation_results(simulation_results)
+        for metric in metrics:
+            self.compiler.set_metrics([metric])
+            results = self.compiler.compile_data()
 
             self.fmt.set_table(results).add_table_title(
                 "metric", metric
             ).append_table().append_empty_row()
         self.all_tables = self.fmt.tables
 
-    def set_tables_grouped(self):
+    def set_tables_grouped(
+        self,
+        metrics: list[str],
+        simulation_results: list[pd.DataFrame],
+        labels: list[str],
+    ):
         """
         Sets the tables for metric of type 'grouped'.
+        Args:
+            metrics (list[str]): List of metrics to be included in the tables.
+            simulation_results (list[pd.DataFrame]): List of DataFrames containing simulation results.
+            labels (list[str]): List of labels for the simulation results.
         """
-        self.fmt.initialize_table_list(self.metrics)
-        for label, simulation_result in zip(self.labels, self.simulation_results):
-            results = ss.compile_data(
-                [simulation_result], self.metrics, "grouped", self.load_points
-            )
+        self.fmt.initialize_table_list(metrics)
+        self.compiler.set_metrics(metrics)
+        for label, simulation_result in zip(labels, simulation_results):
+            self.compiler.set_simulation_results([simulation_result])
+            results = self.compiler.compile_data()
 
             self.fmt.set_table(results).add_table_title(
                 "solution", label

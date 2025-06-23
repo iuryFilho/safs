@@ -154,23 +154,23 @@ def generate_graphs():
         try:
             generator = gs.GraphGenerator()
             generator.initialize_graphs_data(
-                base_directory=base_directory,
-                metric_type=metric_type,
-                graph_type=graph_type,
-                directories=directories,
+                base_directory,
+                metric_type,
+                graph_type,
+                directories,
                 dir_labels=labels,
                 grouped_metrics=chosen_grouped_metrics,
                 loads=list(loads.values()),
                 load_points=list(loads.keys()),
             ).generate_graphs(
-                graph_fontsize=graph_fontsize,
-                legend_fontsize=legend_fontsize,
-                figsize=figsize,
-                overwrite=overwrite,
-                bbox_to_anchor=anchor,
-                legend_position=legend_position,
-                max_columns=max_columns,
-                frameon=frameon,
+                graph_fontsize,
+                legend_fontsize,
+                figsize,
+                overwrite,
+                anchor,
+                legend_position,
+                max_columns,
+                frameon,
             )
             return jsonify({"message": "Gráficos gerados com sucesso."})
         except Exception as e:
