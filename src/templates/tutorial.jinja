@@ -61,7 +61,7 @@
             </li>
             <li>
               <div class="fw-medium">Altura:</div>
-              <p class="mb-2">Especifique a altura do gráfico em polegadas. (Padrão: 6)</p>
+              <p class="mb-2">Especifique a altura do gráfico em polegadas. (Padrão: 5)</p>
             </li>
             <li>
               <div class="fw-medium">Posição da Legenda:</div>
@@ -74,6 +74,43 @@
             <li>
               <div class="fw-medium">Âncora Y:</div>
               <p>Defina a posição vertical da âncora do gráfico. (Padrão: -0.15)</p>
+            </li>
+          </ul>
+        </li>
+        <li class="mb-3">
+          <div class="fw-bold mb-2">Usar Cargas Personalizadas:</div>
+          <ul>
+            <li>
+              <div class="fw-medium">Desativada:</div>
+              <p class="mb-2">
+                Calcula automaticamente as cargas com base nos dados disponíveis e permite a escolha de pontos de carga específicos.
+              </p>
+            </li>
+            <li>
+              <div class="fw-medium">Ativada:</div>
+              <p class="mb-2">Permite o uso de cargas personalizadas definidas pelo usuário.</p>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <div class="fw-bold">Filtro de Pontos de Carga:</div>
+          <p class="mb-2">Defina o filtro de pontos de carga para incluir apenas os pontos desejados nos gráficos. Exemplos:</p>
+          <ul class="mb-2">
+            <li>Nenhum: inclui todos os pontos.</li>
+            <li>
+              <code>0,1,2</code>: inclui os pontos 0, 1 e 2.
+            </li>
+            <li>
+              <code>0-3</code>: inclui do ponto 0 ao 3.
+            </li>
+            <li>
+              <code>0-3,5</code>: inclui do ponto 0 ao 3 e o ponto 5.
+            </li>
+            <li>
+              <code>5-</code>: inclui do ponto 5 em diante.
+            </li>
+            <li>
+              <code>-3,5-</code>: inclui os pontos até 3 e do ponto 5 em diante.
             </li>
           </ul>
         </li>

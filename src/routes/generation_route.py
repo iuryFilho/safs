@@ -5,10 +5,11 @@ from flask import (
     jsonify,
     session,
 )
-
+import os.path as op
 from services import (
     exportation as es,
     generation as gs,
+    loads as ls,
     metrics as ms,
     utils as us,
 )
@@ -46,7 +47,7 @@ def index():
     graph_type = session.get("graph_type", "line")
     overwrite = session.get("overwrite", False)
     figure_width = session.get("figure_width", 10)
-    figure_height = session.get("figure_height", 6)
+    figure_height = session.get("figure_height", 5)
     graph_fontsize = session.get("graph_fontsize", "medium")
     legend_fontsize = session.get("legend_fontsize", "medium")
     max_columns = session.get("max_columns", 5)
@@ -54,6 +55,7 @@ def index():
     anchor_y = session.get("anchor_y", -0.15)
     frameon = session.get("frameon", False)
     legend_position = session.get("legend_position", "upper center")
+    use_custom_loads = session.get("use_custom_loads", False)
     loads = session.get("loads", {})
 
     return render_template(
@@ -77,6 +79,7 @@ def index():
         legend_position=legend_position,
         max_columns=max_columns,
         frameon=frameon,
+        use_custom_loads=use_custom_loads,
         loads=loads,
         debug_output=debug_output,
     )
@@ -97,7 +100,7 @@ def generate_graphs():
         ...    "graph-type": "line", "bar" or "scatter",
         ...    "overwrite": true or false,
         ...    "figure-width": 10,
-        ...    "figure-height": 6,
+        ...    "figure-height": 5,
         ...    "frameon": true or false,
         ...    "max-columns": 5,
         ...    "graph-font-size": "medium",
@@ -110,10 +113,11 @@ def generate_graphs():
     """
     base_directory = session.get("base_directory", "")
     metric_type = session.get("metric_type", "individual")
+    use_custom_loads = session.get("use_custom_loads", False)
     grouped_metrics: gs.GroupedMetricT = session.get("grouped_metrics", None)
 
     data: dict = request.get_json()
-    directories = data.get("directory-list", [])
+    directories: list[str] = data.get("directory-list", [])
     raw_labels = data.get("directory-labels", [])
     labels, session_labels = us.extract_labels(directories, raw_labels)
     chosen_metrics = data.get("metric-list", [])
@@ -131,9 +135,21 @@ def generate_graphs():
         data.get("anchor-y", "-0.15"),
     )
     legend_position = data.get("legend-position", "upper center")
-    max_columns = int(data.get("max-columns", "6"))
+    max_columns = int(data.get("max-columns", "5"))
     frameon = data.get("frameon", "") == "true"
-    loads: dict = data.get("loads", {})
+
+    if use_custom_loads:
+        raw_loads: dict = data.get("loads", {})
+    else:
+        load_points_filter = data.get("load-points-filter", "")
+        try:
+            raw_loads = ls.calculate_loads(
+                base_directory, directories[0], load_points_filter
+            )
+        except Exception as e:
+            return jsonify({"error": str(e)})
+    loads = list(raw_loads.values())
+    load_points = list(raw_loads.keys())
 
     session["labels"] = session_labels
     session["graph_type"] = graph_type
@@ -147,7 +163,7 @@ def generate_graphs():
     session["anchor_y"] = anchor[1]
     session["frameon"] = frameon
     session["max_columns"] = max_columns
-    session["loads"] = loads
+    session["loads"] = raw_loads
 
     chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
     if chosen_grouped_metrics:
@@ -160,8 +176,8 @@ def generate_graphs():
                 directories,
                 dir_labels=labels,
                 grouped_metrics=chosen_grouped_metrics,
-                loads=list(loads.values()),
-                load_points=list(loads.keys()),
+                loads=loads,
+                load_points=load_points,
             ).generate_graphs(
                 graph_fontsize,
                 legend_fontsize,

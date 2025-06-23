@@ -71,16 +71,24 @@ mainForm.addEventListener("submit", function (event) {
     }
 });
 
-mainForm.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-    checkbox.checked = false;
-    const labelElement = document.getElementById(`label-${checkbox.value}`);
-    if (labelElement) {
-        labelElement.disabled = true;
-        labelElement.value = "";
-        checkbox.addEventListener("change", function () {
-            labelElement.disabled = !this.checked;
+const checkboxSections = ["directories-section", "metrics-section"];
+checkboxSections.forEach((sectionId) => {
+    document
+        .getElementById(sectionId)
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach((checkbox) => {
+            checkbox.checked = false;
+            const labelElement = document.getElementById(
+                `label-${checkbox.value}`
+            );
+            if (labelElement) {
+                labelElement.disabled = true;
+                labelElement.value = "";
+                checkbox.addEventListener("change", function () {
+                    labelElement.disabled = !this.checked;
+                });
+            }
         });
-    }
 });
 
 // Carregar configuração
@@ -206,6 +214,24 @@ async function updateMetricType() {
     }
 }
 
+async function updateUseCustomLoads() {
+    const useCustomLoads = getCheckedValue("use-custom-loads");
+    console.log("useCustomLoads:", useCustomLoads);
+
+    const response = await fetch("/config/update-use-custom-loads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "use-custom-loads": useCustomLoads }),
+    });
+
+    const data = await response.json();
+    if (!data.error) {
+        window.location.reload();
+    } else {
+        alert(data.error);
+    }
+}
+
 // Gerar gráficos
 async function generateGraphs() {
     const directories = getCheckedValues("directory-list");
@@ -224,13 +250,21 @@ async function generateGraphs() {
     const anchorY = getElementValue("anchor-y");
     const frameon = getElementValue("frameon");
     const maxColumns = getElementValue("max-columns");
-    const loadMap = getListValues("load-list").reduce((acc, load, index) => {
-        if (load !== "") {
-            acc[index.toString()] = load;
-        }
-        return acc;
-    }, {});
-    console.log("Load Map:", loadMap);
+    const useCustomLoads = getCheckedValue("use-custom-loads");
+    let loadMap;
+    let loadPointsFilter;
+    if (useCustomLoads) {
+        loadMap = getListValues("load-list").reduce((acc, load, index) => {
+            if (load !== "") {
+                acc[index.toString()] = load;
+            }
+            return acc;
+        }, {});
+        loadPointsFilter = "";
+    } else {
+        loadMap = {};
+        loadPointsFilter = getElementValue("load-points-filter");
+    }
 
     const body = {
         "directory-list": directories,
@@ -248,6 +282,7 @@ async function generateGraphs() {
         frameon: frameon,
         "max-columns": maxColumns,
         loads: loadMap,
+        "load-points-filter": loadPointsFilter,
     };
 
     const response = await fetch("/generation/generate-graphs", {
@@ -346,6 +381,10 @@ assignSubmitFunction("deselect-all-metrics-btn", () =>
 
 assignSubmitFunction("radio-individual", () => updateMetricType());
 assignSubmitFunction("radio-grouped", () => updateMetricType());
+
+document
+    .getElementById("use-custom-loads")
+    .addEventListener("change", updateUseCustomLoads);
 
 assignSubmitFunction("generate-graphs-sub", generateGraphs);
 assignSubmitFunction("export-results-sub", exportResults);

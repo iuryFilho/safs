@@ -230,7 +230,7 @@
             {{ input(label='Largura da Figura (Padrão: 10"):',
                         name="figure-width", value=figure_width,
                         placeholder="Informe a largura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
-            {{ input(label='Altura da Figura (Padrão: 6"):',
+            {{ input(label='Altura da Figura (Padrão: 5"):',
                         name="figure-height", value=figure_height,
                         placeholder="Informe a altura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
           </div>
@@ -257,28 +257,48 @@
                         name="anchor-y", value=anchor_y,
                         placeholder="Informe a posição Y da âncora", size="form-control-sm", type="number", label_class="fw-medium") }}
           </div>
-          <div class="mb-3">
-            <div class="fw-medium mb-2">Cargas Personalizadas:</div>
-            <ul class="list-group">
-              {% set digits = load_count|string|length %}
-              {% for i in range(load_count) %}
-                {% set load = loads[i|string] %}
-
-                {% set i_str = "%0{}d".format(digits) % i %}
-                <li class="list-group-item bg-secondary border-0 p-1">
-                  <div class="input-group input-group-sm">
-                    <label class="input-group-text bg-secondary-subtle text-dark"
-                           for="load-{{ i }}">Carga {{ i_str }}</label>
-                    <input id="load-{{ i }}"
-                           type="number"
-                           class="form-control form-control-sm text-bg-light"
-                           step="any"
-                           name="load-list"
-                           value="{{ load }}">
-                  </div>
-                </li>
-              {% endfor %}
-            </ul>
+          <div class="row mb-2">
+            <div class="col">
+              <div class="form-check form-switch d-flex align-items-center">
+                <input class="form-check-input me-2"
+                       type="checkbox"
+                       id="use-custom-loads"
+                       name="use-custom-loads"
+                       value="true"
+                       {% if use_custom_loads %}checked{% endif %}>
+                <label class="form-check-label fw-medium" for="use-custom-loads">Usar Cargas Personalizadas</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              {% if use_custom_loads %}
+                <div class="fw-medium mb-2">Cargas Personalizadas:</div>
+                <ul class="list-group">
+                  {% set digits = load_count|string|length %}
+                  {% for i in range(load_count) %}
+                    {% set load = loads[i|string] %}
+                    {% set i_str = "%0{}d".format(digits) % i %}
+                    <li class="list-group-item bg-secondary border-0 p-1">
+                      <div class="input-group input-group-sm">
+                        <label class="input-group-text bg-secondary-subtle text-dark"
+                               for="load-{{ i }}">Carga {{ i_str }}</label>
+                        <input id="load-{{ i }}"
+                               type="number"
+                               class="form-control form-control-sm text-bg-light"
+                               step="any"
+                               name="load-list"
+                               value="{{ load }}">
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                {{ input(label='Filtro de Pontos de Carga:',
+                                name="load-points-filter", value=load_points_filter,
+                                placeholder="Informe os pontos de carga ou deixe vazio para usar todos (Ex: 0-3,4,5-6)", size="form-control-sm", type="text", label_class="fw-medium") }}
+              {% endif %}
+            </div>
           </div>
           <div class="btn-group" role="group" aria-label="Ações de Gráfico">
             {{ submit('Gerar Gráficos', 'generate-graphs', 'btn-primary', class="me-2") }}

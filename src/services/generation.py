@@ -167,6 +167,7 @@ class GraphGenerator:
                 output_file=filename,
                 **self.graph_config,
             )
+        self.compiler.reset_data()
 
     def generate_grouped(
         self, metrics: list[str], simulation_results: list[pd.DataFrame]
@@ -192,3 +193,4 @@ class GraphGenerator:
                 output_file=filename,
                 **self.graph_config,
             )
+        self.compiler.reset_data()

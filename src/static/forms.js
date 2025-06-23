@@ -19,6 +19,11 @@ function getCheckedValues(name) {
     ).map((el) => el.value);
 }
 
+function getCheckedValue(id) {
+    const checkbox = document.getElementById(id);
+    return checkbox ? checkbox.checked : null;
+}
+
 function assignSubmitFunction(id, func) {
     const element = document.getElementById(id);
     if (element) {

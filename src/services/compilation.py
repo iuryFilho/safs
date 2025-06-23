@@ -1,7 +1,5 @@
-import os.path as op
 import pandas as pd
-from scipy import stats as st
-from services import path as ps, simulation_data as sds, utils as us
+from services import simulation_data as sds
 
 
 class DataCompiler:
@@ -60,7 +58,6 @@ class DataCompiler:
             dataframes[i]["mean"] = average[i]
             dataframes[i]["error"] = error[i]
 
-        self.reset_data()
         return dataframes
 
     def set_simulation_results(self, simulation_results: list[pd.DataFrame]):

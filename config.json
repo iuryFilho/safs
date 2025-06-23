@@ -9,11 +9,6 @@
             "BitRate blocking probability",
             "BitRate blocking probability by Crosstalk",
             "BitRate blocking probability by Crosstalk in Others"
-        ],
-        "BlockingProbability": [
-            "Blocking probability",
-            "Blocking probability by crosstalk",
-            "Blocking probability by crosstalk in other"
         ]
     },
     "graph-config": {

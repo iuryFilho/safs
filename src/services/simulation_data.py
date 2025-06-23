@@ -121,18 +121,3 @@ def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:
     """
 
     return [d.filter(like="rep", axis=1) for d in simulation_results]
-
-
-def get_load_count(directory_path: str, metric_group: str, metric: str) -> int:
-    """
-    Returns the number of load points for a given metric in a simulation results directory.
-    Args:
-        directory_path (str): The path to the directory containing the simulation results.
-        metric_group (str): The metric group to filter the results by.
-        metric (str): The specific metric to count load points for.
-    Returns:
-        int: The number of load points for the specified metric.
-    """
-    simulation_results = load_simulation_results([directory_path], metric_group)
-    filtered_results = filter_result_list_by_metric(metric, simulation_results)
-    return len(extract_load_points(filtered_results[0]))

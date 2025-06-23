@@ -11,7 +11,7 @@ from data.metric_data import FILTERED_METRICS
 from services import (
     config as cs,
     path as ps,
-    simulation_data as sds,
+    loads as ls,
     utils as us,
 )
 
@@ -54,16 +54,17 @@ def load_directory():
 
         metric_type = data.get("metric-type", "individual")
         grouped_metrics = FILTERED_METRICS[metric_type]
-        first_metric_group = list(grouped_metrics.keys())[0]
-        first_metric = grouped_metrics[first_metric_group][0]
-        load_count = sds.get_load_count(
-            simulation_dirs_paths[0], first_metric_group, first_metric
-        )
+        base_path = op.join(base_directory, simulation_dirs[0])
+        use_custom_loads = data.get("use-custom-loads", False)
+        if not use_custom_loads:
+            loads = ls.calculate_loads(base_directory, simulation_dirs[0])
+            load_count = ls.get_number_of_load_points(base_path)
+            session["loads"] = loads
+            session["load_count"] = load_count
 
         session["directories"] = simulation_dirs
         session["metric_type"] = metric_type
         session["grouped_metrics"] = grouped_metrics
-        session["load_count"] = load_count
         session["base_dir_error"] = None
         return "Ok"
     except Exception as e:
@@ -144,3 +145,21 @@ def update_metric_type():
     session["metric_type"] = metric_type
     session["grouped_metrics"] = FILTERED_METRICS[metric_type]
     return jsonify({"message": "Metric updated successfully."})
+
+
+@blueprint.route("/update-use-custom-loads", methods=["POST"])
+def update_use_custom_loads():
+    """
+    Updates the use of custom loads in the session based on the request data.
+    Returns:
+        A JSON response indicating the success of the update operation.
+    Examples:
+        >>> {
+        ... "use-custom-loads": True or False
+        ... }
+    """
+    data: dict = request.get_json()
+    print(data)
+    use_custom_loads = data.get("use-custom-loads", False)
+    session["use_custom_loads"] = use_custom_loads
+    return jsonify({"message": "Custom loads updated successfully."})
