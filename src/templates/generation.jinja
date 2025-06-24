@@ -180,6 +180,13 @@
                         ["bar", "Barra"],
                         ["stacked", "Barra Empilhada"],
                         ]) }}
+            {{ select(label="Linguagem:",
+                        name="language",
+                        selected=language,
+                        options=[
+                        ["pt", "Português"],
+                        ["en", "Inglês"],
+                        ]) }}
             {{ select(label="Sobrescrever Arquivos:",
                         name="overwrite",
                         selected=overwrite,

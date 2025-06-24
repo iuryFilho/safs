@@ -240,6 +240,7 @@ async function generateGraphs() {
     });
     const metrics = getCheckedValues("metric-list");
     const graphType = getElementValue("graph-type");
+    const language = getElementValue("language");
     const overwrite = getElementValue("overwrite");
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
@@ -271,6 +272,7 @@ async function generateGraphs() {
         "directory-labels": directoryLabels,
         "metric-list": metrics,
         "graph-type": graphType,
+        language: language,
         overwrite: overwrite,
         "figure-width": figureWidth,
         "figure-height": figureHeight,

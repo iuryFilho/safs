@@ -33,6 +33,7 @@ class GraphGenerator:
         self,
         base_directory: str,
         metric_type: str,
+        language: str,
         graph_type: str,
         directories: list[str],
         dir_labels: list[str],
@@ -42,6 +43,12 @@ class GraphGenerator:
     ):
         self.graph_type = graph_type
         self.set_generation_strategy(metric_type)
+        if language == "pt":
+            self.x_label = "Carga na rede (Erlangs)"
+        elif language == "en":
+            self.x_label = "Network Load (Erlangs)"
+        else:
+            raise ValueError(f"Unsupported language: {language}")
         self.set_filename_prefix(
             base_directory,
             graph_type,

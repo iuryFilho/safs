@@ -45,6 +45,7 @@ def index():
     has_config_data = session.get("has_config_data", False)
 
     graph_type = session.get("graph_type", "line")
+    language = session.get("language", "pt")
     overwrite = session.get("overwrite", False)
     figure_width = session.get("figure_width", 10)
     figure_height = session.get("figure_height", 5)
@@ -69,6 +70,7 @@ def index():
         load_count=load_count,
         has_config_data=has_config_data,
         graph_type=graph_type,
+        language=language,
         overwrite=overwrite,
         figure_width=figure_width,
         figure_height=figure_height,
@@ -123,6 +125,7 @@ def generate_graphs():
     chosen_metrics = data.get("metric-list", [])
 
     graph_type = data.get("graph-type", "line")
+    language = data.get("language", "pt")
     overwrite = data.get("overwrite", "") == "true"
     figsize = us.to_float(
         data.get("figure-width", "10"),
@@ -153,6 +156,7 @@ def generate_graphs():
 
     session["labels"] = session_labels
     session["graph_type"] = graph_type
+    session["language"] = language
     session["overwrite"] = overwrite
     session["figure_width"] = figsize[0]
     session["figure_height"] = figsize[1]
@@ -172,6 +176,7 @@ def generate_graphs():
             generator.initialize_graphs_data(
                 base_directory,
                 metric_type,
+                language,
                 graph_type,
                 directories,
                 dir_labels=labels,
