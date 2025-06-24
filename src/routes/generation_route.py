@@ -9,8 +9,8 @@ import os.path as op
 from services import (
     exportation as es,
     generation as gs,
-    loads as ls,
-    metrics as ms,
+    loads_utils as lus,
+    metrics_utils as mus,
     utils as us,
 )
 
@@ -143,7 +143,7 @@ def generate_graphs():
     else:
         load_points_filter = data.get("load-points-filter", "")
         try:
-            raw_loads = ls.calculate_loads(
+            raw_loads = lus.calculate_loads(
                 base_directory, directories[0], load_points_filter
             )
         except Exception as e:
@@ -165,7 +165,7 @@ def generate_graphs():
     session["max_columns"] = max_columns
     session["loads"] = raw_loads
 
-    chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
+    chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
     if chosen_grouped_metrics:
         try:
             generator = gs.GraphGenerator()
@@ -224,7 +224,7 @@ def export_results():
     labels, session_labels = us.extract_labels(directories, raw_labels)
 
     chosen_metrics = data.get("metric-list", [])
-    chosen_grouped_metrics = ms.filter_chosen_metrics(grouped_metrics, chosen_metrics)
+    chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
     loads: dict = data.get("loads", {})
     overwrite = data.get("overwrite", "") == "true"
 

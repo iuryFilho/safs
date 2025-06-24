@@ -9,9 +9,9 @@ import os.path as op
 
 from data.metric_data import FILTERED_METRICS
 from services import (
-    config as cs,
-    path as ps,
-    loads as ls,
+    config_utils as cs,
+    loads_utils as lus,
+    path_utils as pus,
     utils as us,
 )
 
@@ -49,7 +49,7 @@ def load_directory():
     print(f"Base directory: {base_directory}")
     session["base_directory"] = base_directory
     try:
-        simulation_dirs_paths = ps.get_simulations_dirs_paths(base_directory)
+        simulation_dirs_paths = pus.get_simulations_dirs_paths(base_directory)
         simulation_dirs = [op.basename(s) for s in simulation_dirs_paths]
 
         metric_type = data.get("metric-type", "individual")
@@ -57,8 +57,8 @@ def load_directory():
         base_path = op.join(base_directory, simulation_dirs[0])
         use_custom_loads = data.get("use-custom-loads", False)
         if not use_custom_loads:
-            loads = ls.calculate_loads(base_directory, simulation_dirs[0])
-            load_count = ls.get_number_of_load_points(base_path)
+            loads = lus.calculate_loads(base_directory, simulation_dirs[0])
+            load_count = lus.get_number_of_load_points(base_path)
             session["loads"] = loads
             session["load_count"] = load_count
 

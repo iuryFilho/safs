@@ -1,7 +1,7 @@
 import os.path as op
 import pandas as pd
 from scipy import stats as st
-from services import path as ps, utils as us
+from services import path_utils as pus, utils as us
 
 
 def calculate_standard_error(
@@ -52,7 +52,7 @@ def load_simulation_results(
         list[pd.DataFrame]: A list of DataFrames containing the simulation results for the specified metric group.
     """
     dataframes = []
-    paths = ps.get_csv_paths_by_metric_group(directory_paths, metric_group)
+    paths = pus.get_csv_paths_by_metric_group(directory_paths, metric_group)
     if not paths:
         raise us.ExtractionError(
             f"No CSV files found for the metric group '{metric_group}'."

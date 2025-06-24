@@ -1,7 +1,7 @@
 import pandas as pd
 import os.path as op
 
-from services import path as ps, utils as us
+from services import path_utils as pus, utils as us
 
 
 def get_metric_names(path: str) -> list[str]:
@@ -45,7 +45,7 @@ def extract_metric_group_names(file_paths: list[str]) -> list[str]:
     Returns:
         list: A list of metric group names found in the file paths.
     """
-    file_names = [ps.get_basename(s) for s in file_paths]
+    file_names = [pus.get_basename(s) for s in file_paths]
     return [get_metric_suffix(s) for s in file_names]
 
 

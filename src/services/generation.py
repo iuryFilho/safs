@@ -4,11 +4,11 @@ import os.path as op
 import pandas as pd
 from data.metric_data import METRIC_GROUP_ALIASES
 from services import (
-    metrics as ms,
-    plotting as pls,
+    metrics_utils as mus,
+    path_utils as pus,
+    plotting as ps,
     compilation as cs,
-    path as ps,
-    simulation_data as sds,
+    simulation_utils as sus,
     utils as us,
 )
 
@@ -82,7 +82,7 @@ class GraphGenerator:
 
         for self.metric_group, metrics in self.grouped_metrics.items():
             self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
-            simulation_results = sds.load_simulation_results(
+            simulation_results = sus.load_simulation_results(
                 self.full_directories, self.metric_group
             )
             self.generation_func(metrics, simulation_results)
@@ -141,7 +141,7 @@ class GraphGenerator:
                 and where the graphs will be saved.
             directories (list[str]): List of directory names.
         """
-        self.full_directories = ps.get_full_paths(base_directory, directories)
+        self.full_directories = pus.get_full_paths(base_directory, directories)
 
     def generate_individual(
         self, metrics: list[str], simulation_results: list[pd.DataFrame]
@@ -159,7 +159,7 @@ class GraphGenerator:
             self.compiler.set_metrics([metric])
             dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{metric.replace(' ', '_')}"
-            pls.plot_graph(
+            ps.plot_graph(
                 dataframes=dataframes,
                 loads=self.loads,
                 labels=self.dir_labels,
@@ -185,11 +185,11 @@ class GraphGenerator:
             self.compiler.set_simulation_results([simulation_result])
             dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{self.metric_group_alias}_{label}"
-            pls.plot_graph(
+            ps.plot_graph(
                 dataframes=dataframes,
                 loads=self.loads,
-                labels=ms.get_metrics_components(metrics),
-                y_label=ms.get_metric_root(metrics[0]),
+                labels=mus.get_metrics_components(metrics),
+                y_label=mus.get_metric_root(metrics[0]),
                 output_file=filename,
                 **self.graph_config,
             )

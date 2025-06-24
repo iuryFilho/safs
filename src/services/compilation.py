@@ -1,16 +1,16 @@
 import pandas as pd
-from services import simulation_data as sds
+from services import simulation_utils as sus
 
 
 class DataCompiler:
     def __init__(self, metric_type: str, load_points: list[str]):
         if metric_type == "individual":
-            self.filter_func = lambda: sds.filter_result_list_by_metric(
+            self.filter_func = lambda: sus.filter_result_list_by_metric(
                 self.metrics[0], self.simulation_results
             )
             self.length_func = lambda: len(self.simulation_results)
         elif metric_type == "grouped":
-            self.filter_func = lambda: sds.filter_result_by_metric_list(
+            self.filter_func = lambda: sus.filter_result_by_metric_list(
                 self.metrics, self.simulation_results[0]
             )
             self.length_func = lambda: len(self.metrics)
@@ -44,12 +44,12 @@ class DataCompiler:
                     loadpoint_str.isin(load_points_set)
                 ]
 
-        final_results = sds.extract_repetitions(metric_results)
+        final_results = sus.extract_repetitions(metric_results)
         del metric_results
 
-        number_of_reps = sds.get_number_of_repetitions(final_results)
-        average = sds.calculate_average(final_results)
-        error = sds.calculate_standard_error(final_results, number_of_reps)
+        number_of_reps = sus.get_number_of_repetitions(final_results)
+        average = sus.calculate_average(final_results)
+        error = sus.calculate_standard_error(final_results, number_of_reps)
         del final_results
 
         dataframes = [pd.DataFrame() for _ in range(length)]

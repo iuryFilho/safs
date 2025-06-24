@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from typing import Callable
 
-from services import path as ps
+from services import path_utils as pus
 
 
 matplotlib.use("agg")
@@ -17,6 +17,7 @@ def plot_line_graph(
     dataframes: list[pd.DataFrame],
     loads: list[str],
     labels: list[str],
+    colors: list,
 ):
     """
     Plot a line graph with error bars.\\
@@ -26,29 +27,84 @@ def plot_line_graph(
         dataframes (list[pd.DataFrame]): List of DataFrames containing the data to plot.
         loads (list[str]): List of loads for the x-axis.
         labels (list[str]): List of labels for the graph legend.
+        colors (list): List of colors to use for the lines and markers.
     """
     load_positions = list(range(len(loads)))
+    colors_len = len(colors)
+    capsize = 3
+    idx_shift = 0
+    idx_count = 0
     for i in range(len(dataframes)):
-        y = dataframes[i]["mean"]
-        e = dataframes[i]["error"]
-        capsize = 0 if all(e == 0) else 3
-        plt.errorbar(
+        if idx_count == colors_len:
+            idx_count = 0
+            idx_shift += 1
+        style_idx = (i + idx_shift) % len(LINESTYLES)
+        idx_count += 1
+        mean = dataframes[i]["mean"]
+        error = dataframes[i]["error"]
+        if sum(mean == 0) >= 2:
+            first_zero = True
+            for idx in range(len(mean)):
+                if not first_zero and mean[idx] == 0:
+                    continue
+                if first_zero and mean[idx] == 0:
+                    first_zero = False
+                if error[idx] > 0:
+                    plt.errorbar(
+                        [load_positions[idx]],
+                        [mean[idx]],
+                        yerr=[error[idx]],
+                        capsize=capsize,
+                        linestyle=LINESTYLES[style_idx],
+                        marker=MARKERS[style_idx],
+                        color=colors[i % colors_len],
+                        elinewidth=1,
+                        markerfacecolor="none",
+                    )
+                else:
+                    plt.scatter(
+                        load_positions[idx],
+                        mean[idx],
+                        marker=MARKERS[style_idx],
+                        color=colors[i % colors_len],
+                        facecolors="none",
+                    )
+        else:
+            plt.errorbar(
+                load_positions,
+                mean,
+                yerr=error,
+                capsize=capsize,
+                linestyle="none",
+                marker=MARKERS[style_idx],
+                color=colors[i % colors_len],
+                elinewidth=1,
+                markerfacecolor="none",
+            )
+        plt.plot(
             load_positions,
-            y,
-            yerr=e,
-            capsize=capsize,
-            linestyle=LINESTYLES[i % len(LINESTYLES)],
-            marker=MARKERS[i % len(MARKERS)],
+            mean,
+            linestyle=LINESTYLES[style_idx],
+            color=colors[i % colors_len],
+        )
+        plt.plot(
+            [],
+            [],
+            linestyle=LINESTYLES[style_idx],
+            marker=MARKERS[style_idx],
+            color=colors[i % colors_len],
+            markerfacecolor="none",
             label=labels[i],
-            fillstyle="none",
         )
     plt.xticks(load_positions, loads)
+    plt.ylim(bottom=0)
 
 
 def plot_bar_graph(
     dataframes: list[pd.DataFrame],
     loads: list[str],
     labels: list[str],
+    colors: list,
 ):
     """
     Plot a bar graph with error bars.\\
@@ -58,31 +114,43 @@ def plot_bar_graph(
         dataframes (list[pd.DataFrame]): List of DataFrames containing the data to plot.
         loads (list[str]): List of loads for the x-axis.
         labels (list[str]): List of labels for the graph legend.
+        colors (list): List of colors to use for the bars.
     """
     bar_width = 0.15
     load_positions = list(range(len(loads)))
+    colors_len = len(colors)
+    idx_shift = 0
+    idx_count = 0
     for i in range(len(dataframes)):
-        y = dataframes[i]["mean"]
-        e = dataframes[i]["error"]
+        if idx_count == colors_len:
+            idx_count = 0
+            idx_shift += 1
+        style_idx = (i + idx_shift) % len(HATCHES)
+        idx_count += 1
+        mean = dataframes[i]["mean"]
+        error = dataframes[i]["error"]
         plt.bar(
             [p + i * bar_width for p in load_positions],
-            y,
+            mean,
             width=bar_width,
             label=labels[i],
-            yerr=e,
+            yerr=error,
             capsize=5,
-            hatch=HATCHES[i % len(HATCHES)],
+            hatch=HATCHES[style_idx],
+            color=colors[i % colors_len],
             edgecolor="black",
         )
-        plt.xticks(
-            [p + (len(dataframes) - 1) * bar_width / 2 for p in load_positions], loads
-        )
+    plt.xticks(
+        [p + (len(dataframes) - 1) * bar_width / 2 for p in load_positions], loads
+    )
+    plt.ylim(bottom=0)
 
 
 def plot_stacked_bar_graph(
     dataframes: list[pd.DataFrame],
     loads: list[str],
     labels: list[str],
+    colors: list,
 ):
     """
     Plot a stacked bar graph with error bars.\\
@@ -92,11 +160,20 @@ def plot_stacked_bar_graph(
         dataframes (list[pd.DataFrame]): List of DataFrames containing the data to plot.
         loads (list[str]): List of loads for the x-axis.
         labels (list[str]): List of labels for the graph legend.
+        colors (list): List of colors to use for the bars.
     """
     bar_width = 0.15
     load_positions = list(range(len(loads)))
     bottom = [0] * len(loads)
+    colors_len = len(colors)
+    idx_shift = 0
+    idx_count = 0
     for i in range(len(dataframes)):
+        if idx_count == colors_len:
+            idx_count = 0
+            idx_shift += 1
+        style_idx = (i + idx_shift) % len(HATCHES)
+        idx_count += 1
         y = dataframes[i]["mean"]
         e = dataframes[i]["error"]
         plt.bar(
@@ -106,16 +183,18 @@ def plot_stacked_bar_graph(
             label=labels[i],
             yerr=e,
             capsize=5,
-            hatch=HATCHES[i % len(HATCHES)],
+            hatch=HATCHES[style_idx],
+            color=colors[i % colors_len],
             edgecolor="black",
             bottom=bottom,
         )
         bottom = [b + y_val for b, y_val in zip(bottom, y)]
-        plt.xticks(load_positions, loads)
+    plt.xticks(load_positions, loads)
+    plt.ylim(bottom=0)
 
 
 PLOTTING_STRATEGIES: dict[
-    str, Callable[[list[pd.DataFrame], list[str], list[str]], None]
+    str, Callable[[list[pd.DataFrame], list[str], list[str], list], None]
 ] = {
     "line": plot_line_graph,
     "bar": plot_bar_graph,
@@ -164,9 +243,11 @@ def plot_graph(
     """
     plt.figure(figsize=figsize)
 
+    colors = get_colors(len(labels))
+
     plot_function = PLOTTING_STRATEGIES.get(graph_type)
     if plot_function is not None:
-        plot_function(dataframes, loads, labels)
+        plot_function(dataframes, loads, labels, colors)
     else:
         raise ValueError(f"Graph type not supported: {graph_type}")
 
@@ -189,6 +270,17 @@ def plot_graph(
             frameon=frameon,
         )
     if output_file != "":
-        output_file = ps.ensure_unique_filename(output_file, overwrite)
+        output_file = pus.ensure_unique_filename(output_file, overwrite)
         plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
     plt.close()
+
+
+def get_colors(size: int) -> list:
+    if size <= 0:
+        raise ValueError("Size must be a positive integer.")
+    if size <= 10:
+        cmap = plt.get_cmap("tab10")
+    else:
+        cmap = plt.get_cmap("tab20")
+    colors = [cmap(i) for i in range(cmap.N)]
+    return colors

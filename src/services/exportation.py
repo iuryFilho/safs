@@ -2,7 +2,7 @@ import pandas as pd
 import os.path as op
 
 from data.metric_data import METRIC_GROUP_ALIASES
-from services import path as ps, compilation as cs, simulation_data as sds
+from services import compilation as cs, path_utils as pus, simulation_utils as sus
 
 
 class ResultExporter:
@@ -24,7 +24,7 @@ class ResultExporter:
         overwrite: bool,
     ):
         self.set_table_format(metric_type)
-        filename = ps.ensure_unique_filename(
+        filename = pus.ensure_unique_filename(
             op.join(base_directory, metric_type), overwrite
         )
         self.set_full_dirs(base_directory, directories)
@@ -35,7 +35,7 @@ class ResultExporter:
         self.fmt = TableFormatter(float_loads, int_load_points)
         with pd.ExcelWriter(f"{filename}.xlsx") as self.writer:
             for metric_group, metrics in chosen_grouped_metrics.items():
-                simulation_results = sds.load_simulation_results(
+                simulation_results = sus.load_simulation_results(
                     self.full_directories, metric_group
                 )
                 self.set_tables_func(metrics, simulation_results, labels)
@@ -66,7 +66,7 @@ class ResultExporter:
                 and where the results will be saved.
             directories (list[str]): List of directory names.
         """
-        self.full_directories = ps.get_full_paths(base_directory, directories)
+        self.full_directories = pus.get_full_paths(base_directory, directories)
 
     def get_float_loads(self, loads: list[str]) -> list[float]:
         """
