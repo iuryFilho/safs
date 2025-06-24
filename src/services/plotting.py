@@ -43,12 +43,10 @@ def plot_line_graph(
         mean = dataframes[i]["mean"]
         error = dataframes[i]["error"]
         if sum(mean == 0) >= 2:
-            first_zero = True
-            for idx in range(len(mean)):
-                if not first_zero and mean[idx] == 0:
+            mean_len = len(mean)
+            for idx in range(mean_len):
+                if mean[idx] == 0 and idx < mean_len - 1 and mean[idx + 1] == 0:
                     continue
-                if first_zero and mean[idx] == 0:
-                    first_zero = False
                 if error[idx] > 0:
                     plt.errorbar(
                         [load_positions[idx]],
