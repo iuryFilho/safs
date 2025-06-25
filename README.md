@@ -12,7 +12,7 @@ O SAFS é um sistema desenvolvido para automatizar o fluxo de simulação de sis
 ## Requisitos
 
 -   Python 3.8 ou superior
--   Bibliotecas: `Flask`, `Jinja2`, `pandas`, `openpyxl`, `matplotlib`
+-   Bibliotecas: `Flask`, `Jinja2`, `pandas`, `openpyxl`, `matplotlib`, `scipy`
 
 ## Instalação
 
