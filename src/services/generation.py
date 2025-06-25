@@ -22,14 +22,7 @@ class GraphGenerator:
     based on the provided parameters.
     """
 
-    def __init__(self):
-        self.GENERATION_STRATEGIES: dict[str, Callable] = {
-            "individual": self.generate_individual,
-            "grouped": self.generate_grouped,
-        }
-        self.x_label = "Carga na rede (Erlangs)"
-
-    def initialize_graphs_data(
+    def __init__(
         self,
         base_directory: str,
         metric_type: str,
@@ -41,6 +34,10 @@ class GraphGenerator:
         loads: list[str],
         load_points: list[str],
     ):
+        self.GENERATION_STRATEGIES: dict[str, Callable] = {
+            "individual": self.generate_individual,
+            "grouped": self.generate_grouped,
+        }
         self.graph_type = graph_type
         self.set_generation_strategy(metric_type)
         if language == "pt":
@@ -61,7 +58,6 @@ class GraphGenerator:
         self.load_points = load_points
 
         self.compiler = cs.DataCompiler(metric_type, load_points)
-        return self
 
     def generate_graphs(
         self,
@@ -74,9 +70,8 @@ class GraphGenerator:
         max_columns: int,
         frameon: bool,
     ):
-        self.graph_config = {
+        graph_config = {
             "graph_type": self.graph_type,
-            "x_label": self.x_label,
             "legend_fontsize": legend_fontsize,
             "graph_fontsize": graph_fontsize,
             "figsize": figsize,
@@ -86,6 +81,7 @@ class GraphGenerator:
             "max_columns": max_columns,
             "frameon": frameon,
         }
+        self.plotter = ps.GraphPlotter(graph_config)
 
         for self.metric_group, metrics in self.grouped_metrics.items():
             self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
@@ -162,17 +158,17 @@ class GraphGenerator:
             simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
         self.compiler.set_simulation_results(simulation_results)
+        self.plotter.initialize_graphs_data(
+            self.loads, labels=self.dir_labels, x_label=self.x_label
+        )
         for metric in metrics:
             self.compiler.set_metrics([metric])
             dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{metric.replace(' ', '_')}"
-            ps.plot_graph(
-                dataframes=dataframes,
-                loads=self.loads,
-                labels=self.dir_labels,
-                y_label=metric,
+            self.plotter.plot_graph(
+                dataframes,
                 output_file=filename,
-                **self.graph_config,
+                y_label=metric,
             )
         self.compiler.reset_data()
 
@@ -188,16 +184,18 @@ class GraphGenerator:
             simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
         self.compiler.set_metrics(metrics)
+        self.plotter.initialize_graphs_data(
+            self.loads,
+            labels=mus.get_metrics_components(metrics),
+            x_label=self.x_label,
+            y_label=mus.get_metric_root(metrics[0]),
+        )
         for label, simulation_result in zip(self.dir_labels, simulation_results):
             self.compiler.set_simulation_results([simulation_result])
             dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{self.metric_group_alias}_{label}"
-            ps.plot_graph(
-                dataframes=dataframes,
-                loads=self.loads,
-                labels=mus.get_metrics_components(metrics),
-                y_label=mus.get_metric_root(metrics[0]),
+            self.plotter.plot_graph(
+                dataframes,
                 output_file=filename,
-                **self.graph_config,
             )
         self.compiler.reset_data()

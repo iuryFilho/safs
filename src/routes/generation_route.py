@@ -172,8 +172,7 @@ def generate_graphs():
     chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
     if chosen_grouped_metrics:
         try:
-            generator = gs.GraphGenerator()
-            generator.initialize_graphs_data(
+            gs.GraphGenerator(
                 base_directory,
                 metric_type,
                 language,
