@@ -27,11 +27,12 @@ class GraphPlotter:
             graph_config (dict): Configuration dictionary for the graph.
         """
         self.PLOTTING_STRATEGIES = {
-            "line": self.plot_line_graph,
+            "linear": self.plot_line_graph,
+            "log": self.plot_line_graph,
             "bar": self.plot_bar_graph,
             "stacked": self.plot_stacked_bar_graph,
         }
-        self.graph_type = graph_config.get("graph_type", "line")
+        self.graph_type: str = graph_config.get("graph_type", "linear")
         self.figsize = graph_config.get("figsize", (10, 5))
         self.graph_fontsize = graph_config.get("graph_fontsize", "medium")
         self.legend_fontsize = graph_config.get("legend_fontsize", "medium")
@@ -93,6 +94,8 @@ class GraphPlotter:
         """
         plt.figure(figsize=self.figsize)
 
+        if self.graph_type in ("linear", "log"):
+            plt.yscale(self.graph_type)
         plot_function = self.PLOTTING_STRATEGIES.get(self.graph_type)
         if plot_function is not None:
             plot_function(dataframes)
@@ -142,7 +145,7 @@ class GraphPlotter:
             idx_count += 1
             mean = dataframes[i]["mean"]
             error = dataframes[i]["error"]
-            if sum(mean == 0) >= 2:
+            if sum(mean == 0) >= 10:
                 mean_len = len(mean)
                 for idx in range(mean_len):
                     if mean[idx] == 0 and idx < mean_len - 1 and mean[idx + 1] == 0:

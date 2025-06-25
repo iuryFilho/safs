@@ -111,18 +111,7 @@ def extract_labels(
     return labels, session_labels
 
 
-def capitalize_first_letters(*strings: str) -> str:
-    """
-    Capitalizes the first letter of each string in a list.
-    Args:
-        strings (str): The strings to capitalize.
-    Raises:
-        ValueError: If any element in the list is not a string.
-    Returns:
-        str: A string with the first letter of each input string capitalized.
-    """
-    if not strings:
-        return ""
-    if not all(isinstance(s, str) for s in strings):
-        raise ValueError("All elements in the list must be strings.")
-    return "".join([s[0].upper() for s in strings if s])
+def get_prefix(graph_type: str, metric_type: str) -> str:
+    graph_pre = graph_type.capitalize()[:2]
+    metric_pre = metric_type.capitalize()[:2]
+    return f"{graph_pre}_{metric_pre}"

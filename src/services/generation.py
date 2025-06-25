@@ -120,7 +120,7 @@ class GraphGenerator:
         """
         self.filename_prefix = op.join(
             base_directory,
-            us.capitalize_first_letters(graph_type, metric_type),
+            us.get_prefix(graph_type, metric_type),
         )
 
     def set_dir_labels(self, dir_labels: list[str], directories: list[str]):
