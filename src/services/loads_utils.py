@@ -4,10 +4,7 @@ import os.path as op
 
 
 def calculate_loads(
-    base_directory: str,
-    directory: str,
-    load_points_filter: str = "",
-    precision: int = 3,
+    base_directory: str, directory: str, load_points_filter: str = ""
 ) -> dict[str, float]:
     base_path = op.join(base_directory, directory)
     load_points_num = get_number_of_load_points(base_path)
@@ -34,11 +31,11 @@ def calculate_loads(
 
     load_1_to_2 = arrival_rate_sum / hold_rate
     load = node_pairs_num * load_1_to_2
-    total_loads = [round(load, precision)]
+    total_loads = [round(load)]
     increment = arrival_rate_increase_sum * node_pairs_num
     for i in range(1, load_points_num):
         load = total_loads[i - 1] + increment
-        total_loads.append(round(load, precision))
+        total_loads.append(round(load))
 
     filtered_loads = filter_loads(total_loads, load_points_num, load_points_filter)
     return filtered_loads

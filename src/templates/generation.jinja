@@ -195,6 +195,13 @@
                         ["true", "Sim"],
                         ["false", "Não"]
                         ]) }}
+            {{ select(label="Exibir Grade:",
+                        name="use-grid",
+                        selected=use_grid,
+                        options=[
+                        ["true", "Sim"],
+                        ["false", "Não"]
+                        ]) }}
           </div>
           <div class="row mb-2">
             {{ select(label="Exibir Moldura da Legenda:",

@@ -9,6 +9,7 @@ DEFAULT_SESSION = {
     "graph_type": "line",
     "language": "pt",
     "overwrite": False,
+    "use_grid": False,
     "figure_width": 10,
     "figure_height": 5,
     "graph_fontsize": "medium",

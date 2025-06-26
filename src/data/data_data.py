@@ -9,6 +9,7 @@ DEFAULT_DATA = {
     "graph-type": "line",
     "language": "pt",
     "overwrite": "",
+    "use-grid": "",
     "figure-width": "10",
     "figure-height": "5",
     "graph-font-size": "medium",

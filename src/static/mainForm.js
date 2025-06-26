@@ -94,9 +94,6 @@ checkboxSections.forEach((sectionId) => {
 // Carregar configuração
 async function loadConfig() {
     const inputConfig = getElementValue("input-config");
-    if (!inputConfig) {
-        return;
-    }
     const response = await fetch("/config/load-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -244,6 +241,7 @@ async function generateGraphs() {
     const graphType = getElementValue("graph-type");
     const language = getElementValue("language");
     const overwrite = getElementValue("overwrite");
+    const useGrid = getElementValue("use-grid");
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
     const graphFontSize = getElementValue("graph-font-size");
@@ -276,6 +274,7 @@ async function generateGraphs() {
         "graph-type": graphType,
         language: language,
         overwrite: overwrite,
+        "use-grid": useGrid,
         "figure-width": figureWidth,
         "figure-height": figureHeight,
         "graph-font-size": graphFontSize,

@@ -44,7 +44,8 @@ def index():
         has_config_data=sdus.get_session("has_config_data"),
         graph_type=sdus.get_session("graph_type"),
         language=sdus.get_session("language"),
-        overwrite=sdus.get_session("overwrite"),
+        overwrite="true" if sdus.get_session("overwrite") else "false",
+        use_grid="true" if sdus.get_session("use_grid") else "false",
         figure_width=sdus.get_session("figure_width"),
         figure_height=sdus.get_session("figure_height"),
         graph_fontsize=sdus.get_session("graph_fontsize"),
@@ -52,7 +53,7 @@ def index():
         max_columns=sdus.get_session("max_columns"),
         anchor_x=sdus.get_session("anchor_x"),
         anchor_y=sdus.get_session("anchor_y"),
-        frameon=sdus.get_session("frameon"),
+        frameon="true" if sdus.get_session("frameon") else "false",
         legend_position=sdus.get_session("legend_position"),
         use_custom_loads=sdus.get_session("use_custom_loads"),
         loads=sdus.get_session("loads"),
@@ -80,6 +81,7 @@ def generate_graphs():
     graph_type = data["graph-type"]
     language = data["language"]
     overwrite = data["overwrite"] == "true"
+    use_grid = data["use-grid"] == "true"
     figsize = us.to_float(
         data["figure-width"],
         data["figure-height"],
@@ -112,6 +114,7 @@ def generate_graphs():
             "graph_type": graph_type,
             "language": language,
             "overwrite": overwrite,
+            "use_grid": use_grid,
             "figure_width": figsize[0],
             "figure_height": figsize[1],
             "graph_fontsize": graph_fontsize,
@@ -143,6 +146,7 @@ def generate_graphs():
                 legend_fontsize,
                 figsize,
                 overwrite,
+                use_grid,
                 anchor,
                 legend_position,
                 max_columns,

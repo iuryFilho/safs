@@ -41,6 +41,7 @@ class GraphPlotter:
         self.max_columns = graph_config.get("max_columns", 5)
         self.frameon = graph_config.get("frameon", False)
         self.overwrite = graph_config.get("overwrite", False)
+        self.use_grid = graph_config.get("use_grid", False)
 
     def initialize_graphs_data(
         self,
@@ -107,9 +108,12 @@ class GraphPlotter:
             y_label = self.y_label
         plt.xlabel(x_label, fontsize=self.graph_fontsize)
         plt.ylabel(y_label, fontsize=self.graph_fontsize)
-        plt.grid(axis="y")
+        if self.use_grid:
+            plt.grid(axis="y")
         if self.labels_len < self.max_columns:
             self.max_columns = self.labels_len
+        if len(self.loads) > 10:
+            plt.xticks(rotation=90)
 
         if self.legend_position == "none":
             plt.legend().set_visible(False)
@@ -145,7 +149,7 @@ class GraphPlotter:
             idx_count += 1
             mean = dataframes[i]["mean"]
             error = dataframes[i]["error"]
-            if sum(mean == 0) >= 10:
+            if sum(mean == 0) >= 2:
                 mean_len = len(mean)
                 for idx in range(mean_len):
                     if mean[idx] == 0 and idx < mean_len - 1 and mean[idx + 1] == 0:
@@ -156,37 +160,47 @@ class GraphPlotter:
                             [mean[idx]],
                             yerr=[error[idx]],
                             capsize=capsize,
-                            linestyle=self.LINESTYLES[style_idx],
-                            marker=self.MARKERS[style_idx],
+                            linestyle="none",
                             color=self.get_color(i),
                             elinewidth=1,
-                            markerfacecolor="none",
+                            ecolor="black",
+                            zorder=2,
                         )
-                    else:
-                        plt.scatter(
-                            self.load_positions[idx],
-                            mean[idx],
-                            marker=self.MARKERS[style_idx],
-                            color=self.get_color(i),
-                            facecolors="none",
-                        )
+                    plt.scatter(
+                        self.load_positions[idx],
+                        mean[idx],
+                        marker=self.MARKERS[style_idx],
+                        color=self.get_color(i),
+                        facecolors="none",
+                        zorder=1,
+                    )
             else:
-                plt.errorbar(
+                if any(error > 0):
+                    plt.errorbar(
+                        self.load_positions,
+                        mean,
+                        yerr=error,
+                        capsize=capsize,
+                        linestyle="none",
+                        color=self.get_color(i),
+                        elinewidth=1,
+                        ecolor="black",
+                        zorder=2,
+                    )
+                plt.scatter(
                     self.load_positions,
                     mean,
-                    yerr=error,
-                    capsize=capsize,
-                    linestyle="none",
                     marker=self.MARKERS[style_idx],
                     color=self.get_color(i),
-                    elinewidth=1,
-                    markerfacecolor="none",
+                    facecolors="none",
+                    zorder=1,
                 )
             plt.plot(
                 self.load_positions,
                 mean,
                 linestyle=self.LINESTYLES[style_idx],
                 color=self.get_color(i),
+                zorder=1,
             )
             plt.plot(
                 [],
@@ -230,6 +244,7 @@ class GraphPlotter:
                 hatch=self.HATCHES[style_idx],
                 color=self.get_color(i),
                 edgecolor="black",
+                ecolor="black",
             )
         plt.xticks(
             [p + (len(dataframes) - 1) * bar_width / 2 for p in self.load_positions],
@@ -270,6 +285,7 @@ class GraphPlotter:
                 color=self.get_color(i),
                 edgecolor="black",
                 bottom=bottom,
+                ecolor="black",
             )
             bottom = [b + y_val for b, y_val in zip(bottom, y)]
         plt.xticks(self.load_positions, self.loads, fontsize=self.graph_fontsize)
