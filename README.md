@@ -34,7 +34,7 @@ O SAFS é um sistema desenvolvido para automatizar o fluxo de simulação de sis
 1. Inicie o servidor Flask:
 
     ```bash
-    python app.py --port PORT
+    python src/app.py --port PORT
     ```
 
     - Substitua `PORT` pela porta desejada.
@@ -42,7 +42,7 @@ O SAFS é um sistema desenvolvido para automatizar o fluxo de simulação de sis
     - Exemplo:
 
     ```bash
-    python app.py --port 8000
+    python src/app.py --port 8000
     ```
 
 2. Acesse a aplicação no navegador: `http://localhost:PORT`
