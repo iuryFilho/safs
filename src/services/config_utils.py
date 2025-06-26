@@ -1,10 +1,10 @@
 import json
-from flask import session
 
-from services import utils as us
+from services import utils as us, session_data_utils as sdus
+from data.metric_data import FILTERED_METRICS as FM
 
 
-def create_config_structure(data: dict) -> dict:
+def create_config_structure(data: sdus.Data) -> dict:
     """
     Creates a configuration structure from the provided data.
     Args:
@@ -13,21 +13,22 @@ def create_config_structure(data: dict) -> dict:
         dict: A dictionary with the configuration structure.
     """
     new_config_data = {"directories": {}, "metrics": {}, "graph-config": {}}
-    directories = data.get("directory-list", [])
-    labels = data.get("labels", [])
+    directories = data["directory-list"]
+    labels = data["directory-labels"]
     for dir, label in zip(directories, labels):
         new_config_data["directories"][dir] = label
 
-    grouped_metrics = session.get("grouped_metrics", {})
-    metric_list_form = data.get("metric-list", [])
+    metric_type = data["metric-type"]
+    grouped_metrics = FM[metric_type]
+    metric_list_data = data["metric-list"]
     for metric_group, metric_list in grouped_metrics.items():
-        for metric in metric_list_form:
+        for metric in metric_list_data:
             if metric in metric_list:
                 new_config_data["metrics"][metric_group] = new_config_data[
                     "metrics"
                 ].get(metric_group, []) + [metric]
 
-    graph_config = data.get("graph-config", {})
+    graph_config = data["graph-config"]
     new_config_data["graph-config"] = graph_config
 
     return new_config_data

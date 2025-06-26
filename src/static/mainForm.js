@@ -166,6 +166,7 @@ async function saveConfig() {
     const labels = directories.map((dir) => {
         return document.getElementById(`label-${dir}`).value;
     });
+    const metricType = getRadioValue("metric-type");
     const metrics = getCheckedValues("metric-list");
     const graphConfig = {};
     getLoads(graphConfig);
@@ -174,6 +175,7 @@ async function saveConfig() {
         "output-config": outputConfig,
         "directory-list": directories,
         labels: labels,
+        "metric-type": metricType,
         "metric-list": metrics,
         "graph-config": graphConfig,
     };
@@ -308,12 +310,21 @@ async function exportResults() {
         return document.getElementById(`label-${dir}`).value;
     });
     const metrics = getCheckedValues("metric-list");
-    const loadMap = getListValues("load-list").reduce((acc, load, index) => {
-        if (load !== "") {
-            acc[index.toString()] = load;
-        }
-        return acc;
-    }, {});
+    const useCustomLoads = getCheckedValue("use-custom-loads");
+    let loadMap;
+    let loadPointsFilter;
+    if (useCustomLoads) {
+        loadMap = getListValues("load-list").reduce((acc, load, index) => {
+            if (load !== "") {
+                acc[index.toString()] = load;
+            }
+            return acc;
+        }, {});
+        loadPointsFilter = "";
+    } else {
+        loadMap = {};
+        loadPointsFilter = getElementValue("load-points-filter");
+    }
     const overwrite = getElementValue("overwrite");
 
     const body = {
@@ -322,6 +333,7 @@ async function exportResults() {
         "metric-list": metrics,
         overwrite: overwrite,
         loads: loadMap,
+        "load-points-filter": loadPointsFilter,
     };
 
     const response = await fetch("/generation/export-results", {

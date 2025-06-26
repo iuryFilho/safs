@@ -1,18 +1,13 @@
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    jsonify,
-    session,
-)
-import os.path as op
+from flask import Blueprint, render_template, request, jsonify
 from services import (
     exportation as es,
     generation as gs,
     loads_utils as lus,
     metrics_utils as mus,
+    session_data_utils as sdus,
     utils as us,
 )
+from data.metric_data import FILTERED_METRICS as FM
 
 blueprint = Blueprint("generation", __name__)
 debug_output = False
@@ -26,64 +21,41 @@ def index():
     Returns:
         Rendered HTML template for the configuration page.
     """
-    base_directory = session.get("base_directory", "")
-    base_dir_error = session.get("base_dir_error", None)
+    base_directory = sdus.get_session("base_directory")
+    base_dir_error = sdus.get_session("base_dir_error")
     if base_dir_error:
         return render_template(
             "generation.jinja",
+            debug_output=debug_output,
             base_directory=base_directory,
             base_dir_error=base_dir_error,
-            debug_output=debug_output,
         )
-    input_config = session.get("input_config", "")
-    output_config = session.get("output_config", "")
-
-    directories = session.get("directories", None)
-    metric_type = session.get("metric_type", "individual")
-    grouped_metrics = session.get("grouped_metrics", None)
-    load_count = session.get("load_count", 0)
-    has_config_data = session.get("has_config_data", False)
-
-    graph_type = session.get("graph_type", "line")
-    language = session.get("language", "pt")
-    overwrite = session.get("overwrite", False)
-    figure_width = session.get("figure_width", 10)
-    figure_height = session.get("figure_height", 5)
-    graph_fontsize = session.get("graph_fontsize", "medium")
-    legend_fontsize = session.get("legend_fontsize", "medium")
-    max_columns = session.get("max_columns", 5)
-    anchor_x = session.get("anchor_x", 0.5)
-    anchor_y = session.get("anchor_y", -0.15)
-    frameon = session.get("frameon", False)
-    legend_position = session.get("legend_position", "upper center")
-    use_custom_loads = session.get("use_custom_loads", False)
-    loads = session.get("loads", {})
-
+    metric_type = sdus.get_session("metric_type")
     return render_template(
         "generation.jinja",
-        base_directory=base_directory,
-        input_config=input_config,
-        output_config=output_config,
-        directories=directories,
-        metric_type=metric_type,
-        grouped_metrics=grouped_metrics,
-        load_count=load_count,
-        has_config_data=has_config_data,
-        graph_type=graph_type,
-        language=language,
-        overwrite=overwrite,
-        figure_width=figure_width,
-        figure_height=figure_height,
-        graph_fontsize=graph_fontsize,
-        legend_fontsize=legend_fontsize,
-        anchor_x=anchor_x,
-        anchor_y=anchor_y,
-        legend_position=legend_position,
-        max_columns=max_columns,
-        frameon=frameon,
-        use_custom_loads=use_custom_loads,
-        loads=loads,
         debug_output=debug_output,
+        base_directory=base_directory,
+        metric_type=metric_type,
+        grouped_metrics=FM[metric_type],
+        input_config=sdus.get_session("input_config"),
+        output_config=sdus.get_session("output_config"),
+        directories=sdus.get_session("directories"),
+        load_count=sdus.get_session("load_count"),
+        has_config_data=sdus.get_session("has_config_data"),
+        graph_type=sdus.get_session("graph_type"),
+        language=sdus.get_session("language"),
+        overwrite=sdus.get_session("overwrite"),
+        figure_width=sdus.get_session("figure_width"),
+        figure_height=sdus.get_session("figure_height"),
+        graph_fontsize=sdus.get_session("graph_fontsize"),
+        legend_fontsize=sdus.get_session("legend_fontsize"),
+        max_columns=sdus.get_session("max_columns"),
+        anchor_x=sdus.get_session("anchor_x"),
+        anchor_y=sdus.get_session("anchor_y"),
+        frameon=sdus.get_session("frameon"),
+        legend_position=sdus.get_session("legend_position"),
+        use_custom_loads=sdus.get_session("use_custom_loads"),
+        loads=sdus.get_session("loads"),
     )
 
 
@@ -93,58 +65,39 @@ def generate_graphs():
     Generates graphs based on the provided data and session information.
     Returns:
         A JSON response indicating the success or failure of the graph generation.
-    Examples:
-        >>> # This endpoint expects a JSON payload with the following structure:
-        >>> {
-        ...    "directory-list": ["dir1", "dir2", ..., "dirN"],
-        ...    "directory-labels": ["label1", "label2", ..., "labelN"],
-        ...    "metric-list": ["metric1", "metric2", ...],
-        ...    "graph-type": "line", "bar" or "scatter",
-        ...    "overwrite": true or false,
-        ...    "figure-width": 10,
-        ...    "figure-height": 5,
-        ...    "frameon": true or false,
-        ...    "max-columns": 5,
-        ...    "graph-font-size": "medium",
-        ...    "legend-font-size": "medium",
-        ...    "legend-position": "upper center",
-        ...    "anchor-x": 0.5,
-        ...    "anchor-y": -0.15,
-        ...    "loads": {"1": "100", "2": "200", ...}
-        ... }
     """
-    base_directory = session.get("base_directory", "")
-    metric_type = session.get("metric_type", "individual")
-    use_custom_loads = session.get("use_custom_loads", False)
-    grouped_metrics: gs.GroupedMetricT = session.get("grouped_metrics", None)
+    base_directory = sdus.get_session("base_directory")
+    metric_type = sdus.get_session("metric_type")
+    use_custom_loads = sdus.get_session("use_custom_loads")
+    grouped_metrics = FM[metric_type]
 
-    data: dict = request.get_json()
-    directories: list[str] = data.get("directory-list", [])
-    raw_labels = data.get("directory-labels", [])
+    data = sdus.Data(request.get_json())
+    directories: list[str] = data["directory-list"]
+    raw_labels = data["directory-labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
-    chosen_metrics = data.get("metric-list", [])
+    chosen_metrics = data["metric-list"]
 
-    graph_type = data.get("graph-type", "line")
-    language = data.get("language", "pt")
-    overwrite = data.get("overwrite", "") == "true"
+    graph_type = data["graph-type"]
+    language = data["language"]
+    overwrite = data["overwrite"] == "true"
     figsize = us.to_float(
-        data.get("figure-width", "10"),
-        data.get("figure-height", "5"),
+        data["figure-width"],
+        data["figure-height"],
     )
-    graph_fontsize = data.get("graph-font-size", "medium")
-    legend_fontsize = data.get("legend-font-size", "medium")
+    graph_fontsize = data["graph-font-size"]
+    legend_fontsize = data["legend-font-size"]
     anchor = us.to_float(
-        data.get("anchor-x", "0.5"),
-        data.get("anchor-y", "-0.15"),
+        data["anchor-x"],
+        data["anchor-y"],
     )
-    legend_position = data.get("legend-position", "upper center")
-    max_columns = int(data.get("max-columns", "5"))
-    frameon = data.get("frameon", "") == "true"
+    legend_position = data["legend-position"]
+    max_columns = int(data["max-columns"])
+    frameon = data["frameon"] == "true"
 
     if use_custom_loads:
-        raw_loads: dict = data.get("loads", {})
+        raw_loads: dict = data["loads"]
     else:
-        load_points_filter = data.get("load-points-filter", "")
+        load_points_filter = data["load-points-filter"]
         try:
             raw_loads = lus.calculate_loads(
                 base_directory, directories[0], load_points_filter
@@ -153,21 +106,24 @@ def generate_graphs():
             return jsonify({"error": str(e)})
     loads = list(raw_loads.values())
     load_points = list(raw_loads.keys())
-
-    session["labels"] = session_labels
-    session["graph_type"] = graph_type
-    session["language"] = language
-    session["overwrite"] = overwrite
-    session["figure_width"] = figsize[0]
-    session["figure_height"] = figsize[1]
-    session["graph_fontsize"] = graph_fontsize
-    session["legend_fontsize"] = legend_fontsize
-    session["legend_position"] = legend_position
-    session["anchor_x"] = anchor[0]
-    session["anchor_y"] = anchor[1]
-    session["frameon"] = frameon
-    session["max_columns"] = max_columns
-    session["loads"] = raw_loads
+    sdus.set_session_data(
+        {
+            "labels": session_labels,
+            "graph_type": graph_type,
+            "language": language,
+            "overwrite": overwrite,
+            "figure_width": figsize[0],
+            "figure_height": figsize[1],
+            "graph_fontsize": graph_fontsize,
+            "legend_fontsize": legend_fontsize,
+            "legend_position": legend_position,
+            "anchor_x": anchor[0],
+            "anchor_y": anchor[1],
+            "frameon": frameon,
+            "max_columns": max_columns,
+            "loads": raw_loads,
+        }
+    )
 
     chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
     if chosen_grouped_metrics:
@@ -205,46 +161,53 @@ def export_results():
     Exports the results of the simulations based on the provided data and session information.
     Returns:
         A JSON response indicating the success or failure of the export operation.
-    Examples:
-        >>> # This endpoint expects a JSON payload with the following structure:
-        >>> {
-        ...    "directory-list": ["dir1", "dir2", ..., "dirN"],
-        ...    "directory-labels": ["label1", "label2", ..., "labelN"],
-        ...    "metric-list": ["metric1", "metric2", ...],
-        ...    "loads": {"1": "100", "2": "200", ...},
-        ...    "overwrite": true or false
-        ... }
     """
-    base_directory = session.get("base_directory", "")
-    metric_type = session.get("metric_type", "individual")
-    grouped_metrics = session.get("grouped_metrics", None)
+    base_directory = sdus.get_session("base_directory")
+    use_custom_loads = sdus.get_session("use_custom_loads")
+    metric_type = sdus.get_session("metric_type")
+    grouped_metrics = FM[metric_type]
 
     if not grouped_metrics:
         return jsonify({"error": "No metrics selected."})
 
-    data: dict = request.get_json()
-    directories = data.get("directory-list", [])
-    raw_labels = data.get("directory-labels", [])
+    data = sdus.Data(request.get_json())
+    directories = data["directory-list"]
+    raw_labels = data["directory-labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
 
-    chosen_metrics = data.get("metric-list", [])
+    chosen_metrics = data["metric-list"]
     chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
-    loads: dict = data.get("loads", {})
-    overwrite = data.get("overwrite", "") == "true"
+    overwrite = data["overwrite"] == "true"
 
-    session["labels"] = session_labels
-    session["loads"] = loads
-    session["overwrite"] = overwrite
+    if use_custom_loads:
+        raw_loads: dict = data["loads"]
+    else:
+        load_points_filter = data["load-points-filter"]
+        try:
+            raw_loads = lus.calculate_loads(
+                base_directory, directories[0], load_points_filter
+            )
+        except Exception as e:
+            return jsonify({"error": str(e)})
+    loads = list(raw_loads.values())
+    load_points = list(raw_loads.keys())
+
+    sdus.set_session_data(
+        {
+            "labels": session_labels,
+            "loads": loads,
+            "overwrite": overwrite,
+        }
+    )
     try:
-        exporter = es.ResultExporter()
-        exporter.export_results(
+        es.ResultExporter().export_results(
             base_directory,
             metric_type,
             directories,
             labels,
             chosen_grouped_metrics,
-            loads=list(loads.values()),
-            load_points=list(loads.keys()),
+            loads=loads,
+            load_points=load_points,
             overwrite=overwrite,
         )
         return jsonify({"message": "Results exported successfully."})
