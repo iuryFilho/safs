@@ -74,7 +74,7 @@ def generate_graphs():
 
     data = sdus.Data(request.get_json())
     directories: list[str] = data["directory-list"]
-    raw_labels = data["directory-labels"]
+    raw_labels = data["labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
     chosen_metrics = data["metric-list"]
 
@@ -176,7 +176,7 @@ def export_results():
 
     data = sdus.Data(request.get_json())
     directories = data["directory-list"]
-    raw_labels = data["directory-labels"]
+    raw_labels = data["labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
 
     chosen_metrics = data["metric-list"]

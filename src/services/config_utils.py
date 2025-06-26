@@ -14,7 +14,7 @@ def create_config_structure(data: sdus.Data) -> dict:
     """
     new_config_data = {"directories": {}, "metrics": {}, "graph-config": {}}
     directories = data["directory-list"]
-    labels = data["directory-labels"]
+    labels = data["labels"]
     for dir, label in zip(directories, labels):
         new_config_data["directories"][dir] = label
 

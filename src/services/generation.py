@@ -8,6 +8,7 @@ from services import (
     path_utils as pus,
     plotting as ps,
     compilation as cs,
+    translation as ts,
     simulation_utils as sus,
     utils as us,
 )
@@ -40,6 +41,7 @@ class GraphGenerator:
         }
         self.graph_type = graph_type
         self.set_generation_strategy(metric_type)
+        self.language = language
         if language == "pt":
             self.x_label = "Carga na rede (Erlangs)"
         elif language == "en":
@@ -161,16 +163,19 @@ class GraphGenerator:
         """
         self.compiler.set_simulation_results(simulation_results)
         self.plotter.initialize_graphs_data(
-            self.loads, labels=self.dir_labels, x_label=self.x_label
+            self.loads,
+            labels=self.dir_labels,
+            x_label=self.x_label,
         )
         for metric in metrics:
             self.compiler.set_metrics([metric])
             dataframes = self.compiler.compile_data()
             filename = f"{self.filename_prefix}_{metric.replace(' ', '_')}"
+            y_label = ts.translate_metric(metric, self.language)
             self.plotter.plot_graph(
                 dataframes,
                 output_file=filename,
-                y_label=metric,
+                y_label=y_label,
             )
         self.compiler.reset_data()
 
@@ -186,11 +191,12 @@ class GraphGenerator:
             simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
         self.compiler.set_metrics(metrics)
+        y_label = ts.translate_metric(mus.get_metric_root(metrics[0]), self.language)
         self.plotter.initialize_graphs_data(
             self.loads,
             labels=mus.get_metrics_components(metrics),
             x_label=self.x_label,
-            y_label=mus.get_metric_root(metrics[0]),
+            y_label=y_label,
         )
         for label, simulation_result in zip(self.dir_labels, simulation_results):
             self.compiler.set_simulation_results([simulation_result])

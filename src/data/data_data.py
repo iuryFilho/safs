@@ -3,7 +3,7 @@ DEFAULT_DATA = {
     "input-config": "",
     "output-config": "",
     "directory-list": [],
-    "directory-labels": [],
+    "labels": [],
     "metric-type": "individual",
     "metric-list": [],
     "graph-type": "line",

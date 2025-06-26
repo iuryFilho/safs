@@ -160,9 +160,11 @@ async function loadConfig() {
 async function saveConfig() {
     const outputConfig = getElementValue("output-config");
     const directories = getCheckedValues("directory-list");
+    console.log("Directories:", directories);
     const labels = directories.map((dir) => {
         return document.getElementById(`label-${dir}`).value;
     });
+    console.log("Labels:", labels);
     const metricType = getRadioValue("metric-type");
     const metrics = getCheckedValues("metric-list");
     const graphConfig = {};
@@ -269,7 +271,7 @@ async function generateGraphs() {
 
     const body = {
         "directory-list": directories,
-        "directory-labels": directoryLabels,
+        labels: directoryLabels,
         "metric-list": metrics,
         "graph-type": graphType,
         language: language,
@@ -328,7 +330,7 @@ async function exportResults() {
 
     const body = {
         "directory-list": directories,
-        "directory-labels": directoryLabels,
+        labels: directoryLabels,
         "metric-list": metrics,
         overwrite: overwrite,
         loads: loadMap,

@@ -1,7 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
-from typing import Callable
 
 from services import path_utils as pus
 
@@ -47,16 +46,16 @@ class GraphPlotter:
         self,
         loads: list[str],
         labels: list[str],
-        x_label: str = "X Axis",
-        y_label: str = "Y Axis",
+        x_label: str = "",
+        y_label: str = "",
     ):
         """
         Initialize the data required for plotting graphs.
         Args:
             loads (list[str]): List of loads for the x-axis.
             labels (list[str]): List of labels for the graph legend.
-            x_label (str, optional): Label for the x-axis. Defaults to "X Axis".
-            y_label (str, optional): Label for the y-axis. Defaults to "Y Axis".
+            x_label (str, optional): Label for the x-axis. Defaults to "".
+            y_label (str, optional): Label for the y-axis. Defaults to "".
         """
         self.loads = loads
         self.load_positions = list(range(len(loads)))
