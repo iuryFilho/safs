@@ -35,26 +35,27 @@ def load_directory():
     base_directory = data["base-directory"]
     sess_data = {"base_directory": base_directory}
     try:
-        simulation_dirs_paths = pus.get_simulations_dirs_paths(base_directory)
-        simulation_dirs = [op.basename(s) for s in simulation_dirs_paths]
+        if base_directory != "":
+            simulation_dirs_paths = pus.get_simulations_dirs_paths(base_directory)
+            simulation_dirs = [op.basename(s) for s in simulation_dirs_paths]
 
-        metric_type: str = data["metric-type"]
-        base_path = op.join(base_directory, simulation_dirs[0])
-        use_custom_loads: bool = data["use-custom-loads"]
-        if not use_custom_loads:
-            loads = lus.calculate_loads(base_directory, simulation_dirs[0])
-            sess_data["loads"] = loads
-        else:
-            load_count = lus.get_number_of_load_points(base_path)
-            sess_data["load_count"] = load_count
+            metric_type: str = data["metric-type"]
+            base_path = op.join(base_directory, simulation_dirs[0])
+            use_custom_loads: bool = data["use-custom-loads"]
+            if not use_custom_loads:
+                loads = lus.calculate_loads(base_directory, simulation_dirs[0])
+                sess_data["loads"] = loads
+            else:
+                load_count = lus.get_number_of_load_points(base_path)
+                sess_data["load_count"] = load_count
 
-        sess_data.update(
-            {
-                "directories": simulation_dirs,
-                "metric_type": metric_type,
-                "base_dir_error": None,
-            }
-        )
+            sess_data.update(
+                {
+                    "directories": simulation_dirs,
+                    "metric_type": metric_type,
+                    "base_dir_error": None,
+                }
+            )
     except Exception as e:
         sess_data["base_dir_error"] = str(e)
     finally:

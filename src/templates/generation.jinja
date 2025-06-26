@@ -21,7 +21,7 @@
     {% call section("base-directory") %}
       {{ input(label="<h2>Diretório Base:</h2>",
             name="base-directory", value=base_directory,
-            placeholder="Informe o caminho do diretório base", required=true,
+            placeholder="Informe o caminho do diretório base",
             button_text="Carregar Diretório", action="load-directory",
             indent=true,
             error=base_dir_error) 
@@ -60,7 +60,7 @@
       {% endcall %}
     {% endif %}
 
-    {% if directories %}
+    {% if base_directory and not base_dir_error and directories %}
       {% call section("directories") %}
         <h2 class="mb-3">Lista de Diretórios de Simulação:</h2>
 
@@ -95,7 +95,7 @@
       {% endcall %}
     {% endif %}
 
-    {% if grouped_metrics %}
+    {% if base_directory and not base_dir_error and grouped_metrics %}
       {% call section("metrics") %}
         <h2 class="mb-3">Lista de Métricas:</h2>
         <div class="mx-4">
