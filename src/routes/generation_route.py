@@ -46,8 +46,9 @@ def index():
         language=sdus.get_session("language"),
         overwrite="true" if sdus.get_session("overwrite") else "false",
         use_grid="true" if sdus.get_session("use_grid") else "false",
-        title=sdus.get_session("title"),
+        ylim_low=sdus.get_session("ylim_low"),
         x_axis_direction=sdus.get_session("x_axis_direction"),
+        title=sdus.get_session("title"),
         xlabel=sdus.get_session("xlabel"),
         ylabel=sdus.get_session("ylabel"),
         figure_width=sdus.get_session("figure_width"),
@@ -75,13 +76,12 @@ def generate_graphs():
     base_directory = sdus.get_session("base_directory")
     metric_type = sdus.get_session("metric_type")
     use_custom_loads = sdus.get_session("use_custom_loads")
-    grouped_metrics = FM[metric_type]
 
     data = sdus.Data(request.get_json())
     directories: list[str] = data["directory-list"]
     raw_labels = data["labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
-    chosen_metrics = data["metric-list"]
+    grouped_metrics = data["grouped-metrics"]
 
     graph_type = data["graph-type"]
     language = data["language"]
@@ -153,8 +153,7 @@ def generate_graphs():
         }
     )
 
-    chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
-    if chosen_grouped_metrics:
+    if grouped_metrics:
         try:
             gs.GraphGenerator(
                 base_directory,
@@ -163,7 +162,7 @@ def generate_graphs():
                 graph_type,
                 directories,
                 dir_labels=labels,
-                grouped_metrics=chosen_grouped_metrics,
+                grouped_metrics=grouped_metrics,
                 loads=loads,
                 load_points=load_points,
             ).generate_graphs(
@@ -201,18 +200,15 @@ def export_results():
     base_directory = sdus.get_session("base_directory")
     use_custom_loads = sdus.get_session("use_custom_loads")
     metric_type = sdus.get_session("metric_type")
-    grouped_metrics = FM[metric_type]
-
-    if not grouped_metrics:
-        return jsonify({"error": "No metrics selected."})
 
     data = sdus.Data(request.get_json())
     directories = data["directory-list"]
     raw_labels = data["labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
 
-    chosen_metrics = data["metric-list"]
-    chosen_grouped_metrics = mus.filter_chosen_metrics(grouped_metrics, chosen_metrics)
+    grouped_metrics = data["grouped-metrics"]
+    if not grouped_metrics:
+        return jsonify({"error": "No metrics selected."})
     overwrite = data["overwrite"] == "true"
 
     if use_custom_loads:
@@ -241,7 +237,7 @@ def export_results():
             metric_type,
             directories,
             labels,
-            chosen_grouped_metrics,
+            grouped_metrics,
             loads=loads,
             load_points=load_points,
             overwrite=overwrite,

@@ -88,6 +88,27 @@ function createToastFunction(id) {
     };
 }
 
+function getGroupedMetrics() {
+    const groupedMetrics = {};
+    document
+        .getElementById("metrics-section")
+        .querySelectorAll(".accordion-collapse")
+        .forEach((metricGroup) => {
+            const groupName = metricGroup.id;
+            const metrics = Array.from(
+                metricGroup.querySelectorAll(
+                    `input[type="checkbox"][name="metric-list"]:checked`
+                )
+            ).map((checkbox) => {
+                return checkbox.value;
+            });
+            if (metrics.length > 0) {
+                groupedMetrics[groupName] = metrics;
+            }
+        });
+    return groupedMetrics;
+}
+
 function getLoads(graphConfig) {
     const allLoadList = getListValues("load-list");
     let loadFilter = "";

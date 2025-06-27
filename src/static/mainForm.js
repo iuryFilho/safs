@@ -160,13 +160,10 @@ async function loadConfig() {
 async function saveConfig() {
     const outputConfig = getElementValue("output-config");
     const directories = getCheckedValues("directory-list");
-    console.log("Directories:", directories);
     const labels = directories.map((dir) => {
         return document.getElementById(`label-${dir}`).value;
     });
-    console.log("Labels:", labels);
-    const metricType = getRadioValue("metric-type");
-    const metrics = getCheckedValues("metric-list");
+    const groupedMetrics = getGroupedMetrics();
     const graphConfig = {};
     getLoads(graphConfig);
 
@@ -174,8 +171,7 @@ async function saveConfig() {
         "output-config": outputConfig,
         "directory-list": directories,
         labels: labels,
-        "metric-type": metricType,
-        "metric-list": metrics,
+        "grouped-metrics": groupedMetrics,
         "graph-config": graphConfig,
     };
 
@@ -239,7 +235,7 @@ async function generateGraphs() {
     const directoryLabels = directories.map((dir) => {
         return document.getElementById(`label-${dir}`).value;
     });
-    const metrics = getCheckedValues("metric-list");
+    const groupedMetrics = getGroupedMetrics();
     const graphType = getElementValue("graph-type");
     const language = getElementValue("language");
     const overwrite = getElementValue("overwrite");
@@ -277,7 +273,7 @@ async function generateGraphs() {
     const body = {
         "directory-list": directories,
         labels: directoryLabels,
-        "metric-list": metrics,
+        "grouped-metrics": groupedMetrics,
         "graph-type": graphType,
         language: language,
         overwrite: overwrite,
@@ -320,7 +316,7 @@ async function exportResults() {
     const directoryLabels = directories.map((dir) => {
         return document.getElementById(`label-${dir}`).value;
     });
-    const metrics = getCheckedValues("metric-list");
+    const groupedMetrics = getGroupedMetrics();
     const useCustomLoads = getCheckedValue("use-custom-loads");
     let loadMap;
     let loadPointsFilter;
@@ -341,7 +337,7 @@ async function exportResults() {
     const body = {
         "directory-list": directories,
         labels: directoryLabels,
-        "metric-list": metrics,
+        "grouped-metrics": groupedMetrics,
         overwrite: overwrite,
         loads: loadMap,
         "load-points-filter": loadPointsFilter,
@@ -353,7 +349,6 @@ async function exportResults() {
         body: JSON.stringify(body),
     });
     const data = await response.json();
-    console.log(data);
 
     const showToast = createToastFunction("export-results-toast");
     if (data.error) {

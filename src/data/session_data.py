@@ -36,7 +36,7 @@ DEFAULT_DATA = {
     "directory-list": [],
     "labels": [],
     "metric-type": "individual",
-    "metric-list": [],
+    "grouped-metrics": {},
     "graph-type": "line",
     "language": "pt",
     "overwrite": "",

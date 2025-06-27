@@ -18,15 +18,8 @@ def create_config_structure(data: sdus.Data) -> dict:
     for dir, label in zip(directories, labels):
         new_config_data["directories"][dir] = label
 
-    metric_type = data["metric-type"]
-    grouped_metrics = FM[metric_type]
-    metric_list_data = data["metric-list"]
-    for metric_group, metric_list in grouped_metrics.items():
-        for metric in metric_list_data:
-            if metric in metric_list:
-                new_config_data["metrics"][metric_group] = new_config_data[
-                    "metrics"
-                ].get(metric_group, []) + [metric]
+    grouped_metrics = data["grouped-metrics"]
+    new_config_data["metrics"] = grouped_metrics
 
     graph_config = data["graph-config"]
     new_config_data["graph-config"] = graph_config
