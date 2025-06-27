@@ -244,6 +244,11 @@ async function generateGraphs() {
     const language = getElementValue("language");
     const overwrite = getElementValue("overwrite");
     const useGrid = getElementValue("use-grid");
+    const ylimLow = getElementValue("ylim-low");
+    const xAxisDirection = getElementValue("x-axis-direction");
+    const title = getElementValue("title");
+    const xlabel = getElementValue("xlabel");
+    const ylabel = getElementValue("ylabel");
     const figureWidth = getElementValue("figure-width");
     const figureHeight = getElementValue("figure-height");
     const graphFontSize = getElementValue("graph-font-size");
@@ -277,6 +282,11 @@ async function generateGraphs() {
         language: language,
         overwrite: overwrite,
         "use-grid": useGrid,
+        "ylim-low": ylimLow,
+        "x-axis-direction": xAxisDirection,
+        title: title,
+        xlabel: xlabel,
+        ylabel: ylabel,
         "figure-width": figureWidth,
         "figure-height": figureHeight,
         "graph-font-size": graphFontSize,

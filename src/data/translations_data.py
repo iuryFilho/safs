@@ -1,5 +1,5 @@
 METRICS_PT = {
-    "Bandwidth blocking probability": "Probabilidade de bloqueio por largura de banda",
+    "Bandwidth blocking probability": "Probabilidade de bloqueio de banda",
     "General requested bandwidth": "Largura de banda solicitada geral",
     "BitRate blocking probability": "Probabilidade de bloqueio por taxa de bit",
     "General requested bitRate": "Taxa de bit solicitada geral",

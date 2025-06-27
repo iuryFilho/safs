@@ -31,6 +31,11 @@ class GraphPlotter:
             "bar": self.plot_bar_graph,
             "stacked": self.plot_stacked_bar_graph,
         }
+        self.ylim_low = graph_config.get("ylim_low", "")
+        self.x_axis_direction = graph_config.get("x_axis_direction", "horizontal")
+        self.title = graph_config.get("title", "")
+        self.x_label = graph_config.get("xlabel", "")
+        self.y_label = graph_config.get("ylabel", "")
         self.graph_type: str = graph_config.get("graph_type", "linear")
         self.figsize = graph_config.get("figsize", (10, 5))
         self.graph_fontsize = graph_config.get("graph_fontsize", "medium")
@@ -62,8 +67,10 @@ class GraphPlotter:
         self.labels = labels
         self.labels_len = len(labels)
         self.set_colors()
-        self.x_label = x_label
-        self.y_label = y_label
+        if self.x_label == "":
+            self.x_label = x_label
+        if self.y_label == "":
+            self.y_label = y_label
 
     def set_colors(self):
         if self.labels_len <= 0:
@@ -94,6 +101,9 @@ class GraphPlotter:
         """
         plt.figure(figsize=self.figsize)
 
+        if self.title:
+            plt.title(self.title, fontsize=self.graph_fontsize, fontweight="bold")
+
         if self.graph_type in ("linear", "log"):
             plt.yscale(self.graph_type)
         plot_function = self.PLOTTING_STRATEGIES.get(self.graph_type)
@@ -101,17 +111,19 @@ class GraphPlotter:
             plot_function(dataframes)
         else:
             raise ValueError(f"Graph type not supported: {self.graph_type}")
-        if x_label is None:
+        if self.ylim_low != "":
+            plt.ylim(bottom=float(self.ylim_low))
+        if x_label is None or self.x_label != "":
             x_label = self.x_label
-        if y_label is None:
+        if y_label is None or self.y_label != "":
             y_label = self.y_label
-        plt.xlabel(x_label, fontsize=self.graph_fontsize)
-        plt.ylabel(y_label, fontsize=self.graph_fontsize)
+        plt.xlabel(x_label, fontsize=self.graph_fontsize, fontweight="bold")
+        plt.ylabel(y_label, fontsize=self.graph_fontsize, fontweight="bold")
         if self.use_grid:
             plt.grid(axis="y")
         if self.labels_len < self.max_columns:
             self.max_columns = self.labels_len
-        if len(self.loads) > 10:
+        if self.x_axis_direction == "vertical":
             plt.xticks(rotation=90)
 
         if self.legend_position == "none":
@@ -212,7 +224,6 @@ class GraphPlotter:
             )
         plt.xticks(self.load_positions, self.loads, fontsize=self.graph_fontsize)
         plt.yticks(fontsize=self.graph_fontsize)
-        plt.ylim(bottom=0)
 
     def plot_bar_graph(self, dataframes: list[pd.DataFrame]):
         """

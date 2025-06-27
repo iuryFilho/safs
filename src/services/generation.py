@@ -63,6 +63,11 @@ class GraphGenerator:
 
     def generate_graphs(
         self,
+        ylim_low: str,
+        x_axis_direction: str,
+        title: str,
+        xlabel: str,
+        ylabel: str,
         graph_fontsize: int,
         legend_fontsize: int,
         figsize: list[float],
@@ -74,6 +79,11 @@ class GraphGenerator:
         frameon: bool,
     ):
         graph_config = {
+            "ylim_low": ylim_low,
+            "x_axis_direction": x_axis_direction,
+            "title": title,
+            "xlabel": xlabel,
+            "ylabel": ylabel,
             "graph_type": self.graph_type,
             "legend_fontsize": legend_fontsize,
             "graph_fontsize": graph_fontsize,
@@ -170,7 +180,9 @@ class GraphGenerator:
         for metric in metrics:
             self.compiler.set_metrics([metric])
             dataframes = self.compiler.compile_data()
-            filename = f"{self.filename_prefix}_{metric.replace(' ', '_')}"
+            filename = (
+                f"{self.filename_prefix}_{metric.replace(' ', '_').replace('/', '_')}"
+            )
             y_label = ts.translate_metric(metric, self.language)
             self.plotter.plot_graph(
                 dataframes,

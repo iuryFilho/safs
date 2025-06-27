@@ -1,7 +1,6 @@
 from flask import session
 from typing import Any
-from data.session_data import DEFAULT_SESSION as DS
-from data.data_data import DEFAULT_DATA as DD
+from data.session_data import DEFAULT_SESSION as DS, DEFAULT_DATA as DD
 
 
 def clear_session() -> tuple[dict[str, str], int]:

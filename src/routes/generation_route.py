@@ -46,6 +46,10 @@ def index():
         language=sdus.get_session("language"),
         overwrite="true" if sdus.get_session("overwrite") else "false",
         use_grid="true" if sdus.get_session("use_grid") else "false",
+        title=sdus.get_session("title"),
+        x_axis_direction=sdus.get_session("x_axis_direction"),
+        xlabel=sdus.get_session("xlabel"),
+        ylabel=sdus.get_session("ylabel"),
         figure_width=sdus.get_session("figure_width"),
         figure_height=sdus.get_session("figure_height"),
         graph_fontsize=sdus.get_session("graph_fontsize"),
@@ -56,6 +60,7 @@ def index():
         frameon="true" if sdus.get_session("frameon") else "false",
         legend_position=sdus.get_session("legend_position"),
         use_custom_loads=sdus.get_session("use_custom_loads"),
+        load_points_filter=sdus.get_session("load_points_filter"),
         loads=sdus.get_session("loads"),
     )
 
@@ -82,6 +87,11 @@ def generate_graphs():
     language = data["language"]
     overwrite = data["overwrite"] == "true"
     use_grid = data["use-grid"] == "true"
+    ylim_low = data["ylim-low"]
+    x_axis_direction = data["x-axis-direction"]
+    title = data["title"]
+    xlabel = data["xlabel"]
+    ylabel = data["ylabel"]
     figsize = us.to_float(
         data["figure-width"],
         data["figure-height"],
@@ -96,14 +106,23 @@ def generate_graphs():
     max_columns = int(data["max-columns"])
     frameon = data["frameon"] == "true"
 
+    load_error = ""
+    load_points_filter = ""
     if use_custom_loads:
         raw_loads: dict = data["loads"]
     else:
         load_points_filter = data["load-points-filter"]
         try:
-            raw_loads = lus.calculate_loads(
+            raw_loads: dict = lus.calculate_loads(
                 base_directory, directories[0], load_points_filter
             )
+            for i in range(1, len(directories)):
+                other_raw_loads = lus.calculate_loads(
+                    base_directory, directories[i], load_points_filter
+                )
+                if len(other_raw_loads) != len(raw_loads):
+                    load_error = "Gráficos gerados com sucesso, mas a quantidade de pontos de carga não é igual entre os diretórios selecionados."
+                    break
         except Exception as e:
             return jsonify({"error": str(e)})
     loads = list(raw_loads.values())
@@ -115,6 +134,11 @@ def generate_graphs():
             "language": language,
             "overwrite": overwrite,
             "use_grid": use_grid,
+            "ylim_low": ylim_low,
+            "x_axis_direction": x_axis_direction,
+            "title": title,
+            "xlabel": xlabel,
+            "ylabel": ylabel,
             "figure_width": figsize[0],
             "figure_height": figsize[1],
             "graph_fontsize": graph_fontsize,
@@ -124,6 +148,7 @@ def generate_graphs():
             "anchor_y": anchor[1],
             "frameon": frameon,
             "max_columns": max_columns,
+            "load_points_filter": load_points_filter,
             "loads": raw_loads,
         }
     )
@@ -142,6 +167,11 @@ def generate_graphs():
                 loads=loads,
                 load_points=load_points,
             ).generate_graphs(
+                ylim_low,
+                x_axis_direction,
+                title,
+                xlabel,
+                ylabel,
                 graph_fontsize,
                 legend_fontsize,
                 figsize,
@@ -152,6 +182,8 @@ def generate_graphs():
                 max_columns,
                 frameon,
             )
+            if load_error:
+                return jsonify({"error": load_error})
             return jsonify({"message": "Gráficos gerados com sucesso."})
         except Exception as e:
             return jsonify({"error": str(e)})

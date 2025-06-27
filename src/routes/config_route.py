@@ -1,8 +1,6 @@
 from flask import Blueprint, request, jsonify
 import os.path as op
 
-
-from data.metric_data import FILTERED_METRICS
 from services import (
     session_data_utils as sdus,
     config_utils as cs,
@@ -45,12 +43,11 @@ def load_directory():
             if not use_custom_loads:
                 loads = lus.calculate_loads(base_directory, simulation_dirs[0])
                 sess_data["loads"] = loads
-            else:
-                load_count = lus.get_number_of_load_points(base_path)
-                sess_data["load_count"] = load_count
+            load_count = lus.get_number_of_load_points(base_path)
 
             sess_data.update(
                 {
+                    "load_count": load_count,
                     "directories": simulation_dirs,
                     "metric_type": metric_type,
                     "base_dir_error": None,

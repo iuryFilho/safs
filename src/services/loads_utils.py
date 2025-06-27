@@ -120,7 +120,6 @@ def filter_loads(
                         raise ValueError(f"Invalid range format: {part}")
                     if start_end[0] == "" and start_end[1] == "":
                         raise ValueError(f"Invalid range: {part}")
-                    # "-i" only valid at the beginning
                     if start_end[0] == "":
                         if indices:
                             raise ValueError(
@@ -128,7 +127,6 @@ def filter_loads(
                             )
                         start = 0
                         end = int(start_end[1])
-                    # "i-" only valid at the end
                     elif start_end[1] == "":
                         if part != load_points_filter.split(",")[-1].strip():
                             raise ValueError(
@@ -149,7 +147,7 @@ def filter_loads(
                     if idx < 0 or idx >= load_points_num:
                         raise ValueError(f"Invalid load point index: {idx}.")
                     indices.append(idx)
-            total_loads = [total_loads[i] for i in indices]
+            return {str(i): total_loads[i] for i in indices}
         except ValueError as e:
             raise ValueError(f"Error parsing load points filter: {e}")
 

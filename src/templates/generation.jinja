@@ -181,6 +181,15 @@
                         ["bar", "Barra"],
                         ["stacked", "Barra Empilhada"],
                         ]) }}
+            {{ select(label="Exibir Grade:",
+                        name="use-grid",
+                        selected=use_grid,
+                        options=[
+                        ["true", "Sim"],
+                        ["false", "Não"]
+                        ]) }}
+          </div>
+          <div class="row mb-2">
             {{ select(label="Linguagem:",
                         name="language",
                         selected=language,
@@ -195,13 +204,30 @@
                         ["true", "Sim"],
                         ["false", "Não"]
                         ]) }}
-            {{ select(label="Exibir Grade:",
-                        name="use-grid",
-                        selected=use_grid,
+          </div>
+          <div class="row mb-2">
+            {{ input(label="Limite Inferior do Eixo Y (Opcional):",
+                        name="ylim-low", value=ylim_low,
+                        placeholder="Informe o limite inferior do eixo Y", size="form-control-sm",
+                        type="number", step="any", label_class="fw-medium") }}
+            {{ select(label="Sentido do Eixo X:",
+                        name="x-axis-direction",
+                        selected=x_axis_direction,
                         options=[
-                        ["true", "Sim"],
-                        ["false", "Não"]
+                        ["horizontal", "Horizontal (Padrão)"],
+                        ["vertical", "Vertical"]
                         ]) }}
+          </div>
+          <div class="row mb-2">
+            {{ input(label="Título do Gráfico (Opcional):",
+                        name="title", value=title,
+                        placeholder="Informe o título do gráfico", size="form-control-sm", type="text", label_class="fw-medium") }}
+            {{ input(label="Rótulo do Eixo X (Opcional):",
+                        name="xlabel", value=xlabel,
+                        placeholder="Informe o rótulo do eixo X", size="form-control-sm", type="text", label_class="fw-medium") }}
+            {{ input(label="Rótulo do Eixo Y (Opcional):",
+                        name="ylabel", value=ylabel,
+                        placeholder="Informe o rótulo do eixo Y", size="form-control-sm", type="text", label_class="fw-medium") }}
           </div>
           <div class="row mb-2">
             {{ select(label="Exibir Moldura da Legenda:",
