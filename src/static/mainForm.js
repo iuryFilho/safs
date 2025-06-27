@@ -111,6 +111,19 @@ async function loadConfig() {
         const configData = data.config_data;
 
         if (configData.directories) {
+            document
+                .getElementById("directories-section")
+                .querySelectorAll('input[type="checkbox"]')
+                .forEach((checkbox) => {
+                    checkbox.checked = false;
+                    const labelElement = document.getElementById(
+                        `label-${checkbox.value}`
+                    );
+                    if (labelElement) {
+                        labelElement.disabled = true;
+                        labelElement.value = "";
+                    }
+                });
             Object.entries(configData.directories).forEach(([dir, label]) => {
                 const dirCheckbox = document.getElementById(dir);
                 const labelElement = document.getElementById(`label-${dir}`);
@@ -186,8 +199,8 @@ async function saveConfig() {
 
     if (data.error) {
         showToast("Erro: " + data.error, "warning");
-    } else {
-        showToast(data.message || "Configuração salva com sucesso!");
+    } else if (data.message) {
+        showToast(data.message);
     }
 }
 

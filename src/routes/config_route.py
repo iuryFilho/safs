@@ -92,9 +92,9 @@ def save_config():
     """
     data = sdus.Data(request.get_json())
     output_config = data["output-config"]
-    if not output_config:
-        return jsonify({"error": "Output config file is required."})
     sdus.set_session_data({"output_config": output_config})
+    if not output_config:
+        return ""
 
     new_config_data = cs.create_config_structure(data)
 

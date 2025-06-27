@@ -79,9 +79,13 @@ def generate_graphs():
 
     data = sdus.Data(request.get_json())
     directories: list[str] = data["directory-list"]
+    if not directories:
+        return jsonify({"error": "Nenhum diretório selecionado."})
     raw_labels = data["labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
     grouped_metrics = data["grouped-metrics"]
+    if not grouped_metrics:
+        return jsonify({"error": "Nenhuma métrica selecionada."})
 
     graph_type = data["graph-type"]
     language = data["language"]
@@ -203,12 +207,14 @@ def export_results():
 
     data = sdus.Data(request.get_json())
     directories = data["directory-list"]
+    if not directories:
+        return jsonify({"error": "Nenhum diretório selecionado."})
     raw_labels = data["labels"]
     labels, session_labels = us.extract_labels(directories, raw_labels)
 
     grouped_metrics = data["grouped-metrics"]
     if not grouped_metrics:
-        return jsonify({"error": "No metrics selected."})
+        return jsonify({"error": "Nenhuma métrica selecionada."})
     overwrite = data["overwrite"] == "true"
 
     if use_custom_loads:
@@ -242,6 +248,6 @@ def export_results():
             load_points=load_points,
             overwrite=overwrite,
         )
-        return jsonify({"message": "Results exported successfully."})
+        return jsonify({"message": "Resultados exportados com sucesso."})
     except Exception as e:
         return jsonify({"error": str(e)})
