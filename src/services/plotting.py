@@ -160,7 +160,7 @@ class GraphPlotter:
             idx_count += 1
             mean = dataframes[i]["mean"]
             error = dataframes[i]["error"]
-            if sum(mean == 0) >= 2:
+            if self.graph_type == "linear" and sum(mean == 0) >= 2:
                 mean_len = len(mean)
                 for idx in range(mean_len):
                     if mean[idx] == 0 and idx < mean_len - 1 and mean[idx + 1] == 0:
