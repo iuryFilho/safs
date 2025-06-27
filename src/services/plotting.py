@@ -137,7 +137,7 @@ class GraphPlotter:
                 frameon=self.frameon,
             )
         if output_file != "":
-            output_file = pus.ensure_unique_filename(output_file, self.overwrite)
+            output_file = pus.ensure_unique_filename(output_file, "png", self.overwrite)
             plt.savefig(f"{output_file}.png", dpi=150, bbox_inches="tight")
         plt.close()
 

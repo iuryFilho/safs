@@ -24,9 +24,8 @@ class ResultExporter:
         overwrite: bool,
     ):
         self.set_table_format(metric_type)
-        filename = pus.ensure_unique_filename(
-            op.join(base_directory, metric_type), overwrite
-        )
+        filename_prefix = op.join(base_directory, metric_type)
+        filename = pus.ensure_unique_filename(filename_prefix, "xlsx", overwrite)
         self.set_full_dirs(base_directory, directories)
         float_loads = self.get_float_loads(loads)
         int_load_points = self.get_int_load_points(load_points)

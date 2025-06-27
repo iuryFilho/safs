@@ -81,7 +81,18 @@ def filter_result_list_by_metric(
     Returns:
         list: A list of DataFrames containing the filtered metrics.
     """
-    return [d[d.Metrics == metric] for d in simulation_results]
+    filtered_results = []
+    for sr in simulation_results:
+        if "Metrics" not in sr.columns:
+            raise us.ExtractionError(
+                "The DataFrame does not contain the 'Metrics' column."
+            )
+        if metric not in sr["Metrics"].values:
+            raise us.ExtractionError(
+                f"The metric '{metric}' was not found in the DataFrame."
+            )
+        filtered_results.append(sr[sr.Metrics == metric])
+    return filtered_results
 
 
 def filter_result_by_metric_list(
@@ -95,9 +106,16 @@ def filter_result_by_metric_list(
     Returns:
         list: A list of DataFrames containing the filtered metrics.
     """
-    return [
-        simulation_result[simulation_result.Metrics == metric] for metric in metrics
-    ]
+    if "Metrics" not in simulation_result.columns:
+        raise us.ExtractionError("The DataFrame does not contain the 'Metrics' column.")
+    filtered_results = []
+    for metric in metrics:
+        if metric not in simulation_result["Metrics"].values:
+            raise us.ExtractionError(
+                f"The metric '{metric}' was not found in the DataFrame."
+            )
+        filtered_results.append(simulation_result[simulation_result.Metrics == metric])
+    return filtered_results
 
 
 def extract_load_points(simulation_result: pd.DataFrame) -> list[str]:

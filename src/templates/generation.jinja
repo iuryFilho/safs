@@ -141,12 +141,13 @@
                     <ul class="list-group col">
                       {% for metric in metric_list %}
                         <li class="list-group-item bg-secondary-subtle text-black border-0">
-                          <input id="{{ metric }}"
+                          <input id="{{ metric_group }}-{{ metric }}"
                                  class="form-check-input me-1"
                                  type="checkbox"
                                  name="metric-list"
                                  value="{{ metric }}" />
-                          <label class="form-check-label stretched-link" for="{{ metric }}">{{ metric }}</label>
+                          <label class="form-check-label stretched-link"
+                                 for="{{ metric_group }}-{{ metric }}">{{ metric }}</label>
                         </li>
                       {% endfor %}
                     </ul>

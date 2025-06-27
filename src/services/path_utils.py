@@ -89,16 +89,17 @@ def get_basename(path: str) -> str:
     return op.basename(op.normpath(path))
 
 
-def ensure_unique_filename(filename: str, overwrite: bool) -> str:
+def ensure_unique_filename(filename: str, extension: str, overwrite: bool) -> str:
     """
     Ensures that the filename is unique by appending a number if necessary.
     Args:
         filename (str): The base filename to check.
+        extension (str): The file extension to use.
         overwrite (bool): Whether to overwrite existing files.
     Returns:
         str: A unique filename, potentially modified with an appended number.
     """
-    if not overwrite and op.exists(f"{filename}.xlsx"):
+    if not overwrite and op.exists(f"{filename}.{extension}"):
         i = 0
         while True:
             new_filename = f"{filename}_{i}"
