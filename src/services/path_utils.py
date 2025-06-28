@@ -103,7 +103,7 @@ def ensure_unique_filename(filename: str, extension: str, overwrite: bool) -> st
         i = 0
         while True:
             new_filename = f"{filename}_{i}"
-            if op.exists(f"{new_filename}.xlsx"):
+            if op.exists(f"{new_filename}.{extension}"):
                 i += 1
             else:
                 filename = new_filename
