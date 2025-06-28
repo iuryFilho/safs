@@ -64,6 +64,7 @@ class GraphGenerator:
     def generate_graphs(
         self,
         ylim_low: str,
+        ylim_up: str,
         x_axis_direction: str,
         title: str,
         xlabel: str,
@@ -80,6 +81,7 @@ class GraphGenerator:
     ):
         graph_config = {
             "ylim_low": ylim_low,
+            "ylim_up": ylim_up,
             "x_axis_direction": x_axis_direction,
             "title": title,
             "xlabel": xlabel,

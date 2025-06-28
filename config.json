@@ -6,18 +6,10 @@
     },
     "metrics": {
         "BitRateBlockingProbability": [
-            "BitRate blocking probability",
-            "BitRate blocking probability by Crosstalk",
-            "BitRate blocking probability by Crosstalk in Others"
+            "BitRate blocking probability by Crosstalk"
         ]
     },
     "graph-config": {
-        "loads": [
-            "200",
-            "300",
-            "400",
-            "500"
-        ],
-        "load-filter": "1-4"
+        "loads": []
     }
 }

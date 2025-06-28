@@ -211,6 +211,10 @@
                         name="ylim-low", value=ylim_low,
                         placeholder="Informe o limite inferior do eixo Y", size="form-control-sm",
                         type="number", step="any", label_class="fw-medium") }}
+            {{ input(label="Limite Superior do Eixo Y (Opcional):",
+                        name="ylim-up", value=ylim_up,
+                        placeholder="Informe o limite superior do eixo Y", size="form-control-sm",
+                        type="number", step="any", label_class="fw-medium") }}
             {{ select(label="Sentido do Eixo X:",
                         name="x-axis-direction",
                         selected=x_axis_direction,

@@ -148,7 +148,9 @@ async function loadConfig() {
                     }
 
                     metricList.forEach((metric) => {
-                        const metricCheckbox = document.getElementById(metric);
+                        const metricCheckbox = document.querySelector(
+                            `input[type="checkbox"][name="metric-list"][value="${metric}"]`
+                        );
                         if (metricCheckbox) {
                             metricCheckbox.checked = true;
                         }
@@ -254,6 +256,7 @@ async function generateGraphs() {
     const overwrite = getElementValue("overwrite");
     const useGrid = getElementValue("use-grid");
     const ylimLow = getElementValue("ylim-low");
+    const ylimUp = getElementValue("ylim-up");
     const xAxisDirection = getElementValue("x-axis-direction");
     const title = getElementValue("title");
     const xlabel = getElementValue("xlabel");
@@ -292,6 +295,7 @@ async function generateGraphs() {
         overwrite: overwrite,
         "use-grid": useGrid,
         "ylim-low": ylimLow,
+        "ylim-up": ylimUp,
         "x-axis-direction": xAxisDirection,
         title: title,
         xlabel: xlabel,

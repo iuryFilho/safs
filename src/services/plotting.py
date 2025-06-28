@@ -32,6 +32,7 @@ class GraphPlotter:
             "stacked": self.plot_stacked_bar_graph,
         }
         self.ylim_low = graph_config.get("ylim_low", "")
+        self.ylim_up = graph_config.get("ylim_up", "")
         self.x_axis_direction = graph_config.get("x_axis_direction", "horizontal")
         self.title = graph_config.get("title", "")
         self.x_label = graph_config.get("xlabel", "")
@@ -113,6 +114,8 @@ class GraphPlotter:
             raise ValueError(f"Graph type not supported: {self.graph_type}")
         if self.ylim_low != "":
             plt.ylim(bottom=float(self.ylim_low))
+        if self.ylim_up != "":
+            plt.ylim(top=float(self.ylim_up))
         if x_label is None or self.x_label != "":
             x_label = self.x_label
         if y_label is None or self.y_label != "":

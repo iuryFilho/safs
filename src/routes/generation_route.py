@@ -92,6 +92,7 @@ def generate_graphs():
     overwrite = data["overwrite"] == "true"
     use_grid = data["use-grid"] == "true"
     ylim_low = data["ylim-low"]
+    ylim_up = data["ylim-up"]
     x_axis_direction = data["x-axis-direction"]
     title = data["title"]
     xlabel = data["xlabel"]
@@ -139,6 +140,7 @@ def generate_graphs():
             "overwrite": overwrite,
             "use_grid": use_grid,
             "ylim_low": ylim_low,
+            "ylim_up": ylim_up,
             "x_axis_direction": x_axis_direction,
             "title": title,
             "xlabel": xlabel,
@@ -171,6 +173,7 @@ def generate_graphs():
                 load_points=load_points,
             ).generate_graphs(
                 ylim_low,
+                ylim_up,
                 x_axis_direction,
                 title,
                 xlabel,

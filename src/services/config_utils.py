@@ -47,10 +47,6 @@ def load_config(path: str) -> dict:
                 raise us.ExtractionError(
                     f"The configuration file '{path}' is not a valid JSON object."
                 )
-            if "directories" not in result or "metrics" not in result:
-                raise us.ExtractionError(
-                    f"The configuration file '{path}' must contain 'directories' and 'metrics' keys."
-                )
             return result
     except FileNotFoundError as e:
         raise FileNotFoundError(f"The configuration file '{path}' does not exist.")
