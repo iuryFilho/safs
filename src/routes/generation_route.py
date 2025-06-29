@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify
 from services import (
     exportation as es,
-    generation as gs,
+    graph_generation as ggs,
     loads_utils as lus,
     data_utils as dus,
     utils as us,
@@ -161,7 +161,7 @@ def generate_graphs():
 
     if grouped_metrics:
         try:
-            gs.GraphGenerator(
+            ggs.GraphGenerator(
                 base_directory,
                 metric_type,
                 language,
