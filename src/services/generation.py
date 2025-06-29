@@ -47,11 +47,7 @@ class GraphGenerator:
             self.x_label = "Network Load (Erlangs)"
         else:
             raise ValueError(f"Idioma não suportado: {language}")
-        self.set_filename_prefix(
-            base_directory,
-            graph_type,
-            metric_type,
-        )
+        self.set_filename_prefix(base_directory, graph_type)
         self.set_dir_labels(dir_labels, directories)
         self.set_full_dirs(base_directory, directories)
         self.grouped_metrics = grouped_metrics
@@ -125,24 +121,15 @@ class GraphGenerator:
             raise ValueError(f"Tipo de métrica não suportado: {metric_type}")
         self.generation_func = generation_func
 
-    def set_filename_prefix(
-        self,
-        base_directory: str,
-        graph_type: str,
-        metric_type: str,
-    ):
+    def set_filename_prefix(self, base_directory: str, graph_type: str):
         """
         Sets the filename prefix for the graphs based on the base directory,
         graph type, and metric type.
         Args:
             base_directory (str): The base directory where the graphs will be saved.
             graph_type (str): The type of graph to be generated.
-            metric_type (str): The type of metric for the graphs.
         """
-        self.filename_prefix = op.join(
-            base_directory,
-            us.get_prefix(graph_type, metric_type),
-        )
+        self.filename_prefix = op.join(base_directory, graph_type)
 
     def set_dir_labels(self, dir_labels: list[str], directories: list[str]):
         """

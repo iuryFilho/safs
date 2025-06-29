@@ -65,9 +65,3 @@ def extract_labels(
         else:
             labels.append(dir)
     return labels, session_labels
-
-
-def get_prefix(graph_type: str, metric_type: str) -> str:
-    graph_pre = graph_type.capitalize()[:2]
-    metric_pre = metric_type.capitalize()[:2]
-    return f"{graph_pre}_{metric_pre}"
