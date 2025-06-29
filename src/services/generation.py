@@ -2,7 +2,7 @@ from typing import Callable, TypeAlias
 import os.path as op
 
 import pandas as pd
-from data.metric_data import METRIC_GROUP_ALIASES
+from data.metrics_data import METRIC_GROUP_ALIASES
 from services import (
     metrics_utils as mus,
     path_utils as pus,
@@ -233,7 +233,7 @@ class GraphGenerator:
         try:
             self.plotter.initialize_graphs_data(
                 self.loads,
-                labels=mus.get_metrics_components(translated_metrics),
+                labels=mus.get_metrics_components(translated_metrics, self.language),
                 x_label=self.x_label,
                 y_label=y_label,
             )

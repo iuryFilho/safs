@@ -40,6 +40,9 @@ FILTERED_METRICS = {
             "Average power consumption (Watt)",
             "Energy efficiency (bits/Joule)",
             "Total data transmitted (bits)",
+            "Total energy consumption by transponders (Joule)",
+            "Total energy consumption by OXCs (Joule)",
+            "Total energy consumption by Amplifiers (Joule)",
         ],
         "ExternalFragmentation": [
             "External Fragmentation (Vertical)",
@@ -56,6 +59,16 @@ FILTERED_METRICS = {
         "SpectrumUtilization": ["Utilization"],
     },
     "grouped": {
+        "BandwidthBlockingProbability": [
+            "Blocking probability by lack of transmitters",
+            "Blocking probability by lack of receivers",
+            "Blocking probability by fragmentation",
+            "Blocking probability by QoTN",
+            "Blocking probability by QoTO",
+            "Blocking probability by other",
+            "Blocking probability by crosstalk",
+            "Blocking probability by crosstalk in other",
+        ],
         "BitRateBlockingProbability": [
             "BitRate blocking probability by lack of transmitters",
             "BitRate blocking probability by lack of receivers",

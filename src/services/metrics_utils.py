@@ -12,17 +12,27 @@ def get_metric_root(metric: str) -> str:
     return metric.split(" by ", 1)[0].strip()
 
 
-def get_metrics_components(metrics: list[str]) -> list[str]:
+def get_metrics_components(metrics: list[str], language: str) -> list[str]:
     """
     Extracts the components of the metrics from a list of metric strings.
     Args:
         metrics (list[str]): List of metric strings.
+        language (str): The language code for translation.
     Returns:
         list[str]: List of components extracted from the metric strings.
     """
     components = []
+    if language == "pt":
+        separator = "por"
+    elif language == "en":
+        separator = "by"
+    else:
+        raise ValueError(f"Idioma não suportado: {language}")
     for metric in metrics:
-        components.append(metric.split("by", 1)[1].strip())
+        if separator in metric:
+            components.append(get_metric_root(metric))
+        else:
+            components.append(metric)
     return components
 
 

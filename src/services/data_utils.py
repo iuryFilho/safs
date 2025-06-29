@@ -1,6 +1,6 @@
 from flask import session as flask_session, request
 from typing import Any
-from data.session_data import DEFAULT_SESSION as DS, DEFAULT_DATA as DD
+from data.default_data import DEFAULT_SESSION as DS, DEFAULT_DATA as DD
 
 
 class Session:

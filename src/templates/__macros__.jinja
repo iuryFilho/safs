@@ -40,24 +40,28 @@
   </section>
 {% endmacro %}
 
-{% macro submit(text, action, style, class="") %}
+{% macro submit(text, action, style, class="", tooltip=None, tooltip_class=None) %}
   <button type="submit"
           id="{{ action }}-sub"
           class="btn fw-medium {{ style }} {{ class }}"
           name="action"
-          value="{{ action }}">{{ text }}</button>
+          value="{{ action }}"
+          {% if tooltip %}data-bs-toggle="tooltip" title="{{ tooltip }}"{% if tooltip_class %} data-bs-custom-class="{{ tooltip_class }}"{% endif %}
+          {% endif %}>{{ text }}</button>
 {% endmacro %}
 
-{% macro button(text, action, style, class="") %}
+{% macro button(text, action, style, class="", tooltip=None, tooltip_class=None) %}
   <button type="button"
           id="{{ action }}-btn"
           class="btn fw-medium {{ style }} {{ class }}"
           name="action"
-          value="{{ action }}">{{ text }}</button>
+          value="{{ action }}"
+          {% if tooltip %}data-bs-toggle="tooltip" title="{{ tooltip }}"{% if tooltip_class %} data-bs-custom-class="{{ tooltip_class }}"{% endif %}
+          {% endif %}>{{ text }}</button>
 {% endmacro %}
 
 {% macro input(label, name, value, placeholder, required, button_text, action,
-  size="", type="text", label_class="", step="any", min="", max="", indent=false, error=None) %}
+  size="", type="text", label_class="", step="any", min="", max="", indent=false, error=None, tooltip=None, tooltip_class=None) %}
   {% set has_button = button_text and action %}
   <div class="col">
     <label for="{{ name }}" class="form-label {{ label_class }}">{{ label }}</label>
@@ -71,19 +75,23 @@
              {% if type == "number" %}step="{{ step }}"{% if min %}min="{{ min }}"{% endif %}
              {% if max %}max="{{ max }}"{% endif %}
              {% endif %}
-             {% if required %}required{% endif %}>
+             {% if required %}required{% endif %}
+             {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}"{% if tooltip_class %} data-bs-custom-class="{{ tooltip_class }}"{% endif %}
+             {% endif %}>
       {% if has_button %}{{ submit(button_text, action, 'btn-primary') }}{% endif %}
     </div>
   </div>
   {% if error %}<div id="{{ name }}-error" class="alert alert-danger mt-3" role="alert">{{ error|e }}</div>{% endif %}
 {% endmacro %}
 
-{% macro select(label, name, selected, options) %}
+{% macro select(label, name, selected, options, tooltip=None, tooltip_class=None) %}
   <div class="col">
     <label for="{{ name }}" class="form-label fw-medium">{{ label }}</label>
     <select id="{{ name }}"
-            class="form-select form-select-sm text-bg-light border border-0 "
-            name="{{ name }}">
+            class="form-select form-select-sm text-bg-light border border-0"
+            name="{{ name }}"
+            {% if tooltip %}data-bs-toggle="tooltip" title="{{ tooltip }}"{% if tooltip_class %} data-bs-custom-class="{{ tooltip_class }}"{% endif %}
+            {% endif %}>
       {% if options[0]|length == 3 %}
         {% for op_value, option, enabled in options %}
           <option value="{{ op_value }}"
@@ -98,4 +106,20 @@
       {% endif %}
     </select>
   </div>
+{% endmacro %}
+
+{% macro radio(name, chosen_value, items, tooltip_class=None) %}
+  {% for value, label, tooltip in items %}
+    <input type="radio"
+           class="btn-check"
+           name="{{ name }}"
+           id="radio-{{ value }}"
+           value="{{ value }}"
+           autocomplete="off"
+           {% if chosen_value == value %}checked{% endif %}>
+    <label class="btn btn-outline-primary fw-medium"
+           for="radio-{{ value }}"
+           {% if tooltip %}data-bs-toggle="tooltip" title="{{ tooltip }}"{% if tooltip_class %} data-bs-custom-class="{{ tooltip_class }}"{% endif %}
+           {% endif %}>{{ label }}</label>
+  {% endfor %}
 {% endmacro %}

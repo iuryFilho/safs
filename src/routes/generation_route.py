@@ -7,7 +7,7 @@ from services import (
     utils as us,
 )
 from services.data_utils import session
-from data.metric_data import FILTERED_METRICS as FM
+from data.metrics_data import FILTERED_METRICS as FM
 
 blueprint = Blueprint("generation", __name__)
 debug_output = False

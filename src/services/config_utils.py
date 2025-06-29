@@ -1,7 +1,7 @@
 import json
 
 from services.data_utils import Data
-from data.metric_data import FILTERED_METRICS as FM
+from data.metrics_data import FILTERED_METRICS as FM
 
 
 def create_config_structure(data: Data) -> dict:

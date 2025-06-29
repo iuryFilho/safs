@@ -1,7 +1,7 @@
 import pandas as pd
 import os.path as op
 
-from data.metric_data import METRIC_GROUP_ALIASES
+from data.metrics_data import METRIC_GROUP_ALIASES
 import os
 from services import (
     compilation as cs,

@@ -1,5 +1,5 @@
 {% extends "__base__.jinja" %}
-{% from "__macros__.jinja" import navbarNav, toast, section, submit, button, input, select %}
+{% from "__macros__.jinja" import navbarNav, toast, section, submit, button, input, select, radio %}
 
 {% block title %}
   Geração
@@ -24,7 +24,8 @@
             placeholder="Informe o caminho do diretório base",
             button_text="Carregar Diretório", action="load-directory",
             indent=true,
-            error=base_dir_error) 
+            error=base_dir_error,
+            tooltip="Diretório onde estão os resultados das simulações e onde serão salvos os gráficos e os resultados exportados.") 
       }}
     {% endcall %}
 
@@ -35,13 +36,15 @@
                     name="input-config", value=input_config,
                     placeholder="Informe o caminho do arquivo de configuração de entrada", required=false,
                     button_text="Carregar Configuração", action="load-config",
-                    indent=true) 
+                    indent=true,
+                    tooltip="Caminho do arquivo JSON com as configurações de geração/exportação.") 
           }}
           {{ input(label="<h2>Arquivo de Configuração de Saída:</h2>",
                     name="output-config", value=output_config,
                     placeholder="Informe o caminho do arquivo de configuração de saída", required=false,
                     button_text="Salvar Configuração", action="save-config",
-                    indent=true) 
+                    indent=true,
+                    tooltip="Caminho do arquivo JSON onde as configurações de geração/exportação serão salvas.") 
           }}
         </div>
       {% endcall %}
@@ -99,25 +102,17 @@
       {% call section("metrics") %}
         <h2 class="mb-3">Lista de Métricas:</h2>
         <div class="mx-4">
+          <p class="lead">
+            Para mudar as métricas da lista, acesse o arquivo <strong>metrics_data.py</strong> em <strong>src/data/</strong>.
+          </p>
           <div class="btn-group mb-3 w-100"
                role="group"
                aria-label="Tipo de Métrica">
-            <input type="radio"
-                   class="btn-check"
-                   name="metric-type"
-                   id="radio-individual"
-                   value="individual"
-                   autocomplete="off"
-                   {% if metric_type == "individual" %}checked{% endif %}>
-            <label class="btn btn-outline-primary fw-medium" for="radio-individual">Individual</label>
-            <input type="radio"
-                   class="btn-check"
-                   name="metric-type"
-                   id="radio-grouped"
-                   value="grouped"
-                   autocomplete="off"
-                   {% if metric_type == "grouped" %}checked{% endif %}>
-            <label class="btn btn-outline-primary fw-medium" for="radio-grouped">Agrupada</label>
+            {{ radio(name="metric-type",chosen_value=metric_type,
+                        items=[
+                        ["individual", "Individual", "Gera um gráfico para cada métrica selecionada, composto pelos diretórios selecionados."],
+                        ["grouped", "Agrupada", "Gera um gráfico separado para cada combinação de diretório e grupo selecionados, composto pelas métricas do grupo."],
+                        ], tooltip_class="tooltip-wide") }}
           </div>
           <input id="previous-metric-type"
                  type="hidden"
@@ -181,14 +176,16 @@
                         ["log", "Linha (Logarítmico)"],
                         ["bar", "Barra"],
                         ["stacked", "Barra Empilhada"],
-                        ]) }}
+                        ],
+                        tooltip="Define o tipo de gráfico a ser gerado.") }}
             {{ select(label="Exibir Grade:",
                         name="use-grid",
                         selected=use_grid,
                         options=[
                         ["true", "Sim"],
                         ["false", "Não"]
-                        ]) }}
+                        ],
+                        tooltip="Exibe linhas de grade no eixo Y do gráfico.") }}
           </div>
           <div class="row mb-2">
             {{ select(label="Linguagem:",
@@ -197,42 +194,50 @@
                         options=[
                         ["pt", "Português"],
                         ["en", "Inglês"],
-                        ]) }}
+                        ],
+                        tooltip="Define o idioma dos textos do gráfico.") }}
             {{ select(label="Sobrescrever Arquivos:",
                         name="overwrite",
                         selected=overwrite,
                         options=[
                         ["true", "Sim"],
                         ["false", "Não"]
-                        ]) }}
+                        ],
+                        tooltip="Se habilitado, arquivos existentes serão sobrescritos.") }}
           </div>
           <div class="row mb-2">
             {{ input(label="Limite Inferior do Eixo Y (Opcional):",
                         name="ylim-low", value=ylim_low,
                         placeholder="Informe o limite inferior do eixo Y", size="form-control-sm",
-                        type="number", step="any", label_class="fw-medium") }}
+                        type="number", step="any", label_class="fw-medium",
+                        tooltip="Define o valor mínimo do eixo Y do gráfico") }}
             {{ input(label="Limite Superior do Eixo Y (Opcional):",
                         name="ylim-up", value=ylim_up,
                         placeholder="Informe o limite superior do eixo Y", size="form-control-sm",
-                        type="number", step="any", label_class="fw-medium") }}
+                        type="number", step="any", label_class="fw-medium",
+                        tooltip="Define o valor máximo do eixo Y do gráfico") }}
             {{ select(label="Sentido do Eixo X:",
                         name="x-axis-direction",
                         selected=x_axis_direction,
                         options=[
                         ["horizontal", "Horizontal (Padrão)"],
                         ["vertical", "Vertical"]
-                        ]) }}
+                        ],
+                        tooltip="Altera a orientação dos valores do eixo X do gráfico.") }}
           </div>
           <div class="row mb-2">
             {{ input(label="Título do Gráfico (Opcional):",
                         name="title", value=title,
-                        placeholder="Informe o título do gráfico", size="form-control-sm", type="text", label_class="fw-medium") }}
+                        placeholder="Informe o título do gráfico", size="form-control-sm", type="text", label_class="fw-medium",
+                        tooltip="Título exibido acima do gráfico (opcional)") }}
             {{ input(label="Rótulo do Eixo X (Opcional):",
                         name="xlabel", value=xlabel,
-                        placeholder="Informe o rótulo do eixo X", size="form-control-sm", type="text", label_class="fw-medium") }}
+                        placeholder="Informe o rótulo do eixo X", size="form-control-sm", type="text", label_class="fw-medium",
+                        tooltip="Texto exibido como rótulo do eixo X. Substitui o valor padrão.") }}
             {{ input(label="Rótulo do Eixo Y (Opcional):",
                         name="ylabel", value=ylabel,
-                        placeholder="Informe o rótulo do eixo Y", size="form-control-sm", type="text", label_class="fw-medium") }}
+                        placeholder="Informe o rótulo do eixo Y", size="form-control-sm", type="text", label_class="fw-medium",
+                        tooltip="Texto exibido como rótulo do eixo Y. Substitui o valor padrão.") }}
           </div>
           <div class="row mb-2">
             {{ select(label="Exibir Moldura da Legenda:",
@@ -241,10 +246,12 @@
                         options=[
                         ["true", "Sim"],
                         ["false", "Não"]
-                        ]) }}
+                        ],
+                        tooltip="Exibe uma borda ao redor da legenda do gráfico.") }}
             {{ input(label="Máximo de Colunas da Legenda (Padrão: 5):",
                         name="max-columns", value=max_columns,
-                        placeholder="Informe o número máximo de colunas da legenda", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium") }}
+                        placeholder="Informe o número máximo de colunas da legenda", size="form-control-sm", type="number", step="1", min="1", label_class="fw-medium",
+                        tooltip="Quantidade máxima de colunas exibidas na legenda do gráfico.") }}
           </div>
           <div class="row mb-2">
             {{ select(label="Tamanho da Fonte do Gráfico:",
@@ -258,7 +265,8 @@
                         ["large", "Grande"],
                         ["x-large", "X-Grande"],
                         ["xx-large", "XX-Grande"],
-                        ]) }}
+                        ],
+                        tooltip="Define o tamanho da fonte dos textos do gráfico.") }}
             {{ select(label="Tamanho da Fonte da Legenda:",
                         name="legend-font-size",
                         selected=legend_fontsize,
@@ -270,18 +278,21 @@
                         ["large", "Grande"],
                         ["x-large", "X-Grande"],
                         ["xx-large", "XX-Grande"],
-                        ]) }}
+                        ],
+                        tooltip="Define o tamanho da fonte da legenda.") }}
           </div>
           <div class="row mb-2">
             {{ input(label='Largura da Figura (Padrão: 10"):',
                         name="figure-width", value=figure_width,
-                        placeholder="Informe a largura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
-            {{ input(label='Altura da Figura (Padrão: 5"):',
+                        placeholder="Informe a largura em polegadas", size="form-control-sm", type="number", label_class="fw-medium",
+                        tooltip="Largura da figura em polegadas.") }}
+            {{ input(label='Altura da Figura (Padrão: 6"):',
                         name="figure-height", value=figure_height,
-                        placeholder="Informe a altura em polegadas", size="form-control-sm", type="number", label_class="fw-medium") }}
+                        placeholder="Informe a altura em polegadas", size="form-control-sm", type="number", label_class="fw-medium",
+                        tooltip="Altura da figura em polegadas.") }}
           </div>
           <div class="row mb-2">
-            {{ select(label="Posição da Legenda:",
+            {{ select(label="Posição da Âncora da Legenda:",
                         name="legend-position",
                         selected=legend_position,
                         options=[
@@ -295,13 +306,16 @@
                         ["lower left", "Inferior Esquerda"],
                         ["lower center", "Inferior Centro"],
                         ["lower right", "Inferior Direita"]
-                        ]) }}
+                        ],
+                        tooltip="Define a posição da âncora da legenda. De acordo com essa posição, a âncora será ajustada.") }}
             {{ input(label="Âncora X (Padrão: 0.5):",
                         name="anchor-x", value=anchor_x,
-                        placeholder="Informe a posição X da âncora", size="form-control-sm", type="number", label_class="fw-medium") }}
+                        placeholder="Informe o ajuste da posição da âncora no eixo X", size="form-control-sm", type="number", label_class="fw-medium",
+                        tooltip="Ajuste da posição da âncora no eixo X") }}
             {{ input(label="Âncora Y (Padrão: -0.15):",
                         name="anchor-y", value=anchor_y,
-                        placeholder="Informe a posição Y da âncora", size="form-control-sm", type="number", label_class="fw-medium") }}
+                        placeholder="Informe o ajuste da posição da âncora no eixo Y", size="form-control-sm", type="number", label_class="fw-medium",
+                        tooltip="Ajuste da posição da âncora no eixo Y") }}
           </div>
           <div class="row mb-2">
             <div class="col">
@@ -341,14 +355,18 @@
                 </ul>
               {% else %}
                 {{ input(label='Filtro de Pontos de Carga:',
-                                name="load-points-filter", value=load_points_filter,
-                                placeholder="Informe os pontos de carga ou deixe vazio para usar todos (Ex: 0-3,4,5-6)", size="form-control-sm", type="text", label_class="fw-medium") }}
+                                name="load-points-filter",
+                                value=load_points_filter,
+                                placeholder="Informe os pontos de carga ou deixe vazio para usar todos (Exemplos: -13; 2-; 1,2,3-7)",
+                                size="form-control-sm", type="text", label_class="fw-medium",
+                                tooltip="Define quais pontos de carga serão usados para gerar os gráficos. Use vírgula para separar pontos individuais e hífen para intervalos, podendo omitir o primeiro e o último ponto.",
+                                tooltip_class="tooltip-wide") }}
               {% endif %}
             </div>
           </div>
           <div class="btn-group" role="group" aria-label="Ações de Gráfico">
-            {{ submit('Gerar Gráficos', 'generate-graphs', 'btn-primary', class="me-2") }}
-            {{ submit('Exportar Resultados', 'export-results', 'btn-primary') }}
+            {{ submit('Gerar Gráficos', 'generate-graphs', 'btn-primary', class="me-2", tooltip="Gera os gráficos com base nas configurações atuais.") }}
+            {{ submit('Exportar Resultados', 'export-results', 'btn-primary', tooltip="Exporta os resultados dos gráficos gerados para um arquivo de planilha XLSX.") }}
           </div>
         </div>
       {% endcall %}
