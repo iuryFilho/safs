@@ -52,20 +52,14 @@ def load_simulation_results(
         list[pd.DataFrame]: A list of DataFrames containing the simulation results for the specified metric group.
     """
     dataframes = []
-    paths = pus.get_csv_paths_by_metric_group(directory_paths, metric_group)
-    if not paths:
-        raise us.ExtractionError(
-            f"No CSV files found for the metric group '{metric_group}'."
-        )
+    paths = pus.get_csv_paths(directory_paths, metric_group)
     for path in paths:
         if not op.exists(path):
-            raise FileNotFoundError(f"The file '{path}' does not exist.")
+            raise FileNotFoundError(f"O arquivo '{path}' não existe.")
         sep = us.get_separator(path)
         df = pd.read_csv(path, sep=sep)
         if "Metrics" not in df.columns:
-            raise us.ExtractionError(
-                f"The file '{path}' does not contain the 'Metrics' column."
-            )
+            raise Exception(f"O arquivo '{path}' não contém a coluna 'Metrics'.")
         dataframes.append(df)
     return dataframes
 
@@ -84,13 +78,9 @@ def filter_result_list_by_metric(
     filtered_results = []
     for sr in simulation_results:
         if "Metrics" not in sr.columns:
-            raise us.ExtractionError(
-                "The DataFrame does not contain the 'Metrics' column."
-            )
+            raise Exception("O DataFrame não contém a coluna 'Metrics'.")
         if metric not in sr["Metrics"].values:
-            raise us.ExtractionError(
-                f"The metric '{metric}' was not found in the DataFrame."
-            )
+            raise Exception(f"A métrica '{metric}' não foi encontrada no DataFrame.")
         filtered_results.append(sr[sr.Metrics == metric])
     return filtered_results
 
@@ -107,26 +97,13 @@ def filter_result_by_metric_list(
         list: A list of DataFrames containing the filtered metrics.
     """
     if "Metrics" not in simulation_result.columns:
-        raise us.ExtractionError("The DataFrame does not contain the 'Metrics' column.")
+        raise Exception("O DataFrame não contém a coluna 'Metrics'.")
     filtered_results = []
     for metric in metrics:
         if metric not in simulation_result["Metrics"].values:
-            raise us.ExtractionError(
-                f"The metric '{metric}' was not found in the DataFrame."
-            )
+            raise Exception(f"A métrica '{metric}' não foi encontrada no DataFrame.")
         filtered_results.append(simulation_result[simulation_result.Metrics == metric])
     return filtered_results
-
-
-def extract_load_points(simulation_result: pd.DataFrame) -> list[str]:
-    """
-    Extracts the load points from the simulation result DataFrame.
-    Args:
-        simulation_result (DataFrame): DataFrame containing the simulation results.
-    Returns:
-        list[str]: A list of load points extracted from the simulation results.
-    """
-    return simulation_result["LoadPoint"].tolist()
 
 
 def extract_repetitions(simulation_results: list[pd.DataFrame]) -> list:

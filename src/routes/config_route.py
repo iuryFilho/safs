@@ -11,7 +11,6 @@ from services import (
 
 
 blueprint = Blueprint("config", __name__)
-logger = us.Logger(True, __name__)
 
 
 @blueprint.route("/clear-session", methods=["POST"])

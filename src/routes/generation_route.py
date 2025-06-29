@@ -11,7 +11,6 @@ from data.metric_data import FILTERED_METRICS as FM
 
 blueprint = Blueprint("generation", __name__)
 debug_output = False
-logger = us.Logger(True, __name__)
 
 
 @blueprint.route("/", methods=["GET"])
@@ -47,6 +46,7 @@ def index():
         overwrite="true" if sdus.get_session("overwrite") else "false",
         use_grid="true" if sdus.get_session("use_grid") else "false",
         ylim_low=sdus.get_session("ylim_low"),
+        ylim_up=sdus.get_session("ylim_up"),
         x_axis_direction=sdus.get_session("x_axis_direction"),
         title=sdus.get_session("title"),
         xlabel=sdus.get_session("xlabel"),
@@ -192,7 +192,7 @@ def generate_graphs():
                 return jsonify({"error": load_error})
             return jsonify({"message": "Gráficos gerados com sucesso."})
         except Exception as e:
-            return jsonify({"error": str(e)})
+            return jsonify({"error": "Erro ao gerar gráficos:\n" + str(e)})
     else:
         return jsonify({"error": "Nenhuma métrica selecionada."})
 
@@ -229,7 +229,7 @@ def export_results():
                 base_directory, directories[0], load_points_filter
             )
         except Exception as e:
-            return jsonify({"error": str(e)})
+            return jsonify({"error": "Erro ao calcular cargas:\n" + str(e)})
     loads = list(raw_loads.values())
     load_points = list(raw_loads.keys())
 
@@ -253,4 +253,4 @@ def export_results():
         )
         return jsonify({"message": "Resultados exportados com sucesso."})
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": "Erro ao exportar resultados:\n" + str(e)})

@@ -74,8 +74,6 @@ class GraphPlotter:
             self.y_label = y_label
 
     def set_colors(self):
-        if self.labels_len <= 0:
-            raise ValueError("Size must be a positive integer.")
         if self.labels_len <= 10:
             cmap = plt.get_cmap("tab10")
         else:
@@ -111,7 +109,7 @@ class GraphPlotter:
         if plot_function is not None:
             plot_function(dataframes)
         else:
-            raise ValueError(f"Graph type not supported: {self.graph_type}")
+            raise ValueError(f"Tipo de gráfico não suportado: {self.graph_type}")
         if self.ylim_low != "":
             plt.ylim(bottom=float(self.ylim_low))
         if self.ylim_up != "":

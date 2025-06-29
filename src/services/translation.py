@@ -17,4 +17,4 @@ def translate_metric(metric: str, language: str) -> str:
     elif language == "en":
         return metric
     else:
-        raise ValueError(f"Unsupported language: {language}")
+        raise ValueError(f"Idioma não suportado: {language}")

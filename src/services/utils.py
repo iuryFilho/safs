@@ -1,50 +1,6 @@
 import json
 
 
-class ExtractionError(Exception):
-    """
-    Custom exception for errors during data extraction.
-    """
-
-    def __init__(self, message):
-        """
-        Initializes the ExtractionError instance.
-        Args:
-            message (str): The error message to be displayed.
-        """
-        super().__init__(message)
-        self.message = message
-
-
-class Logger:
-    """
-    A simple logger class for debugging purposes.
-    This class can be used to enable or disable logging and set a location prefix.
-    """
-
-    def __init__(self, log=True, location=""):
-        """
-        Initializes the Logger instance.
-        Args:
-            log (bool): Whether to enable logging. Defaults to True.
-            location (str): The location of the logger object.
-        """
-        self.log_enable = log
-        self.location = location
-
-    def debug(self, message, enable=True):
-        """
-        Logs a debug message.
-        Args:
-            message (str): The message to log.
-        """
-        if self.log_enable and enable:
-            if self.location:
-                print(f"DEBUG - {self.location}: {message}")
-            else:
-                print(f"DEBUG: {message}")
-
-
 def to_json(obj: dict) -> str:
     """
     Converts a dictionary to a JSON string with indentation.

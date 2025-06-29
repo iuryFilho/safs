@@ -10,8 +10,6 @@ def get_simulations_dirs_paths(base_directory: str) -> list[str]:
         base_directory (str): The base directory to search for directories.
     Returns:
         list: A list of simulation directories found in the directory.
-    Raises:
-        FileNotFoundError: If the base directory does not exist.
     """
     if not op.isdir(base_directory):
         raise FileNotFoundError(
@@ -34,28 +32,7 @@ def get_full_paths(base_directory: str, directories: list[str]) -> list[str]:
     return [op.join(base_directory, d) for d in directories]
 
 
-def get_csv_paths(simulation_directory: str) -> list[str]:
-    """
-    Retrieves the csv file paths from the simulation directory.
-    Args:
-        simulation_directory (str): The simulation directory to search for files.
-    Returns:
-        list: A list of csv file paths found in the directory.
-    Raises:
-        FileNotFoundError: If the base directory does not exist.
-    """
-    if not op.isdir(simulation_directory):
-        raise FileNotFoundError(
-            f"The simulation directory '{simulation_directory}' does not exist."
-        )
-    pattern = f"{simulation_directory}/*.csv"
-    file_paths = glob.glob(pattern)
-    return [op.normpath(s) for s in file_paths]
-
-
-def get_csv_paths_by_metric_group(
-    simulation_directories: list[str], metric_group: str
-) -> list[str]:
+def get_csv_paths(simulation_directories: list[str], metric_group: str) -> list[str]:
     """
     Retrieves the csv file paths from the simulation directories based on the given metric group.
     Args:
@@ -63,18 +40,27 @@ def get_csv_paths_by_metric_group(
         metric_group (str): The file name pattern to search for.
     Returns:
         list: A list of csv file paths matching the given pattern.
-    Raises:
-        FileNotFoundError: If any simulation directory does not exist.
     """
     file_paths = []
+    empty_directories = []
     for simulation_directory in simulation_directories:
         if not op.isdir(simulation_directory):
-            raise FileNotFoundError(
-                f"The simulation directory '{simulation_directory}' does not exist."
-            )
+            raise FileNotFoundError(f"O diretório '{simulation_directory}' não existe.")
         pattern = f"{simulation_directory}/*_{metric_group}.csv"
-        file_path = glob.glob(pattern)[0]
-        file_paths.append(op.normpath(file_path))
+        file_paths_glob = glob.glob(pattern)
+        if not file_paths_glob:
+            empty_directories.append(simulation_directory)
+            continue
+        file_paths.append(op.normpath(file_paths_glob[0]))
+    if empty_directories and len(empty_directories) != len(simulation_directories):
+        raise FileNotFoundError(
+            f"Nenhum arquivo CSV encontrado para o grupo '{metric_group}' "
+            f"nos diretórios: {', '.join(empty_directories)}."
+        )
+    if not file_paths:
+        raise FileNotFoundError(
+            f"Nenhum arquivo CSV encontrado para o grupo '{metric_group}'."
+        )
     return file_paths
 
 

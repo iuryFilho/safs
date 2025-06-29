@@ -2,7 +2,12 @@ import pandas as pd
 import os.path as op
 
 from data.metric_data import METRIC_GROUP_ALIASES
-from services import compilation as cs, path_utils as pus, simulation_utils as sus
+import os
+from services import (
+    compilation as cs,
+    path_utils as pus,
+    simulation_utils as sus,
+)
 
 
 class ResultExporter:
@@ -32,13 +37,41 @@ class ResultExporter:
 
         self.compiler = cs.DataCompiler(metric_type, load_points)
         self.fmt = TableFormatter(float_loads, int_load_points)
-        with pd.ExcelWriter(f"{filename}.xlsx") as self.writer:
-            for metric_group, metrics in chosen_grouped_metrics.items():
-                simulation_results = sus.load_simulation_results(
-                    self.full_directories, metric_group
+        previous_file_content = None
+        if overwrite and op.exists(f"{filename}.xlsx"):
+            try:
+                previous_file_content = pd.read_excel(
+                    f"{filename}.xlsx", sheet_name=None
                 )
-                self.set_tables_func(metrics, simulation_results, labels)
-                self.write_to_excel(metric_group)
+            except Exception as e:
+                previous_file_content = None
+
+        with pd.ExcelWriter(f"{filename}.xlsx") as self.writer:
+            try:
+                for metric_group, metrics in chosen_grouped_metrics.items():
+                    try:
+                        simulation_results = sus.load_simulation_results(
+                            self.full_directories, metric_group
+                        )
+                    except Exception as e:
+                        raise Exception(
+                            f"Erro ao carregar resultados de simulação:\n{e}"
+                        )
+                    self.set_tables_func(metrics, simulation_results, labels)
+                    try:
+                        self.write_to_excel(metric_group)
+                    except Exception as e:
+                        raise Exception(
+                            f"Erro ao escrever resultados de simulação para o grupo '{metric_group}':\n{e}"
+                        )
+            except Exception as e:
+                if previous_file_content is not None:
+                    for sheet_name, df in previous_file_content.items():
+                        df.to_excel(self.writer, sheet_name=sheet_name)
+                else:
+                    empty_df = pd.DataFrame()
+                    empty_df.to_excel(self.writer)
+                raise e
 
     def write_to_excel(self, metric_group: str):
         metric_group_alias = METRIC_GROUP_ALIASES[metric_group]
@@ -53,7 +86,7 @@ class ResultExporter:
         """
         set_tables_func = self.TABLE_FORMATS.get(metric_type, None)
         if set_tables_func is None:
-            raise ValueError(f"Metric type not supported: {metric_type}")
+            raise ValueError(f"Tipo de métrica não suportado: {metric_type}")
         self.set_tables_func = set_tables_func
 
     def set_full_dirs(self, base_directory: str, directories: list[str]):

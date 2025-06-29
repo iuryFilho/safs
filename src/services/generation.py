@@ -47,7 +47,7 @@ class GraphGenerator:
         elif language == "en":
             self.x_label = "Network Load (Erlangs)"
         else:
-            raise ValueError(f"Unsupported language: {language}")
+            raise ValueError(f"Idioma não suportado: {language}")
         self.set_filename_prefix(
             base_directory,
             graph_type,
@@ -100,10 +100,16 @@ class GraphGenerator:
         self.plotter = ps.GraphPlotter(graph_config)
 
         for self.metric_group, metrics in self.grouped_metrics.items():
-            self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
-            simulation_results = sus.load_simulation_results(
-                self.full_directories, self.metric_group
-            )
+            try:
+                self.metric_group_alias = METRIC_GROUP_ALIASES[self.metric_group]
+            except KeyError:
+                raise ValueError(f"Grupo de métrica desconhecido: {self.metric_group}")
+            try:
+                simulation_results = sus.load_simulation_results(
+                    self.full_directories, self.metric_group
+                )
+            except Exception as e:
+                raise ValueError(f"Erro ao carregar resultados de simulação:\n{e}")
             self.generation_func(metrics, simulation_results)
         return self
 
@@ -117,7 +123,7 @@ class GraphGenerator:
         """
         generation_func = self.GENERATION_STRATEGIES.get(metric_type, None)
         if generation_func is None:
-            raise ValueError(f"Metric type not supported: {metric_type}")
+            raise ValueError(f"Tipo de métrica não suportado: {metric_type}")
         self.generation_func = generation_func
 
     def set_filename_prefix(
@@ -174,23 +180,39 @@ class GraphGenerator:
             simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
         self.compiler.set_simulation_results(simulation_results)
-        self.plotter.initialize_graphs_data(
-            self.loads,
-            labels=self.dir_labels,
-            x_label=self.x_label,
-        )
+        try:
+            self.plotter.initialize_graphs_data(
+                self.loads,
+                labels=self.dir_labels,
+                x_label=self.x_label,
+            )
+        except Exception as e:
+            raise Exception(f"Erro ao inicializar dados dos gráficos:\n{e}")
         for metric in metrics:
             self.compiler.set_metrics([metric])
-            dataframes = self.compiler.compile_data()
+            try:
+                dataframes = self.compiler.compile_data()
+            except Exception as e:
+                raise Exception(
+                    f"Erro ao compilar dados para a métrica '{metric}':\n{e}"
+                )
             filename = (
                 f"{self.filename_prefix}_{metric.replace(' ', '_').replace('/', '_')}"
             )
-            y_label = ts.translate_metric(metric, self.language)
-            self.plotter.plot_graph(
-                dataframes,
-                output_file=filename,
-                y_label=y_label,
-            )
+            try:
+                y_label = ts.translate_metric(metric, self.language)
+            except Exception as e:
+                raise Exception(f"Erro ao traduzir métrica '{metric}':\n{e}")
+            try:
+                self.plotter.plot_graph(
+                    dataframes,
+                    output_file=filename,
+                    y_label=y_label,
+                )
+            except Exception as e:
+                raise Exception(
+                    f"Erro ao plotar gráfico para a métrica '{metric}':\n{e}"
+                )
         self.compiler.reset_data()
 
     def generate_grouped(
@@ -206,18 +228,34 @@ class GraphGenerator:
         """
         self.compiler.set_metrics(metrics)
         y_label = ts.translate_metric(mus.get_metric_root(metrics[0]), self.language)
-        self.plotter.initialize_graphs_data(
-            self.loads,
-            labels=mus.get_metrics_components(metrics),
-            x_label=self.x_label,
-            y_label=y_label,
-        )
+        translated_metrics = [
+            ts.translate_metric(metric, self.language) for metric in metrics
+        ]
+        try:
+            self.plotter.initialize_graphs_data(
+                self.loads,
+                labels=mus.get_metrics_components(translated_metrics),
+                x_label=self.x_label,
+                y_label=y_label,
+            )
+        except Exception as e:
+            raise Exception(f"Erro ao inicializar dados dos gráficos:\n{e}")
         for label, simulation_result in zip(self.dir_labels, simulation_results):
             self.compiler.set_simulation_results([simulation_result])
-            dataframes = self.compiler.compile_data()
+            try:
+                dataframes = self.compiler.compile_data()
+            except Exception as e:
+                raise Exception(
+                    f"Erro ao compilar dados para o grupo '{self.metric_group}':\n{e}"
+                )
             filename = f"{self.filename_prefix}_{self.metric_group_alias}_{label}"
-            self.plotter.plot_graph(
-                dataframes,
-                output_file=filename,
-            )
+            try:
+                self.plotter.plot_graph(
+                    dataframes,
+                    output_file=filename,
+                )
+            except Exception as e:
+                raise Exception(
+                    f"Erro ao plotar gráfico para o grupo '{self.metric_group}':\n{e}"
+                )
         self.compiler.reset_data()

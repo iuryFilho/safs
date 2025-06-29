@@ -13,13 +13,15 @@ def calculate_loads(
 
     traffic_path = op.join(base_directory, directory, "traffic")
     if not op.exists(traffic_path):
-        raise FileNotFoundError(f"Traffic file not found at {traffic_path}")
-    with open(traffic_path, "r") as f:
-        traffic = json.load(f)
+        raise FileNotFoundError(f"Arquivo 'traffic' não encontrado em {traffic_path}")
+
+    try:
+        with open(traffic_path, "r") as f:
+            traffic = json.load(f)
+    except Exception as e:
+        raise ValueError(f"Erro ao ler arquivo de tráfego:\n{e}")
 
     filtered_req_gen = filter_request_generators(traffic)
-    if not filtered_req_gen:
-        raise ValueError("No valid request generators found in the traffic data.")
 
     arrival_rate_sum = 0
     arrival_rate_increase_sum = 0
@@ -48,12 +50,12 @@ def get_number_of_load_points(base_path: str):
         base_path (str): The base directory path where the simulation file is located.
     Returns:
         int: The number of load points.
-    Raises:
-        FileNotFoundError: If the simulation file does not exist at the specified path.
     """
     simulation_path = op.join(base_path, "simulation")
     if not op.exists(simulation_path):
-        raise FileNotFoundError(f"Simulation file not found at {simulation_path}")
+        raise FileNotFoundError(
+            f"Arquivo 'simulation' não encontrado em {simulation_path}"
+        )
     with open(simulation_path, "r") as f:
         simulation = json.load(f)
         load_point_num = simulation["loadPoints"]
@@ -67,12 +69,10 @@ def get_number_of_nodes(base_path: str):
         base_path (str): The base directory path where the network file is located.
     Returns:
         int: The number of nodes.
-    Raises:
-        FileNotFoundError: If the network file does not exist at the specified path.
     """
     network_path = op.join(base_path, "network")
     if not op.exists(network_path):
-        raise FileNotFoundError(f"Network file not found at {network_path}")
+        raise FileNotFoundError(f"Arquivo 'network' não encontrado em {network_path}")
     with open(network_path, "r") as f:
         network = json.load(f)
         node_num = len(network["nodes"])
@@ -94,6 +94,10 @@ def filter_request_generators(traffic: dict):
             filtered_req_gen.append(req_gen)
         else:
             break
+    if not filtered_req_gen:
+        raise ValueError(
+            "Nenhum gerador de requisições válido encontrado nos dados de tráfego."
+        )
     return filtered_req_gen
 
 
@@ -117,20 +121,20 @@ def filter_loads(
                 if "-" in part:
                     start_end = part.split("-")
                     if len(start_end) != 2:
-                        raise ValueError(f"Invalid range format: {part}")
+                        raise ValueError(f"Formato de intervalo inválido: {part}")
                     if start_end[0] == "" and start_end[1] == "":
-                        raise ValueError(f"Invalid range: {part}")
+                        raise ValueError(f"Intervalo inválido: {part}")
                     if start_end[0] == "":
                         if indices:
                             raise ValueError(
-                                f"'-i' range only allowed at the beginning: {part}"
+                                f"Intervalo '-i' só permitido no início: {part}"
                             )
                         start = 0
                         end = int(start_end[1])
                     elif start_end[1] == "":
                         if part != load_points_filter.split(",")[-1].strip():
                             raise ValueError(
-                                f"'i-' range only allowed at the end: {part}"
+                                f"Intervalo 'i-' só permitido no final ou sozinho: {part}"
                             )
                         start = int(start_end[0])
                         end = load_points_num - 1
@@ -139,16 +143,16 @@ def filter_loads(
                         end = int(start_end[1])
                     if start < 0 or end >= load_points_num or start > end:
                         raise ValueError(
-                            f"Invalid load points filter range: {start}-{end}."
+                            f"Intervalo de pontos de carga inválido: {start}-{end}."
                         )
                     indices.extend(range(start, end + 1))
                 else:
                     idx = int(part)
                     if idx < 0 or idx >= load_points_num:
-                        raise ValueError(f"Invalid load point index: {idx}.")
+                        raise ValueError(f"Índice de ponto de carga inválido: {idx}.")
                     indices.append(idx)
             return {str(i): total_loads[i] for i in indices}
         except ValueError as e:
-            raise ValueError(f"Error parsing load points filter: {e}")
+            raise ValueError(f"Erro ao analisar filtro de pontos de carga:\n{e}")
 
     return {str(i): total_loads[i] for i in range(len(total_loads))}

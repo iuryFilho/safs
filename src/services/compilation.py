@@ -15,7 +15,7 @@ class DataCompiler:
             )
             self.length_func = lambda: len(self.metrics)
         else:
-            raise ValueError("Invalid metric type: must be 'individual' or 'grouped'.")
+            raise ValueError(f"Tipo de métrica não suportado: {metric_type}")
         self.load_points = load_points
         self.simulation_results = []
         self.metrics = []

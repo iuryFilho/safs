@@ -35,6 +35,11 @@ def get_session(key: str) -> Any:
 
 
 class Data(dict):
+    """
+    Custom dictionary class to handle data sent
+    from the frontend.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

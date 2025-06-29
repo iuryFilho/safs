@@ -44,15 +44,15 @@ def load_config(path: str) -> dict:
         with open(path, "r") as config_file:
             result = json.load(config_file)
             if not isinstance(result, dict):
-                raise us.ExtractionError(
-                    f"The configuration file '{path}' is not a valid JSON object."
+                raise Exception(
+                    f"O arquivo de configuração '{path}' não contém um objeto JSON válido."
                 )
             return result
     except FileNotFoundError as e:
-        raise FileNotFoundError(f"The configuration file '{path}' does not exist.")
+        raise FileNotFoundError(f"O arquivo de configuração '{path}' não existe.")
     except json.JSONDecodeError as e:
-        raise us.ExtractionError(
-            f"The configuration file '{path}' is not a valid JSON file."
+        raise Exception(
+            f"O arquivo de configuração '{path}' não é um arquivo JSON válido."
         )
 
 
@@ -70,6 +70,6 @@ def save_config(config: dict, path: str) -> str:
     try:
         with open(path, "w") as config_file:
             json.dump(config, config_file, indent=4)
-        return "Configuration saved successfully"
+        return "Configuração salva com sucesso"
     except IOError:
-        return "Failed to save configuration"
+        return "Falha ao salvar a configuração"
