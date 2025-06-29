@@ -35,8 +35,8 @@ class GraphPlotter:
         self.ylim_up = graph_config.get("ylim_up", "")
         self.x_axis_direction = graph_config.get("x_axis_direction", "horizontal")
         self.title = graph_config.get("title", "")
-        self.x_label = graph_config.get("xlabel", "")
-        self.y_label = graph_config.get("ylabel", "")
+        self.custom_x_label: str = graph_config.get("xlabel", "")
+        self.custom_y_label: str = graph_config.get("ylabel", "")
         self.graph_type: str = graph_config.get("graph_type", "linear")
         self.figsize = graph_config.get("figsize", (10, 5))
         self.graph_fontsize = graph_config.get("graph_fontsize", "medium")
@@ -68,10 +68,8 @@ class GraphPlotter:
         self.labels = labels
         self.labels_len = len(labels)
         self.set_colors()
-        if self.x_label == "":
-            self.x_label = x_label
-        if self.y_label == "":
-            self.y_label = y_label
+        self.x_label = x_label
+        self.y_label = y_label
 
     def set_colors(self):
         if self.labels_len <= 10:
@@ -114,16 +112,22 @@ class GraphPlotter:
             plt.ylim(bottom=float(self.ylim_low))
         if self.ylim_up != "":
             plt.ylim(top=float(self.ylim_up))
-        if x_label is None or self.x_label != "":
+        if self.custom_x_label != "":
+            x_label = self.custom_x_label
+        elif x_label is None or self.x_label != "":
             x_label = self.x_label
-        if y_label is None or self.y_label != "":
+        if self.custom_y_label != "":
+            y_label = self.custom_y_label
+        elif y_label is None or self.y_label != "":
             y_label = self.y_label
         plt.xlabel(x_label, fontsize=self.graph_fontsize, fontweight="bold")
         plt.ylabel(y_label, fontsize=self.graph_fontsize, fontweight="bold")
         if self.use_grid:
             plt.grid(axis="y")
         if self.labels_len < self.max_columns:
-            self.max_columns = self.labels_len
+            max_columns = self.labels_len
+        else:
+            max_columns = self.max_columns
         if self.x_axis_direction == "vertical":
             plt.xticks(rotation=90)
 
@@ -133,7 +137,7 @@ class GraphPlotter:
             plt.legend(
                 loc=self.legend_position,
                 bbox_to_anchor=self.bbox_to_anchor,
-                ncol=self.max_columns,
+                ncol=max_columns,
                 fontsize=self.legend_fontsize,
                 frameon=self.frameon,
             )

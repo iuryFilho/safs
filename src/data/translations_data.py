@@ -24,7 +24,7 @@ METRICS_PT = {
     "Average power consumption (Watt)": "Consumo médio de energia (Watt)",
     "Energy efficiency (bits/Joule)": "Eficiência energética (bits/Joule)",
     "Total data transmitted (bits)": "Total de dados transmitidos (bits)",
-    "Total energy consumption (Joule)": "Total de energia consumida (Joule)",
+    "Total energy consumption": "Total de energia consumida",
     "Total energy consumption by transponders (Joule)": "Total de energia consumida por transponders (Joule)",
     "Total energy consumption by OXCs (Joule)": "Total de energia consumida por OXCs (Joule)",
     "Total energy consumption by Amplifiers (Joule)": "Total de energia consumida por Amplificadores (Joule)",

@@ -30,7 +30,7 @@ def get_metrics_components(metrics: list[str], language: str) -> list[str]:
         raise ValueError(f"Idioma não suportado: {language}")
     for metric in metrics:
         if separator in metric:
-            components.append(get_metric_root(metric))
+            components.append(metric.split(separator, 1)[1].strip())
         else:
             components.append(metric)
     return components
