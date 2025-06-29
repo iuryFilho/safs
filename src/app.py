@@ -31,7 +31,7 @@ def main():
         "--port", type=int, default=5000, help="Port to run the server on"
     )
     parser.add_argument(
-        "--no-debug", action="store_false", help="Disable debug mode for the server"
+        "--debug", action="store_true", help="Enable debug mode for the server"
     )
     args = parser.parse_args()
     blueprints = {
@@ -44,7 +44,7 @@ def main():
     app.run(
         host="127.0.0.1",
         port=args.port,
-        debug=args.no_debug,
+        debug=args.debug,
     )
 
 
