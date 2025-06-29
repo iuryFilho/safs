@@ -1,14 +1,13 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 import os.path as op
 
 from services import (
-    session_data_utils as sdus,
     config_utils as cs,
     loads_utils as lus,
     path_utils as pus,
-    utils as us,
+    data_utils as dus,
 )
-
+from services.data_utils import session
 
 blueprint = Blueprint("config", __name__)
 
@@ -16,7 +15,7 @@ blueprint = Blueprint("config", __name__)
 @blueprint.route("/clear-session", methods=["POST"])
 def clear_session():
     """Clear the session data."""
-    message, status_code = sdus.clear_session()
+    message, status_code = session.clear_session()
     return jsonify(message), status_code
 
 
@@ -28,7 +27,7 @@ def load_directory():
         A JSON response containing the simulation directories and metrics or an error message.
         - If the base directory is not found or an error occurs, it sets an error message in the session.
     """
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     base_directory = data["base-directory"]
     sess_data = {"base_directory": base_directory}
     try:
@@ -55,7 +54,7 @@ def load_directory():
     except Exception as e:
         sess_data["base_dir_error"] = str(e)
     finally:
-        sdus.set_session_data(sess_data)
+        session.update(sess_data)
         return ""
 
 
@@ -66,7 +65,7 @@ def load_config():
     Returns:
         A JSON response containing the loaded configuration data or an error message.
     """
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     input_config = data["input-config"]
     sess_data = {"input_config": input_config}
     response = {}
@@ -78,7 +77,7 @@ def load_config():
         sess_data["has_config_data"] = False
         response = {"error": str(e)}
     finally:
-        sdus.set_session_data(sess_data)
+        session.update(sess_data)
         return jsonify(response)
 
 
@@ -89,9 +88,9 @@ def save_config():
     Returns:
         A JSON response indicating the success or failure of the save operation.
     """
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     output_config = data["output-config"]
-    sdus.set_session_data({"output_config": output_config})
+    session.update({"output_config": output_config})
     if not output_config:
         return ""
 
@@ -108,9 +107,9 @@ def update_metric_type():
     Returns:
         A JSON response indicating the success of the update operation.
     """
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     metric_type = data["metric-type"]
-    sdus.set_session_data({"metric_type": metric_type})
+    session.update({"metric_type": metric_type})
     return jsonify({"message": "Metric updated successfully."})
 
 
@@ -121,7 +120,7 @@ def update_use_custom_loads():
     Returns:
         A JSON response indicating the success of the update operation.
     """
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     use_custom_loads = data["use-custom-loads"]
-    sdus.set_session_data({"use_custom_loads": use_custom_loads})
+    session.update({"use_custom_loads": use_custom_loads})
     return jsonify({"message": "Custom loads updated successfully."})

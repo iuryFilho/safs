@@ -1,10 +1,10 @@
 import json
 
-from services import utils as us, session_data_utils as sdus
+from services.data_utils import Data
 from data.metric_data import FILTERED_METRICS as FM
 
 
-def create_config_structure(data: sdus.Data) -> dict:
+def create_config_structure(data: Data) -> dict:
     """
     Creates a configuration structure from the provided data.
     Args:

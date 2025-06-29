@@ -1,3 +1,6 @@
+from data.translations_data import METRICS_PT as MPT
+
+
 def get_metric_root(metric: str) -> str:
     """
     Extracts the root of the metric from the given metric string.
@@ -21,3 +24,22 @@ def get_metrics_components(metrics: list[str]) -> list[str]:
     for metric in metrics:
         components.append(metric.split("by", 1)[1].strip())
     return components
+
+
+def translate_metric(metric: str, language: str) -> str:
+    """
+    Translates a metric name to the specified language.
+
+    Args:
+        metric (str): The metric name to translate.
+        language (str): The language code for translation ('pt' for Portuguese, 'en' for English).
+
+    Returns:
+        str: The translated metric name.
+    """
+    if language == "pt":
+        return MPT.get(metric, metric)
+    elif language == "en":
+        return metric
+    else:
+        raise ValueError(f"Idioma não suportado: {language}")

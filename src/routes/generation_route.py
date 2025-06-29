@@ -1,12 +1,12 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, jsonify
 from services import (
     exportation as es,
     generation as gs,
     loads_utils as lus,
-    metrics_utils as mus,
-    session_data_utils as sdus,
+    data_utils as dus,
     utils as us,
 )
+from services.data_utils import session
 from data.metric_data import FILTERED_METRICS as FM
 
 blueprint = Blueprint("generation", __name__)
@@ -20,8 +20,8 @@ def index():
     Returns:
         Rendered HTML template for the configuration page.
     """
-    base_directory = sdus.get_session("base_directory")
-    base_dir_error = sdus.get_session("base_dir_error")
+    base_directory = session["base_directory"]
+    base_dir_error = session["base_dir_error"]
     if base_dir_error:
         return render_template(
             "generation.jinja",
@@ -29,40 +29,40 @@ def index():
             base_directory=base_directory,
             base_dir_error=base_dir_error,
         )
-    metric_type = sdus.get_session("metric_type")
+    metric_type = session["metric_type"]
     return render_template(
         "generation.jinja",
         debug_output=debug_output,
         base_directory=base_directory,
         metric_type=metric_type,
         grouped_metrics=FM[metric_type],
-        input_config=sdus.get_session("input_config"),
-        output_config=sdus.get_session("output_config"),
-        directories=sdus.get_session("directories"),
-        load_count=sdus.get_session("load_count"),
-        has_config_data=sdus.get_session("has_config_data"),
-        graph_type=sdus.get_session("graph_type"),
-        language=sdus.get_session("language"),
-        overwrite="true" if sdus.get_session("overwrite") else "false",
-        use_grid="true" if sdus.get_session("use_grid") else "false",
-        ylim_low=sdus.get_session("ylim_low"),
-        ylim_up=sdus.get_session("ylim_up"),
-        x_axis_direction=sdus.get_session("x_axis_direction"),
-        title=sdus.get_session("title"),
-        xlabel=sdus.get_session("xlabel"),
-        ylabel=sdus.get_session("ylabel"),
-        figure_width=sdus.get_session("figure_width"),
-        figure_height=sdus.get_session("figure_height"),
-        graph_fontsize=sdus.get_session("graph_fontsize"),
-        legend_fontsize=sdus.get_session("legend_fontsize"),
-        max_columns=sdus.get_session("max_columns"),
-        anchor_x=sdus.get_session("anchor_x"),
-        anchor_y=sdus.get_session("anchor_y"),
-        frameon="true" if sdus.get_session("frameon") else "false",
-        legend_position=sdus.get_session("legend_position"),
-        use_custom_loads=sdus.get_session("use_custom_loads"),
-        load_points_filter=sdus.get_session("load_points_filter"),
-        loads=sdus.get_session("loads"),
+        input_config=session["input_config"],
+        output_config=session["output_config"],
+        directories=session["directories"],
+        load_count=session["load_count"],
+        has_config_data=session["has_config_data"],
+        graph_type=session["graph_type"],
+        language=session["language"],
+        overwrite="true" if session["overwrite"] else "false",
+        use_grid="true" if session["use_grid"] else "false",
+        ylim_low=session["ylim_low"],
+        ylim_up=session["ylim_up"],
+        x_axis_direction=session["x_axis_direction"],
+        title=session["title"],
+        xlabel=session["xlabel"],
+        ylabel=session["ylabel"],
+        figure_width=session["figure_width"],
+        figure_height=session["figure_height"],
+        graph_fontsize=session["graph_fontsize"],
+        legend_fontsize=session["legend_fontsize"],
+        max_columns=session["max_columns"],
+        anchor_x=session["anchor_x"],
+        anchor_y=session["anchor_y"],
+        frameon="true" if session["frameon"] else "false",
+        legend_position=session["legend_position"],
+        use_custom_loads=session["use_custom_loads"],
+        load_points_filter=session["load_points_filter"],
+        loads=session["loads"],
     )
 
 
@@ -73,11 +73,11 @@ def generate_graphs():
     Returns:
         A JSON response indicating the success or failure of the graph generation.
     """
-    base_directory = sdus.get_session("base_directory")
-    metric_type = sdus.get_session("metric_type")
-    use_custom_loads = sdus.get_session("use_custom_loads")
+    base_directory = session["base_directory"]
+    metric_type = session["metric_type"]
+    use_custom_loads = session["use_custom_loads"]
 
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     directories: list[str] = data["directory-list"]
     if not directories:
         return jsonify({"error": "Nenhum diretório selecionado."})
@@ -132,7 +132,7 @@ def generate_graphs():
             return jsonify({"error": str(e)})
     loads = list(raw_loads.values())
     load_points = list(raw_loads.keys())
-    sdus.set_session_data(
+    session.update(
         {
             "labels": session_labels,
             "graph_type": graph_type,
@@ -204,11 +204,11 @@ def export_results():
     Returns:
         A JSON response indicating the success or failure of the export operation.
     """
-    base_directory = sdus.get_session("base_directory")
-    use_custom_loads = sdus.get_session("use_custom_loads")
-    metric_type = sdus.get_session("metric_type")
+    base_directory = session["base_directory"]
+    use_custom_loads = session["use_custom_loads"]
+    metric_type = session["metric_type"]
 
-    data = sdus.Data(request.get_json())
+    data = dus.Data()
     directories = data["directory-list"]
     if not directories:
         return jsonify({"error": "Nenhum diretório selecionado."})
@@ -233,7 +233,7 @@ def export_results():
     loads = list(raw_loads.values())
     load_points = list(raw_loads.keys())
 
-    sdus.set_session_data(
+    session.update(
         {
             "labels": session_labels,
             "loads": loads,

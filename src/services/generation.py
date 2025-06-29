@@ -8,7 +8,6 @@ from services import (
     path_utils as pus,
     plotting as ps,
     compilation as cs,
-    translation as ts,
     simulation_utils as sus,
     utils as us,
 )
@@ -200,7 +199,7 @@ class GraphGenerator:
                 f"{self.filename_prefix}_{metric.replace(' ', '_').replace('/', '_')}"
             )
             try:
-                y_label = ts.translate_metric(metric, self.language)
+                y_label = mus.translate_metric(metric, self.language)
             except Exception as e:
                 raise Exception(f"Erro ao traduzir métrica '{metric}':\n{e}")
             try:
@@ -227,9 +226,9 @@ class GraphGenerator:
             simulation_results (list[pd.DataFrame]): List of DataFrames containing the simulation results.
         """
         self.compiler.set_metrics(metrics)
-        y_label = ts.translate_metric(mus.get_metric_root(metrics[0]), self.language)
+        y_label = mus.translate_metric(mus.get_metric_root(metrics[0]), self.language)
         translated_metrics = [
-            ts.translate_metric(metric, self.language) for metric in metrics
+            mus.translate_metric(metric, self.language) for metric in metrics
         ]
         try:
             self.plotter.initialize_graphs_data(
