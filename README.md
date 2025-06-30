@@ -11,7 +11,7 @@ O SAFS é um sistema desenvolvido para automatizar o fluxo de simulação de sis
 
 ## Requisitos
 
--   Python 3.8 ou superior
+-   Python 3.10 ou superior
 -   Bibliotecas: `Flask`, `Jinja2`, `pandas`, `openpyxl`, `matplotlib`, `scipy`
 
 ## Instalação
@@ -21,7 +21,7 @@ Siga os passos abaixo para instalar e preparar o ambiente do projeto:
 1. **Baixe o repositório:**
 
     - Para baixar diretamente, clique [neste link](https://github.com/iuryFilho/safs/archive/refs/heads/master.zip) e extraia o arquivo ZIP.
-    - Ou, se preferir usar o Git, execute no terminal:
+    - Ou, se preferir usar o [Git](https://git-scm.com/), execute no terminal:
 
         ```bash
         git clone https://github.com/iuryFilho/safs.git
@@ -79,3 +79,26 @@ Siga os passos abaixo para instalar e preparar o ambiente do projeto:
     - Substitua `PORT` pela porta que você especificou.
 
 3. Utilize a interface para carregar os dados de simulação e gerar gráficos.
+
+## (Opcional) Testes automatizados com pytest
+
+Você pode utilizar o [pytest](https://docs.pytest.org/) para rodar testes automatizados no projeto.
+
+### Instalação do pytest
+
+Instale o pytest com o comando:
+
+```bash
+pip install pytest
+```
+
+### Como rodar os testes
+
+1. Certifique-se de que existem arquivos de teste no projeto (por exemplo, dentro da pasta `tests/` e com nomes iniciando por `test_`).
+2. Execute o seguinte comando na raiz do projeto:
+
+    ```bash
+    pytest
+    ```
+
+O pytest irá procurar automaticamente por arquivos e funções de teste e exibirá o resultado no terminal.
