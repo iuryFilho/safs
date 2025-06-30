@@ -10,7 +10,6 @@ from services.data_utils import session
 from data.metrics_data import FILTERED_METRICS as FM
 
 blueprint = Blueprint("generation", __name__)
-debug_output = False
 
 
 @blueprint.route("/", methods=["GET"])
@@ -25,14 +24,12 @@ def index():
     if base_dir_error:
         return render_template(
             "generation.jinja",
-            debug_output=debug_output,
             base_directory=base_directory,
             base_dir_error=base_dir_error,
         )
     metric_type = session["metric_type"]
     return render_template(
         "generation.jinja",
-        debug_output=debug_output,
         base_directory=base_directory,
         metric_type=metric_type,
         grouped_metrics=FM[metric_type],

@@ -1,5 +1,4 @@
 const mainForm = document.getElementById("form");
-const debugOutput = document.getElementById("debug-output");
 
 // Initialization of Bootstrap tooltips
 document.addEventListener("DOMContentLoaded", function () {
@@ -11,42 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-if (debugOutput) {
-    function setOutput() {
-        debugOutput.textContent = "";
-        for (const [key, value] of new FormData(mainForm)) {
-            debugOutput.textContent += `${key}: ${value}\n`;
-        }
-    }
-    document.addEventListener("DOMContentLoaded", setOutput);
-    (() => {
-        const checkboxes = mainForm.querySelectorAll(
-            'input[type="checkbox"][name="directory-list"], input[type="checkbox"][name="metric-list"]'
-        );
-        checkboxes.forEach((checkbox) => {
-            checkbox.addEventListener("change", function () {
-                setOutput();
-            });
-        });
-        const selections = mainForm.querySelectorAll("select");
-        selections.forEach((select) => {
-            select.addEventListener("change", function () {
-                setOutput();
-            });
-        });
-        const graphSection = mainForm.querySelector("#graph-section");
-        if (graphSection) {
-            const inputs = graphSection.querySelectorAll(
-                'input[type="text"], input[type="number"]'
-            );
-            inputs.forEach((input) => {
-                input.addEventListener("input", function () {
-                    setOutput();
-                });
-            });
-        }
-    })();
-}
 mainForm.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
         if (event.target.id == "base-directory") {
@@ -173,9 +136,6 @@ async function loadConfig() {
             if (configData["graph-config"]["loads"]) {
                 setLoads(configData["graph-config"]);
             }
-        }
-        if (debugOutput) {
-            setOutput();
         }
         showToast(data.message || "Configuration loaded successfully!");
     }

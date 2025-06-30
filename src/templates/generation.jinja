@@ -373,12 +373,6 @@
     {% endif %}
   </form>
 
-  {% if debug_output %}
-    {% call section("debug") %}
-      <h2>Saída de Depuração:</h2>
-      <pre id="debug-output" class="text-bg-secondary p-3">{{ debug_output }}</pre>
-    {% endcall %}
-  {% endif %}
 {% endblock content %}
 {% block scripts %}
   <script src="{{ url_for('static', filename='mainForm.js') }}"></script>
