@@ -9,7 +9,6 @@ from services import (
     plotting as ps,
     compilation as cs,
     simulation_utils as sus,
-    utils as us,
 )
 
 GroupedMetricT: TypeAlias = dict[str, list[str]]

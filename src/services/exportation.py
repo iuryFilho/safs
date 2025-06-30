@@ -2,7 +2,6 @@ import pandas as pd
 import os.path as op
 
 from data.metrics_data import METRIC_GROUP_ALIASES
-import os
 from services import (
     compilation as cs,
     path_utils as pus,
