@@ -15,21 +15,47 @@ O SAFS é um sistema desenvolvido para automatizar o fluxo de simulação de sis
 -   Bibliotecas: `Flask`, `Jinja2`, `pandas`, `openpyxl`, `matplotlib`, `scipy`
 
 ## Instalação
-1. Baixe o repositório:
-- Para baixar diretamente, clique [nesse link](https://github.com/iuryFilho/safs/archive/refs/heads/master.zip)
-- Para baixar usando git, clone o repositório:
-```bash
-git clone https://github.com/iuryFilho/safs.git
-```
-> Recomenda-se baixar usando git para facilitar a atualização do repositório.
 
-3. Navegue até o diretório do projeto:
+Siga os passos abaixo para instalar e preparar o ambiente do projeto:
+
+1. **Baixe o repositório:**
+
+    - Para baixar diretamente, clique [neste link](https://github.com/iuryFilho/safs/archive/refs/heads/master.zip) e extraia o arquivo ZIP.
+    - Ou, se preferir usar o Git, execute no terminal:
+
+        ```bash
+        git clone https://github.com/iuryFilho/safs.git
+        ```
+
+2. **Acesse o diretório do projeto:**
+
     ```bash
     cd safs
     ```
-4. Instale as dependências:
+
+3. **(Opcional, mas recomendado) Crie e ative um ambiente virtual:**
+
+    - **Windows:**
+        ```bash
+        python -m venv .venv
+        .venv\Scripts\activate
+        ```
+    - **macOS / Linux:**
+        ```bash
+        python3 -m venv .venv
+        source .venv/bin/activate
+        ```
+
+4. **Instale as dependências do projeto:**
+
     ```bash
     pip install -r requirements.txt
+    ```
+
+5. **(Opcional) Para desativar o ambiente virtual:**
+
+    ```bash
+    deactivate
     ```
 
 ## Uso
